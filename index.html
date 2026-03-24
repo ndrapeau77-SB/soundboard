@@ -12,19 +12,19 @@
     }
 
     body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: white;
-  min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
 
-  background: 
-    linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)),
-    url('heroquestbackground.jpg');
+      background:
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)),
+        url('heroquestbackground.jpg');
 
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
 
     .app {
       max-width: 900px;
@@ -44,7 +44,7 @@
 
     .header p {
       margin: 0;
-      opacity: 0.8;
+      opacity: 0.85;
       font-size: 1rem;
     }
 
@@ -73,7 +73,6 @@
       opacity: 0.9;
     }
 
-    /* Couleurs */
     .rat { background: #6b7280; }
     .squelette { background: #94a3b8; }
     .gobelin { background: #16a34a; }
@@ -85,7 +84,7 @@
       text-align: center;
       margin-top: 28px;
       font-size: 0.9rem;
-      opacity: 0.7;
+      opacity: 0.75;
     }
 
     @media (max-width: 480px) {
@@ -123,19 +122,30 @@
   </div>
 
   <!-- Sons -->
-  <audio id="rat" src="rat.mp3"></audio>
-  <audio id="squelette" src="squelette.mp3"></audio>
-  <audio id="gobelin" src="gobelin.mp3"></audio>
-  <audio id="ogre" src="ogre.mp3"></audio>
-  <audio id="abomination" src="abomination.mp3"></audio>
-  <audio id="monstre" src="monstre.mp3"></audio>
+  <audio id="rat" src="rat.mp3" preload="auto" playsinline></audio>
+  <audio id="squelette" src="squelette.mp3" preload="auto" playsinline></audio>
+  <audio id="gobelin" src="gobelin.mp3" preload="auto" playsinline></audio>
+  <audio id="ogre" src="ogre.mp3" preload="auto" playsinline></audio>
+  <audio id="abomination" src="abomination.mp3" preload="auto" playsinline></audio>
+  <audio id="monstre" src="monstre.mp3" preload="auto" playsinline></audio>
 
   <script>
     function playSound(id) {
       const sound = document.getElementById(id);
       if (!sound) return;
+
+      sound.pause();
       sound.currentTime = 0;
-      sound.play();
+      sound.volume = 1.0;
+      sound.muted = false;
+      sound.setAttribute("playsinline", "");
+
+      const playPromise = sound.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.log("Lecture du son bloquée ou interrompue :", error);
+        });
+      }
     }
   </script>
 </body>
