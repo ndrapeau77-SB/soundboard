@@ -2,15 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hero Quest Soundboard</title>
-  <meta name="theme-color" content="#111827" />
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -18,134 +13,152 @@
       min-height: 100vh;
 
       background:
-        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)),
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)),
         url('heroquestbackground.jpg');
 
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
     }
 
     .app {
       max-width: 900px;
-      margin: 0 auto;
-      padding: 20px 16px 40px;
+      margin: auto;
+      padding: 20px;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 22px;
-    }
-
-    .header h1 {
-      margin: 0 0 8px;
-      font-size: 2rem;
-    }
-
-    .header p {
-      margin: 0;
-      opacity: 0.85;
-      font-size: 1rem;
+      margin-bottom: 20px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 14px;
-      margin-top: 24px;
+      gap: 12px;
     }
 
     .sound-btn {
-      border: none;
-      border-radius: 18px;
-      padding: 20px 12px;
-      min-height: 80px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: white;
+      position: relative;
+      height: 120px;
+      border-radius: 14px;
+      overflow: hidden;
       cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-      transition: transform 0.08s ease, opacity 0.2s ease;
+      border: none;
+      padding: 0;
+      background: none;
+    }
+
+    .sound-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.7);
+    }
+
+    .sound-btn span {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
     }
 
     .sound-btn:active {
-      transform: scale(0.97);
-      opacity: 0.9;
+      transform: scale(0.96);
     }
 
-    .rat { background: #6b7280; }
-    .squelette { background: #94a3b8; }
-    .gobelin { background: #16a34a; }
-    .ogre { background: #b45309; }
-    .abomination { background: #7c3aed; }
-    .monstre { background: #dc2626; }
-
-    .footer {
-      text-align: center;
-      margin-top: 28px;
-      font-size: 0.9rem;
-      opacity: 0.75;
-    }
-
-    @media (max-width: 480px) {
-      .header h1 {
-        font-size: 1.7rem;
-      }
-
-      .sound-btn {
-        min-height: 72px;
-        font-size: 0.95rem;
-      }
-    }
   </style>
 </head>
 
 <body>
   <div class="app">
     <div class="header">
-      <h1>Hero Quest Soundboard 🔊</h1>
-      <p>Appuie sur une créature pour jouer son son</p>
+      <h1>Hero Quest 🔊</h1>
+      <p>Appuie sur une créature</p>
     </div>
 
     <div class="grid">
-      <button class="sound-btn rat" onclick="playSound('rat')">Rat</button>
-      <button class="sound-btn squelette" onclick="playSound('squelette')">Squelette</button>
-      <button class="sound-btn gobelin" onclick="playSound('gobelin')">Gobelin</button>
-      <button class="sound-btn ogre" onclick="playSound('ogre')">Ogre</button>
-      <button class="sound-btn abomination" onclick="playSound('abomination')">Abomination</button>
-      <button class="sound-btn monstre" onclick="playSound('monstre')">Monstre 👹</button>
-    </div>
 
-    <div class="footer">
-      Soundboard Hero Quest
+      <button class="sound-btn" onclick="playSound('porte')">
+        <img src="porte.png">
+        <span>Porte 🚪</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('rat')">
+        <img src="rat.png">
+        <span>Rat</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('squelette')">
+        <img src="squelette.png">
+        <span>Squelette</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('zombie')">
+        <img src="zombie.png">
+        <span>Zombie</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('momie')">
+        <img src="momie.png">
+        <span>Momie</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('gobelin')">
+        <img src="gobelin.png">
+        <span>Gobelin</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('ogre')">
+        <img src="ogre.png">
+        <span>Ogre</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('abomination')">
+        <img src="abomination.png">
+        <span>Abomination</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('gargouille')">
+        <img src="gargouille.png">
+        <span>Gargouille</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('dreadwarrior')">
+        <img src="dreadwarrior.png">
+        <span>Dread Warrior</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('dragon')">
+        <img src="dragon.png">
+        <span>Dragon 🐉</span>
+      </button>
+
     </div>
   </div>
 
   <!-- Sons -->
-  <audio id="rat" src="rat.mp3" preload="auto" playsinline></audio>
-  <audio id="squelette" src="squelette.mp3" preload="auto" playsinline></audio>
-  <audio id="gobelin" src="gobelin.mp3" preload="auto" playsinline></audio>
-  <audio id="ogre" src="ogre.mp3" preload="auto" playsinline></audio>
-  <audio id="abomination" src="abomination.mp3" preload="auto" playsinline></audio>
-  <audio id="monstre" src="monstre.mp3" preload="auto" playsinline></audio>
+  <audio id="porte" src="porte.mp3" preload="auto"></audio>
+  <audio id="rat" src="rat.mp3" preload="auto"></audio>
+  <audio id="squelette" src="squelette.mp3" preload="auto"></audio>
+  <audio id="zombie" src="zombie.mp3" preload="auto"></audio>
+  <audio id="momie" src="momie.mp3" preload="auto"></audio>
+  <audio id="gobelin" src="gobelin.mp3" preload="auto"></audio>
+  <audio id="ogre" src="ogre.mp3" preload="auto"></audio>
+  <audio id="abomination" src="abomination.mp3" preload="auto"></audio>
+  <audio id="gargouille" src="gargouille.mp3" preload="auto"></audio>
+  <audio id="dreadwarrior" src="dreadwarrior.mp3" preload="auto"></audio>
+  <audio id="dragon" src="dragon.mp3" preload="auto"></audio>
 
   <script>
     function playSound(id) {
       const sound = document.getElementById(id);
       if (!sound) return;
 
-      sound.pause();
       sound.currentTime = 0;
-      sound.volume = 1.0;
-      sound.muted = false;
-      sound.setAttribute("playsinline", "");
-
-      const playPromise = sound.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          console.log("Lecture du son bloquée ou interrompue :", error);
-        });
-      }
+      sound.play().catch(()=>{});
     }
   </script>
 </body>
