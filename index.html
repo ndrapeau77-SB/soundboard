@@ -11,19 +11,18 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-
       background:
-        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)),
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
         url('heroquestbackground.jpg');
-
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
     }
 
     .app {
-      max-width: 900px;
+      max-width: 1100px;
       margin: auto;
-      padding: 20px;
+      padding: 20px 16px 40px;
     }
 
     .header {
@@ -31,44 +30,95 @@
       margin-bottom: 20px;
     }
 
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 1rem;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      justify-items: center;
     }
 
     .sound-btn {
       position: relative;
-      height: 120px;
-      border-radius: 14px;
+      width: 100%;
+      max-width: 170px;
+      height: 250px;
+      border-radius: 16px;
       overflow: hidden;
       cursor: pointer;
       border: none;
       padding: 0;
-      background: none;
+      background: rgba(0,0,0,0.25);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      transition: transform 0.08s ease;
+    }
+
+    .sound-btn:active {
+      transform: scale(0.97);
     }
 
     .sound-btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: brightness(0.7);
+      object-position: center top;
+      display: block;
     }
 
     .sound-btn span {
       position: absolute;
-      bottom: 8px;
-      left: 8px;
-      right: 8px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 8px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      text-align: center;
+      color: white;
+      background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.15));
       text-shadow: 0 2px 6px rgba(0,0,0,0.9);
     }
 
-    .sound-btn:active {
-      transform: scale(0.96);
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .sound-btn {
+        max-width: 180px;
+        height: 260px;
+      }
     }
 
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.6rem;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .sound-btn {
+        max-width: 100%;
+        height: 220px;
+      }
+
+      .sound-btn span {
+        font-size: 0.9rem;
+        padding: 8px 6px;
+      }
+    }
   </style>
 </head>
 
@@ -80,66 +130,63 @@
     </div>
 
     <div class="grid">
-
       <button class="sound-btn" onclick="playSound('porte')">
-        <img src="porte.png">
+        <img src="porte.png" alt="Porte">
         <span>Porte 🚪</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('rat')">
-        <img src="rat.png">
+        <img src="rat.png" alt="Rat">
         <span>Rat</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('squelette')">
-        <img src="squelette.png">
+        <img src="squelette.png" alt="Squelette">
         <span>Squelette</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('zombie')">
-        <img src="zombie.png">
+        <img src="zombie.png" alt="Zombie">
         <span>Zombie</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('momie')">
-        <img src="momie.png">
+        <img src="momie.png" alt="Momie">
         <span>Momie</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('gobelin')">
-        <img src="gobelin.png">
+        <img src="gobelin.png" alt="Gobelin">
         <span>Gobelin</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('ogre')">
-        <img src="ogre.png">
+        <img src="ogre.png" alt="Ogre">
         <span>Ogre</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('abomination')">
-        <img src="abomination.png">
+        <img src="abomination.png" alt="Abomination">
         <span>Abomination</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('gargouille')">
-        <img src="gargouille.png">
+        <img src="gargouille.png" alt="Gargouille">
         <span>Gargouille</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('dreadwarrior')">
-        <img src="dreadwarrior.png">
+        <img src="dreadwarrior.png" alt="Dread Warrior">
         <span>Dread Warrior</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('dragon')">
-        <img src="dragon.png">
+        <img src="dragon.png" alt="Dragon">
         <span>Dragon 🐉</span>
       </button>
-
     </div>
   </div>
 
-  <!-- Sons -->
   <audio id="porte" src="porte.mp3" preload="auto"></audio>
   <audio id="rat" src="rat.mp3" preload="auto"></audio>
   <audio id="squelette" src="squelette.mp3" preload="auto"></audio>
@@ -156,9 +203,8 @@
     function playSound(id) {
       const sound = document.getElementById(id);
       if (!sound) return;
-
       sound.currentTime = 0;
-      sound.play().catch(()=>{});
+      sound.play().catch(() => {});
     }
   </script>
 </body>
