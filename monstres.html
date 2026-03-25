@@ -11,11 +11,9 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-
       background:
         linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
         url('heroquestbackground.jpg');
-
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -32,6 +30,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
@@ -87,9 +86,9 @@
       font-weight: bold;
       font-size: 0.95rem;
       text-align: center;
-      color: white;
-      background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.15));
-      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+      color: #ffffff;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
     }
 
     .sound-btn:active {
@@ -104,94 +103,157 @@
       .sound-btn {
         height: 220px;
       }
+
+      .topbar h1 {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="app">
-
     <div class="topbar">
       <h1>Monstres</h1>
       <a class="back-btn" href="index.html">← Retour</a>
     </div>
 
     <div class="grid">
-
       <button class="sound-btn" onclick="playSound('rat')">
-        <img src="rat.png">
+        <img src="rat.png" alt="Rat">
         <span>Rat</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('squelette')">
-        <img src="squelette.png">
+        <img src="squelette.png" alt="Squelette">
         <span>Squelette</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('zombie')">
-        <img src="zombie.png">
+        <img src="zombie.png" alt="Zombie">
         <span>Zombie</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('momie')">
-        <img src="momie.png">
+        <img src="momie.png" alt="Momie">
         <span>Momie</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('gobelin')">
-        <img src="gobelin.png">
+        <img src="gobelin.png" alt="Gobelin">
         <span>Gobelin</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('ogre')">
-        <img src="ogre.png">
+        <img src="ogre.png" alt="Ogre">
         <span>Ogre</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('abomination')">
-        <img src="abomination.png">
+        <img src="abomination.png" alt="Abomination">
         <span>Abomination</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('gargouille')">
-        <img src="gargouille.png">
+        <img src="gargouille.png" alt="Gargouille">
         <span>Gargouille</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('dreadwarrior')">
-        <img src="dreadwarrior.png">
+        <img src="dreadwarrior.png" alt="Dread Warrior">
         <span>Dread Warrior</span>
       </button>
 
       <button class="sound-btn" onclick="playSound('dragon')">
-        <img src="dragon.png">
+        <img src="dragon.png" alt="Dragon">
         <span>Dragon 🐉</span>
       </button>
-
     </div>
-
   </div>
 
-  <!-- Sons -->
-  <audio id="rat" src="rat.mp3" preload="auto"></audio>
-  <audio id="squelette" src="squelette.mp3" preload="auto"></audio>
-  <audio id="zombie" src="zombie.mp3" preload="auto"></audio>
-  <audio id="momie" src="momie.mp3" preload="auto"></audio>
-  <audio id="gobelin" src="gobelin.mp3" preload="auto"></audio>
-  <audio id="ogre" src="ogre.mp3" preload="auto"></audio>
-  <audio id="abomination" src="abomination.mp3" preload="auto"></audio>
-  <audio id="gargouille" src="gargouille.mp3" preload="auto"></audio>
-  <audio id="dreadwarrior" src="dreadwarrior.mp3" preload="auto"></audio>
-  <audio id="dragon" src="dragon.mp3" preload="auto"></audio>
-
   <script>
-    function playSound(id) {
-      const sound = document.getElementById(id);
-      if (!sound) return;
+    const soundFiles = {
+      rat: "rat.mp3",
+      squelette: "squelette.mp3",
+      zombie: "zombie.mp3",
+      momie: "momie.mp3",
+      gobelin: "gobelin.mp3",
+      ogre: "ogre.mp3",
+      abomination: "abomination.mp3",
+      gargouille: "gargouille.mp3",
+      dreadwarrior: "dreadwarrior.mp3",
+      dragon: "dragon.mp3"
+    };
 
-      sound.currentTime = 0;
-      sound.play().catch(() => {});
+    let audioContext = null;
+    const audioBuffers = {};
+
+    function getAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
     }
+
+    async function loadSoundBuffer(file) {
+      if (audioBuffers[file]) return audioBuffers[file];
+
+      const ctx = getAudioContext();
+      const response = await fetch(file);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = await ctx.decodeAudioData(arrayBuffer);
+      audioBuffers[file] = buffer;
+      return buffer;
+    }
+
+    async function playSound(id) {
+      const file = soundFiles[id];
+      if (!file) return;
+
+      try {
+        const ctx = getAudioContext();
+
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        const buffer = await loadSoundBuffer(file);
+
+        const source = ctx.createBufferSource();
+        const gainNode = ctx.createGain();
+
+        gainNode.gain.value = 1.0;
+
+        source.buffer = buffer;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        source.start(0);
+      } catch (error) {
+        console.log("Erreur lecture son :", error);
+      }
+    }
+
+    // Précharge après premier toucher pour réduire la latence
+    async function warmUpAudio() {
+      try {
+        const ctx = getAudioContext();
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        const files = Object.values(soundFiles);
+        for (const file of files) {
+          loadSoundBuffer(file).catch(() => {});
+        }
+
+        window.removeEventListener("touchstart", warmUpAudio);
+        window.removeEventListener("click", warmUpAudio);
+      } catch (_) {}
+    }
+
+    window.addEventListener("touchstart", warmUpAudio, { once: true });
+    window.addEventListener("click", warmUpAudio, { once: true });
   </script>
 </body>
 </html>
