@@ -1,33 +1,160 @@
-<script>
-  const soundFiles = {
-    porte: "porte.mp3",
-    rat: "rat.mp3",
-    squelette: "squelette.mp3",
-    zombie: "zombie.mp3",
-    momie: "momie.mp3",
-    gobelin: "gobelin.mp3",
-    ogre: "ogre.mp3",
-    abomination: "abomination.mp3",
-    gargouille: "gargouille.mp3",
-    dreadwarrior: "dreadwarrior.mp3",
-    dragon: "dragon.mp3"
-  };
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pièges - Hero Quest</title>
 
-  function playSound(id) {
-    const file = soundFiles[id];
-    if (!file) return;
-
-    const sound = new Audio(file);
-    sound.preload = "auto";
-    sound.volume = 1.0;
-    sound.muted = false;
-    sound.setAttribute("playsinline", "");
-
-    const playPromise = sound.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((error) => {
-        console.log("Lecture bloquée ou interrompue :", error);
-      });
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
+        url('heroquestbackground.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
-  }
-</script>
+
+    .app {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px 16px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .back-btn {
+      text-decoration: none;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      justify-items: center;
+    }
+
+    .sound-btn {
+      position: relative;
+      width: 100%;
+      max-width: 180px;
+      height: 260px;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      background: rgba(0,0,0,0.25);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .sound-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    .sound-btn span {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #ffffff;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+    }
+
+    .sound-btn:active {
+      transform: scale(0.97);
+    }
+
+    @media (max-width: 480px) {
+      .sound-btn {
+        max-width: 100%;
+        height: 220px;
+      }
+
+      .topbar h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <h1>Pièges</h1>
+      <a class="back-btn" href="index.html">← Retour</a>
+    </div>
+
+    <div class="grid">
+      <button class="sound-btn" onclick="playSound('fleche')">
+        <img src="piegefleche.png" alt="Piège flèche">
+        <span>Flèches</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('oubliette')">
+        <img src="piegeoubliette.png" alt="Piège oubliette">
+        <span>Oubliette</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('eboulis')">
+        <img src="piegeeboulis.png" alt="Piège éboulis">
+        <span>Éboulis</span>
+      </button>
+
+      <button class="sound-btn" onclick="playSound('coffre')">
+        <img src="piegecoffre.png" alt="Piège coffre">
+        <span>Coffre piégé</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const soundFiles = {
+      fleche: "fleche.mp3",
+      oubliette: "oubliette.mp3",
+      eboulis: "eboulis.mp3",
+      coffre: "coffre.mp3"
+    };
+
+    function playSound(id) {
+      const file = soundFiles[id];
+      if (!file) return;
+
+      const sound = new Audio(file);
+      sound.preload = "auto";
+      sound.volume = 1.0;
+      sound.play().catch(() => {});
+    }
+  </script>
+</body>
+</html>
