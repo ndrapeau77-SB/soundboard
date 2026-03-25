@@ -91,19 +91,25 @@
 }
 
     /* MOBILE */
-    @media (max-width: 480px) {
-      .header img {
-        max-width: 320px;
-      }
+ @media (max-width: 480px) {
 
-      .folder-btn {
-        height: 240px;
-      }
+  .grid {
+    grid-template-columns: repeat(2, 1fr); /* 🔥 2 par ligne */
+  }
 
-      .folder-btn span {
-        font-size: 1rem;
-      }
-    }
+  .folder-btn {
+    height: 240px;
+    max-width: 100%;
+  }
+
+  .header img {
+    max-width: 320px;
+  }
+
+  .folder-btn span {
+    font-size: 1rem;
+  }
+}
 
   </style>
 </head>
