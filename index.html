@@ -34,13 +34,36 @@
     /* HEADER IMAGE */
     .header {
       text-align: center;
-      margin-bottom: 35px;
+      margin-bottom: 20px;
     }
 
     .header img {
       width: 100%;
-      max-width: 500px; /* PLUS GROS */
+      max-width: 500px;
       height: auto;
+    }
+
+    /* 🎵 BOUTON SPOTIFY */
+    .spotify-container {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .spotify-btn {
+      background: #1db954;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      transition: transform 0.1s ease;
+    }
+
+    .spotify-btn:active {
+      transform: scale(0.96);
     }
 
     /* GRID */
@@ -57,7 +80,7 @@
       display: block;
       width: 100%;
       max-width: 200px;
-      height: 280px; /* PLUS LONG */
+      height: 280px;
       border-radius: 18px;
       overflow: hidden;
       text-decoration: none;
@@ -73,47 +96,45 @@
     .folder-btn img {
       width: 100%;
       height: 100%;
-      object-fit: contain; /* IMPORTANT pour voir complet */
+      object-fit: contain;
       background: rgba(0,0,0,0.4);
     }
 
     /* TEXTE */
     .folder-btn span {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 14px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
-
-  color: #ffffff; /* 🔥 TEXTE BLANC */
-
-  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
-  text-shadow: 0 2px 6px rgba(0,0,0,1); /* plus lisible */
-}
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 14px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      color: #ffffff;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+    }
 
     /* MOBILE */
- @media (max-width: 480px) {
+    @media (max-width: 480px) {
 
-  .grid {
-    grid-template-columns: repeat(2, 1fr); /* 🔥 2 par ligne */
-  }
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
 
-  .folder-btn {
-    height: 240px;
-    max-width: 100%;
-  }
+      .folder-btn {
+        height: 240px;
+        max-width: 100%;
+      }
 
-  .header img {
-    max-width: 320px;
-  }
+      .header img {
+        max-width: 320px;
+      }
 
-  .folder-btn span {
-    font-size: 1rem;
-  }
-}
+      .folder-btn span {
+        font-size: 1rem;
+      }
+    }
 
   </style>
 </head>
@@ -124,6 +145,13 @@
     <!-- ENTÊTE -->
     <div class="header">
       <img src="hqentete.png" alt="Hero Quest">
+    </div>
+
+    <!-- 🎲 BOUTON IMMERSION -->
+    <div class="spotify-container">
+      <button class="spotify-btn" onclick="openSpotifyPlaylist()">
+        🎲 Lancer l'immersion
+      </button>
     </div>
 
     <!-- DOSSIERS -->
@@ -152,5 +180,17 @@
     </div>
 
   </div>
+
+  <!-- 🎵 SCRIPT SPOTIFY -->
+  <script>
+    function openSpotifyPlaylist() {
+      window.location.href = "spotify:playlist:6FohP6m1ipvNjgllOH4HLt";
+
+      setTimeout(() => {
+        window.location.href = "https://open.spotify.com/playlist/6FohP6m1ipvNjgllOH4HLt";
+      }, 500);
+    }
+  </script>
+
 </body>
 </html>
