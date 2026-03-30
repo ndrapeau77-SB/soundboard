@@ -81,6 +81,12 @@
     .play-btn.playing {
       opacity: 0.85;
     }
+
+    .hint {
+      margin-top: 12px;
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
   </style>
 </head>
 
@@ -100,11 +106,29 @@
       ⚔️ Début du combat
     </button>
 
+    <div class="hint">
+      À la fin du son, tentative de retour vers Spotify.
+    </div>
+
   </div>
 
   <script>
+    const SPOTIFY_URI = "spotify:playlist:6FohP6m1ipvNjgllOH4HLt";
+    const SPOTIFY_WEB = "https://open.spotify.com/playlist/6FohP6m1ipvNjgllOH4HLt";
+
     let combatSound = null;
     let isPlaying = false;
+    let spotifyReturnTimer = null;
+
+    function relaunchSpotify() {
+      // tente d'ouvrir l'app Spotify
+      window.location.href = SPOTIFY_URI;
+
+      // fallback web si l'app n'ouvre pas
+      setTimeout(() => {
+        window.location.href = SPOTIFY_WEB;
+      }, 500);
+    }
 
     function toggleCombatSound() {
       const btn = document.getElementById("combatBtn");
@@ -117,10 +141,18 @@
           isPlaying = false;
           btn.classList.remove("playing");
           btn.textContent = "⚔️ Début du combat";
+
+          // tente de relancer Spotify quand le son finit
+          relaunchSpotify();
         };
       }
 
       if (!isPlaying) {
+        if (spotifyReturnTimer) {
+          clearTimeout(spotifyReturnTimer);
+          spotifyReturnTimer = null;
+        }
+
         combatSound.currentTime = 0;
         combatSound.play().catch(() => {});
         isPlaying = true;
@@ -132,6 +164,9 @@
         isPlaying = false;
         btn.classList.remove("playing");
         btn.textContent = "⚔️ Début du combat";
+
+        // option 2: si tu arrêtes manuellement, on peut aussi renvoyer vers Spotify
+        relaunchSpotify();
       }
     }
   </script>
