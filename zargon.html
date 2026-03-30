@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zargon - Hero Quest</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+
+      background:
+        linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)),
+        url('heroquestbackground.jpg');
+
+      background-size: cover;
+      background-position: center;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px 16px 40px;
+      text-align: center;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .back-btn {
+      text-decoration: none;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    /* IMAGE PRINCIPALE */
+    .zargon-card {
+      margin-top: 20px;
+    }
+
+    .zargon-card img {
+      width: 100%;
+      max-width: 350px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    /* BOUTON */
+    .play-btn {
+      margin-top: 20px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 16px 22px;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+      transition: transform 0.1s ease;
+    }
+
+    .play-btn:active {
+      transform: scale(0.95);
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <div class="topbar">
+      <h1>Zargon 😈</h1>
+      <a class="back-btn" href="index.html">← Retour</a>
+    </div>
+
+    <div class="zargon-card">
+      <img src="combat_intro.png" alt="Combat Intro">
+    </div>
+
+    <button class="play-btn" onclick="playSound()">
+      ⚔️ Début du combat
+    </button>
+
+  </div>
+
+  <!-- 🔥 MULTI-SON WEB AUDIO -->
+  <script>
+    let audioContext = null;
+    let audioBuffer = null;
+
+    function getAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    async function loadSound() {
+      if (audioBuffer) return audioBuffer;
+
+      const ctx = getAudioContext();
+      const response = await fetch("combat_intro.mp3");
+      const arrayBuffer = await response.arrayBuffer();
+      audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+      return audioBuffer;
+    }
+
+    async function playSound() {
+      try {
+        const ctx = getAudioContext();
+
+        if (ctx.state === "suspended") {
+          await ctx.resume();
+        }
+
+        const buffer = await loadSound();
+
+        const source = ctx.createBufferSource();
+        const gainNode = ctx.createGain();
+
+        gainNode.gain.value = 1.0;
+
+        source.buffer = buffer;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        source.start(0);
+
+      } catch (error) {
+        console.log("Erreur son :", error);
+      }
+    }
+  </script>
+
+</body>
+</html>
