@@ -31,7 +31,6 @@
       padding: 20px 16px 40px;
     }
 
-    /* HEADER IMAGE */
     .header {
       text-align: center;
       margin-bottom: 20px;
@@ -40,10 +39,9 @@
     .header img {
       width: 100%;
       max-width: 500px;
-      height: auto;
     }
 
-    /* 🎵 BOUTON SPOTIFY */
+    /* 🔥 BOUTON IMMERSION */
     .spotify-container {
       text-align: center;
       margin-bottom: 25px;
@@ -59,14 +57,12 @@
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-      transition: transform 0.1s ease;
     }
 
     .spotify-btn:active {
       transform: scale(0.96);
     }
 
-    /* GRID */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -74,10 +70,8 @@
       justify-items: center;
     }
 
-    /* BOUTONS LONGS */
     .folder-btn {
       position: relative;
-      display: block;
       width: 100%;
       max-width: 200px;
       height: 280px;
@@ -85,14 +79,8 @@
       overflow: hidden;
       text-decoration: none;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      transition: transform 0.1s ease;
     }
 
-    .folder-btn:active {
-      transform: scale(0.97);
-    }
-
-    /* IMAGE */
     .folder-btn img {
       width: 100%;
       height: 100%;
@@ -100,7 +88,6 @@
       background: rgba(0,0,0,0.4);
     }
 
-    /* TEXTE */
     .folder-btn span {
       position: absolute;
       bottom: 0;
@@ -110,29 +97,17 @@
       font-size: 1.2rem;
       font-weight: bold;
       text-align: center;
-      color: #ffffff;
+      color: white;
       background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
-      text-shadow: 0 2px 6px rgba(0,0,0,1);
     }
 
-    /* MOBILE */
     @media (max-width: 480px) {
-
       .grid {
         grid-template-columns: repeat(2, 1fr);
       }
 
       .folder-btn {
         height: 240px;
-        max-width: 100%;
-      }
-
-      .header img {
-        max-width: 320px;
-      }
-
-      .folder-btn span {
-        font-size: 1rem;
       }
     }
 
@@ -149,7 +124,7 @@
 
     <!-- 🎲 BOUTON IMMERSION -->
     <div class="spotify-container">
-      <button class="spotify-btn" onclick="openSpotifyPlaylist()">
+      <button class="spotify-btn" onclick="openSpotify()">
         🎲 Lancer l'immersion
       </button>
     </div>
@@ -158,37 +133,33 @@
     <div class="grid">
 
       <a class="folder-btn" href="pieges.html">
-        <img src="pieges.png" alt="Pièges">
+        <img src="pieges.png">
         <span>Pièges</span>
       </a>
 
       <a class="folder-btn" href="monstres.html">
-        <img src="monstres.png" alt="Monstres">
+        <img src="monstres.png">
         <span>Monstres</span>
       </a>
 
       <a class="folder-btn" href="ambiances.html">
-        <img src="ambiances.png" alt="Ambiances">
+        <img src="ambiances.png">
         <span>Ambiances</span>
       </a>
 
       <a class="folder-btn" href="zargon.html">
-        <img src="zargon.png" alt="Zargon">
-        <span>Zargon</span>
+        <img src="combat_intro.png">
+        <span>Zargon 😈</span>
       </a>
 
     </div>
 
   </div>
 
-  <!-- 🎵 SCRIPT SPOTIFY -->
+  <!-- 🔥 SPOTIFY APP ONLY -->
   <script>
-    function openSpotifyPlaylist() {
-      window.location.href = "spotify:track:0RjE5HPE8MWxXlQm1zdY1n?si=16938587aa99436b";
-
-      setTimeout(() => {
-        window.location.href = "https://open.spotify.com/track/0RjE5HPE8MWxXlQm1zdY1n?si=16938587aa99436b";
-      }, 500);
+    function openSpotify() {
+      window.location.href = "spotify:playlist:6FohP6m1ipvNjgllOH4HLt";
     }
   </script>
 
