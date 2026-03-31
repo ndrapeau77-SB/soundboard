@@ -127,10 +127,10 @@
         <span>Ambiances</span>
       </a>
 
-      <a class="btn" href="portes.html">
-        <img src="portes.png" alt="Portes">
-        <span>Portes</span>
-      </a>
+     <div class="btn" onclick="playRandomDoor()">
+  <img src="portes.png" alt="Portes">
+  <span>Portes</span>
+</div>
 
       <a class="btn" href="pieges.html">
         <img src="pieges.png" alt="Pièges">
@@ -141,4 +141,35 @@
 
   </div>
 </body>
+  <script>
+  const doorSounds = [
+    "porte1.mp3",
+    "porte2.mp3",
+    "porte3.mp3",
+    "porte4.mp3",
+    "porte5.m4a"
+  ];
+
+  let doorAudio = null;
+
+  function playRandomDoor() {
+
+    // choisir un son aléatoire
+    const randomIndex = Math.floor(Math.random() * doorSounds.length);
+    const chosenSound = doorSounds[randomIndex];
+
+    // si un son joue déjà → stop
+    if (doorAudio) {
+      doorAudio.pause();
+      doorAudio.currentTime = 0;
+    }
+
+    doorAudio = new Audio(chosenSound);
+    doorAudio.preload = "auto";
+    doorAudio.volume = 1.0;
+
+    doorAudio.play().catch(() => {});
+  }
+</script>
+</div>
 </html>
