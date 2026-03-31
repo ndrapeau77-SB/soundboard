@@ -1,91 +1,144 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Héros</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Héros</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  color: white;
-  background:
-    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
-    url('heroquestbackground.jpg');
-  background-size: cover;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
 
-.app {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-}
+      background:
+        linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
+        url('heroquestbackground.jpg');
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
+    .app {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
 
-.btn {
-  height: 250px;
-  border-radius: 18px;
-  overflow: hidden;
-  position: relative;
-}
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-.btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: rgba(0,0,0,0.4);
-}
+    .topbar h1 {
+      margin: 0;
+    }
 
-.btn span {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  background: rgba(0,0,0,0.8);
-  padding: 10px;
-}
-</style>
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      justify-items: center;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      max-width: 220px;
+      height: 260px;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      transition: transform 0.1s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: rgba(0,0,0,0.4);
+      display: block;
+    }
+
+    .btn span {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      padding: 12px;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 480px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .btn {
+        max-width: 100%;
+        height: 220px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<div class="app">
+  <div class="app">
 
-<div class="topbar">
-  <h1>Héros</h1>
-  <a href="index.html">← Retour</a>
-</div>
+    <div class="topbar">
+      <h1>Héros ⚔️</h1>
+      <a href="index.html">← Retour</a>
+    </div>
 
-<div class="grid">
+    <div class="grid">
 
-  <a class="btn" href="combat.html">
-    <img src="combat.png">
-    <span>Combat ⚔️</span>
-  </a>
+      <a class="btn" href="combats.html">
+        <img src="combats.png" alt="Combats">
+        <span>Combats ⚔️</span>
+      </a>
 
-  <a class="btn" href="ambiances.html">
-    <img src="ambiance.png">
-    <span>Ambiance 🎵</span>
-  </a>
+      <a class="btn" href="ambiances.html">
+        <img src="ambiance.png" alt="Ambiance">
+        <span>Ambiance 🎵</span>
+      </a>
 
-  <a class="btn" href="porte.html">
-    <img src="porte.png">
-    <span>Porte 🚪</span>
-  </a>
+      <a class="btn" href="portes.html">
+        <img src="portes.png" alt="Portes">
+        <span>Portes 🚪</span>
+      </a>
 
-</div>
+      <a class="btn" href="pieges.html">
+        <img src="pieges.png" alt="Pièges">
+        <span>Pièges ⚠️</span>
+      </a>
 
-</div>
+    </div>
+
+  </div>
 </body>
 </html>
