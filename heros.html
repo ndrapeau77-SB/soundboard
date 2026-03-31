@@ -11,47 +11,54 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-
       background:
         linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
         url('heroquestbackground.jpg');
-
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
     }
 
     .app {
-      max-width: 900px;
+      max-width: 980px;
       margin: auto;
-      padding: 20px;
+      padding: 20px 16px 40px;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 2rem;
     }
 
     .topbar a {
       color: white;
       text-decoration: none;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.65);
       padding: 10px 14px;
       border-radius: 10px;
+      font-weight: bold;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(2, minmax(160px, 220px));
+      justify-content: center;
+      gap: 24px 36px;
     }
 
     .btn {
       display: block;
       width: 100%;
-      max-width: 220px;
-      height: 260px;
+      height: 280px;
       border-radius: 18px;
       overflow: hidden;
       position: relative;
@@ -59,6 +66,9 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       cursor: pointer;
       transition: transform 0.1s ease;
+      background: rgba(0,0,0,0.25);
+      border: none;
+      padding: 0;
     }
 
     .btn:active {
@@ -68,19 +78,43 @@
     .btn img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      background: rgba(0,0,0,0.4);
+      object-fit: cover;
+      object-position: center;
+      display: block;
     }
 
     .btn span {
       position: absolute;
+      left: 0;
+      right: 0;
       bottom: 0;
-      width: 100%;
-      padding: 12px;
+      padding: 12px 10px;
       text-align: center;
       font-weight: bold;
-      color: white;
-      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      font-size: 1.05rem;
+      color: #ffffff;
+      background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.25));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+      z-index: 2;
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+        gap: 16px;
+      }
+
+      .btn {
+        height: 220px;
+      }
+
+      .btn span {
+        font-size: 0.95rem;
+      }
+
+      .topbar h1 {
+        font-size: 1.7rem;
+      }
     }
   </style>
 </head>
@@ -96,31 +130,29 @@
     <div class="grid">
 
       <a class="btn" href="combats.html">
-        <img src="combats.png">
-        <span>Combats</span>
+        <img src="combats.png" alt="Combats">
+        <span>Combats ⚔️</span>
       </a>
 
       <a class="btn" href="ambiances.html">
-        <img src="ambiances.png">
-        <span>Ambiance</span>
+        <img src="ambiance.png" alt="Ambiance">
+        <span>Ambiance 🎵</span>
       </a>
 
-      <!-- 🔥 BOUTON PORTE RANDOM -->
-      <div class="btn" onclick="playRandomDoor()">
-        <img src="portes.png">
-        <span>Portes</span>
-      </div>
+      <button class="btn" onclick="playRandomDoor()">
+        <img src="portes.png" alt="Portes">
+        <span>Portes 🚪</span>
+      </button>
 
       <a class="btn" href="pieges.html">
-        <img src="pieges.png">
-        <span>Pièges</span>
+        <img src="pieges.png" alt="Pièges">
+        <span>Pièges ⚠️</span>
       </a>
 
     </div>
 
   </div>
 
-  <!-- 🔊 SCRIPT SON PORTE RANDOM -->
   <script>
     const doorSounds = [
       "porte1.mp3",
@@ -134,19 +166,15 @@
     let lastIndex = -1;
 
     function playRandomDoor() {
-
       let randomIndex;
 
-      // 🔥 éviter répétition
       do {
         randomIndex = Math.floor(Math.random() * doorSounds.length);
-      } while (randomIndex === lastIndex);
+      } while (randomIndex === lastIndex && doorSounds.length > 1);
 
       lastIndex = randomIndex;
-
       const chosenSound = doorSounds[randomIndex];
 
-      // stop si un son joue déjà
       if (doorAudio) {
         doorAudio.pause();
         doorAudio.currentTime = 0;
@@ -155,10 +183,8 @@
       doorAudio = new Audio(chosenSound);
       doorAudio.preload = "auto";
       doorAudio.volume = 1.0;
-
       doorAudio.play().catch(() => {});
     }
   </script>
-
 </body>
 </html>
