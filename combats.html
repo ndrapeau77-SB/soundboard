@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Magie</title>
+  <title>Combats</title>
 
   <style>
     body {
@@ -11,11 +11,9 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-
       background:
         linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)),
         url('heroquestbackground.jpg');
-
       background-size: cover;
       background-position: center;
     }
@@ -31,6 +29,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 25px;
+      gap: 15px;
     }
 
     .topbar a {
@@ -40,6 +39,7 @@
       padding: 10px 14px;
       border-radius: 10px;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .grid {
@@ -57,11 +57,13 @@
       overflow: hidden;
       position: relative;
       cursor: pointer;
+      text-decoration: none;
       border: none;
       padding: 0;
       background: transparent;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       transition: transform 0.1s ease;
+      display: block;
     }
 
     .btn:active {
@@ -73,25 +75,49 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      position: relative;
+      z-index: 1;
     }
 
     .btn span {
       position: absolute;
+      left: 0;
       bottom: 0;
       width: 100%;
-      padding: 14px;
+      padding: 14px 10px;
+      box-sizing: border-box;
       text-align: center;
       font-weight: bold;
       font-size: 20px;
       color: white;
       text-shadow: 2px 2px 6px rgba(0,0,0,1);
-      background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.3));
+      background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.45), rgba(0,0,0,0));
+      z-index: 2;
+      pointer-events: none;
     }
 
     @media (max-width: 480px) {
+      .app {
+        padding: 16px;
+      }
+
+      .topbar {
+        flex-wrap: wrap;
+      }
+
+      .topbar h1 {
+        margin: 0;
+        font-size: 32px;
+      }
+
       .btn {
         height: 220px;
         max-width: 100%;
+      }
+
+      .btn span {
+        font-size: 18px;
+        padding: 12px 8px;
       }
     }
   </style>
@@ -101,34 +127,28 @@
   <div class="app">
 
     <div class="topbar">
-      <h1>Magie ✨</h1>
-      <a href="combats.html">← Retour</a>
+      <h1>Combats ⚔️</h1>
+      <a href="heros.html">← Retour</a>
     </div>
 
     <div class="grid">
 
-      <!-- 🌊 EAU -->
-      <button class="btn" onclick="playSound('magie_eau.mp3', 40)">
-        <img src="magie_eau.png" alt="Eau">
-        <span>Eau 🌊</span>
+      <!-- 🎲 DES (SON) -->
+      <button class="btn" onclick="playDice()">
+        <img src="des.png" alt="Dés">
+        <span>Dés 🎲</span>
       </button>
 
-      <!-- 🔥 FEU -->
-      <button class="btn" onclick="playSound('magie_feu.mp3', 120)">
-        <img src="magie_feu.png" alt="Feu">
-        <span>Feu 🔥</span>
-      </button>
+      <!-- ✨ MAGIE (PAGE) -->
+      <a class="btn" href="magies.html">
+        <img src="magie.png" alt="Magie">
+        <span>Magie ✨</span>
+      </a>
 
-      <!-- 🌪️ AIR -->
-      <button class="btn" onclick="playAir()">
-        <img src="magie_air.png" alt="Air">
-        <span>Air 🌪️</span>
-      </button>
-
-      <!-- 🌱 TERRE -->
-      <button class="btn" onclick="playSound('magie_terre.mp3', 200)">
-        <img src="magie_terre.png" alt="Terre">
-        <span>Terre 🌱</span>
+      <!-- 🗡️ DAGUE (SON) -->
+      <button class="btn" onclick="playDagger()">
+        <img src="dague.png" alt="Dague">
+        <span>Dague 🗡️</span>
       </button>
 
     </div>
@@ -136,37 +156,27 @@
   </div>
 
   <script>
-    let currentAudio = null;
+    let diceAudio = null;
+    let daggerAudio = null;
 
-    function vibrate(pattern) {
-      if ("vibrate" in navigator) {
-        navigator.vibrate(pattern);
+    function playDice() {
+      if (diceAudio) {
+        diceAudio.pause();
+        diceAudio.currentTime = 0;
       }
+
+      diceAudio = new Audio("des.mp3");
+      diceAudio.play().catch(() => {});
     }
 
-    function playSound(file, vibration = 60) {
-      vibrate(vibration);
-
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+    function playDagger() {
+      if (daggerAudio) {
+        daggerAudio.pause();
+        daggerAudio.currentTime = 0;
       }
 
-      currentAudio = new Audio(file);
-      currentAudio.play().catch(() => {});
-    }
-
-    // 🌪️ Air = vibration spéciale (2 pulses)
-    function playAir() {
-      vibrate([30, 40, 30]);
-
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      currentAudio = new Audio("magie_air.mp3");
-      currentAudio.play().catch(() => {});
+      daggerAudio = new Audio("dague.mp3");
+      daggerAudio.play().catch(() => {});
     }
   </script>
 
