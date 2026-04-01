@@ -127,33 +127,29 @@
       <a href="index.html">← Retour</a>
     </div>
 
-<div class="grid">
+    <div class="grid">
 
-  <!-- Combats -->
-  <a class="btn" href="combats.html">
-    <img src="combats.png" alt="Combats">
-    <span>Combats</span>
-  </a>
+      <a class="btn" href="combats.html">
+        <img src="combats.png" alt="Combats">
+        <span>Combats</span>
+      </a>
 
-  <!-- Pièges -->
-  <a class="btn" href="pieges.html">
-    <img src="pieges.png" alt="Pièges">
-    <span>Pièges</span>
-  </a>
+      <a class="btn" href="pieges.html">
+        <img src="pieges.png" alt="Pièges">
+        <span>Pièges</span>
+      </a>
 
-  <!-- Portes -->
-  <button class="btn" onclick="playRandomDoor()">
-    <img src="portes.png" alt="Portes">
-    <span>Portes</span>
-  </button>
+      <button class="btn" onclick="playRandomDoor()">
+        <img src="portes.png" alt="Portes">
+        <span>Portes</span>
+      </button>
 
-  <!-- Musique -->
-  <a class="btn" href="ambiances.html">
-    <img src="musique.png" alt="Musique">
-    <span>Musique 🎵</span>
-  </a>
+      <a class="btn" href="ambiances.html">
+        <img src="musique.png" alt="Musique">
+        <span>Musique 🎵</span>
+      </a>
 
-</div>
+    </div>
 
   </div>
 
@@ -162,7 +158,7 @@
       "porte1.mp3",
       "porte2.mp3",
       "porte3.mp3",
-      "porte5.m4a"
+      "porte5.mp3"
     ];
 
     let doorAudio = null;
@@ -186,7 +182,15 @@
       doorAudio = new Audio(chosenSound);
       doorAudio.preload = "auto";
       doorAudio.volume = 1.0;
-      doorAudio.play().catch(() => {});
+      doorAudio.setAttribute("playsinline", "");
+
+      doorAudio.addEventListener("ended", () => {
+        doorAudio = null;
+      }, { once: true });
+
+      doorAudio.play().catch((error) => {
+        console.log("Lecture impossible :", error);
+      });
     }
   </script>
 </body>
