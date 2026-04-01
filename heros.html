@@ -153,6 +153,9 @@
 
   </div>
 
+  <!-- Média principal caché -->
+  <audio id="doorPlayer" preload="auto"></audio>
+
   <script>
     const doorSounds = [
       "porte1.mp3",
@@ -162,51 +165,58 @@
       "porte5.m4a"
     ];
 
- let doorAudio = null;
-  let lastIndex = -1;
+    const doorPlayer = document.getElementById("doorPlayer");
+    let lastIndex = -1;
 
-  function playRandomDoor() {
-    let randomIndex;
+    function pickRandomDoorSound() {
+      let randomIndex;
 
-    do {
-      randomIndex = Math.floor(Math.random() * doorSounds.length);
-    } while (randomIndex === lastIndex && doorSounds.length > 1);
+      do {
+        randomIndex = Math.floor(Math.random() * doorSounds.length);
+      } while (randomIndex === lastIndex && doorSounds.length > 1);
 
-    lastIndex = randomIndex;
-    const chosenSound = doorSounds[randomIndex];
-
-    // 🔥 STOP tout son précédent
-    if (doorAudio) {
-      doorAudio.pause();
-      doorAudio.currentTime = 0;
+      lastIndex = randomIndex;
+      return doorSounds[randomIndex];
     }
 
-    // 🔥 NOUVEL AUDIO (prend le contrôle)
-    doorAudio = new Audio(chosenSound);
+    function stopDoorSound() {
+      doorPlayer.pause();
+      doorPlayer.currentTime = 0;
+      doorPlayer.removeAttribute("src");
+      doorPlayer.load();
+    }
 
-    doorAudio.preload = "auto";
-    doorAudio.volume = 1.0;
-    doorAudio.muted = false;
+    function playRandomDoor() {
+      const chosenSound = pickRandomDoorSound();
 
-    // 🔥 TRÈS IMPORTANT → force le mode "media principal"
-    doorAudio.setAttribute("playsinline", "");
-    doorAudio.setAttribute("webkit-playsinline", "");
+      try {
+        // Stoppe le son précédent
+        stopDoorSound();
 
-    // 🔥 hack pour forcer priorité audio
-    doorAudio.crossOrigin = "anonymous";
+        // Force un nouveau média principal
+        doorPlayer.src = chosenSound;
+        doorPlayer.preload = "auto";
+        doorPlayer.volume = 1.0;
+        doorPlayer.muted = false;
+        doorPlayer.loop = false;
+        doorPlayer.autoplay = false;
 
-    // 🔥 petit trick : reset audio context interne
-    doorAudio.load();
+        // Ne pas mettre playsinline ici pour laisser le système
+        // gérer ça comme un média "prioritaire" si possible.
 
-    // 🔥 lecture (va couper Spotify)
-    doorAudio.play().catch((error) => {
-      console.log("Erreur lecture :", error);
-    });
-  }
-</script>
-🧠 Pourquoi ça marche mieux
+        // Recharge explicitement
+        doorPlayer.load();
 
-Ce qu’on fait ici :
+        const playPromise = doorPlayer.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.log("Lecture impossible :", error);
+          });
+        }
+      } catch (error) {
+        console.log("Erreur audio :", error);
+      }
+    }
   </script>
 </body>
 </html>
