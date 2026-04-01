@@ -144,10 +144,10 @@
         <span>Portes</span>
       </button>
 
-      <a class="btn" href="ambiances.html">
-        <img src="musique.png" alt="Musique">
-        <span>Musique 🎵</span>
-      </a>
+      <button class="btn" onclick="playRandomMusic()">
+  <img src="musique.png" alt="Musique">
+  <span>Musique 🎵</span>
+</button>
 
     </div>
 
@@ -218,5 +218,37 @@
       }
     }
   </script>
+  <script>
+  const musicSounds = [
+    "donjon.mp3",
+    "combat.mp3",
+    "exploration.mp3"
+  ];
+
+  let musicAudio = null;
+  let lastMusicIndex = -1;
+
+  function playRandomMusic() {
+    let randomIndex;
+
+    do {
+      randomIndex = Math.floor(Math.random() * musicSounds.length);
+    } while (randomIndex === lastMusicIndex && musicSounds.length > 1);
+
+    lastMusicIndex = randomIndex;
+    const chosenSound = musicSounds[randomIndex];
+
+    if (musicAudio) {
+      musicAudio.pause();
+      musicAudio.currentTime = 0;
+    }
+
+    musicAudio = new Audio(chosenSound);
+    musicAudio.preload = "auto";
+    musicAudio.volume = 1.0;
+
+    musicAudio.play().catch(() => {});
+  }
+</script>
 </body>
 </html>
