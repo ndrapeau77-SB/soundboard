@@ -158,40 +158,55 @@
       "porte1.mp3",
       "porte2.mp3",
       "porte3.mp3",
+      "porte4.mp3",
       "porte5.mp3"
     ];
 
-    let doorAudio = null;
-    let lastIndex = -1;
+ let doorAudio = null;
+  let lastIndex = -1;
 
-    function playRandomDoor() {
-      let randomIndex;
+  function playRandomDoor() {
+    let randomIndex;
 
-      do {
-        randomIndex = Math.floor(Math.random() * doorSounds.length);
-      } while (randomIndex === lastIndex && doorSounds.length > 1);
+    do {
+      randomIndex = Math.floor(Math.random() * doorSounds.length);
+    } while (randomIndex === lastIndex && doorSounds.length > 1);
 
-      lastIndex = randomIndex;
-      const chosenSound = doorSounds[randomIndex];
+    lastIndex = randomIndex;
+    const chosenSound = doorSounds[randomIndex];
 
-      if (doorAudio) {
-        doorAudio.pause();
-        doorAudio.currentTime = 0;
-      }
-
-      doorAudio = new Audio(chosenSound);
-      doorAudio.preload = "auto";
-      doorAudio.volume = 1.0;
-      doorAudio.setAttribute("playsinline", "");
-
-      doorAudio.addEventListener("ended", () => {
-        doorAudio = null;
-      }, { once: true });
-
-      doorAudio.play().catch((error) => {
-        console.log("Lecture impossible :", error);
-      });
+    // 🔥 STOP tout son précédent
+    if (doorAudio) {
+      doorAudio.pause();
+      doorAudio.currentTime = 0;
     }
+
+    // 🔥 NOUVEL AUDIO (prend le contrôle)
+    doorAudio = new Audio(chosenSound);
+
+    doorAudio.preload = "auto";
+    doorAudio.volume = 1.0;
+    doorAudio.muted = false;
+
+    // 🔥 TRÈS IMPORTANT → force le mode "media principal"
+    doorAudio.setAttribute("playsinline", "");
+    doorAudio.setAttribute("webkit-playsinline", "");
+
+    // 🔥 hack pour forcer priorité audio
+    doorAudio.crossOrigin = "anonymous";
+
+    // 🔥 petit trick : reset audio context interne
+    doorAudio.load();
+
+    // 🔥 lecture (va couper Spotify)
+    doorAudio.play().catch((error) => {
+      console.log("Erreur lecture :", error);
+    });
+  }
+</script>
+🧠 Pourquoi ça marche mieux
+
+Ce qu’on fait ici :
   </script>
 </body>
 </html>
