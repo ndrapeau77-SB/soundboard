@@ -126,14 +126,9 @@
       <span>Portes</span>
     </button>
 
-    <button class="btn" onclick="launchAmbiance()">
-      <img src="musique.png" alt="Lancer ambiance">
-      <span>Lancer l'ambiance 🎵</span>
-    </button>
-
-    <button class="btn" onclick="resumeSpotify()">
-      <img src="musique.png" alt="Repartir ambiance">
-      <span>Repartir l'ambiance ▶️</span>
+    <button class="btn" onclick="playSpotify()">
+      <img src="musique.png" alt="Ambiance">
+      <span>Lancer / Repartir l'ambiance 🎵</span>
     </button>
 
   </div>
@@ -196,14 +191,6 @@ async function playSpotify() {
   } catch (e) {
     console.log("Play Spotify error:", e);
   }
-}
-
-function launchAmbiance() {
-  playSpotify();
-}
-
-function resumeSpotify() {
-  playSpotify();
 }
 
 async function playRandomDoor() {
