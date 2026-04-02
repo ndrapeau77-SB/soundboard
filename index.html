@@ -220,5 +220,13 @@ function launchAmbiance() {
 }
 </script>
 
+  <script>
+const btn = document.getElementById("spotifyBtn");
+
+if (localStorage.getItem("access_token")) {
+  btn.textContent = "✅ Spotify connecté";
+}
+</script>
+
 </body>
 </html>
