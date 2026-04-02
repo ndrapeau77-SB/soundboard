@@ -85,8 +85,8 @@
     }
 
     function generateRandomString(length) {
-      let text = "";
       const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let text = "";
       for (let i = 0; i < length; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
       }
@@ -113,13 +113,13 @@
       const args = new URLSearchParams({
         response_type: "code",
         client_id: clientId,
-        scope: scope,
+        scope,
         redirect_uri: redirectUri,
         code_challenge_method: "S256",
         code_challenge: codeChallenge
       });
 
-      window.location = `https://accounts.spotify.com/authorize?${args}`;
+      window.location.href = `https://accounts.spotify.com/authorize?${args.toString()}`;
     }
   </script>
 
