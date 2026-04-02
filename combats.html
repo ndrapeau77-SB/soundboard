@@ -171,10 +171,20 @@
       "combat6.mp3"
     ];
 
+    const defenseSounds = [
+      "block1.mp3",
+      "block2.mp3",
+      "block3.mp3",
+      "block4.mp3",
+      "block5.mp3"
+    ];
+
     let attackAudio = null;
     let defenseAudio = null;
     let daggerAudio = null;
+
     let lastAttackIndex = -1;
+    let lastDefenseIndex = -1;
 
     function vibrate(pattern) {
       if ("vibrate" in navigator) {
@@ -191,30 +201,32 @@
       } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
 
       lastAttackIndex = randomIndex;
-      const chosenSound = attackSounds[randomIndex];
 
       if (attackAudio) {
         attackAudio.pause();
         attackAudio.currentTime = 0;
       }
 
-      attackAudio = new Audio(chosenSound);
-      attackAudio.preload = "auto";
-      attackAudio.volume = 1.0;
+      attackAudio = new Audio(attackSounds[randomIndex]);
       attackAudio.play().catch(() => {});
     }
 
     function playDefenseDice() {
       vibrate(30);
 
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * defenseSounds.length);
+      } while (randomIndex === lastDefenseIndex && defenseSounds.length > 1);
+
+      lastDefenseIndex = randomIndex;
+
       if (defenseAudio) {
         defenseAudio.pause();
         defenseAudio.currentTime = 0;
       }
 
-      defenseAudio = new Audio("des.mp3");
-      defenseAudio.preload = "auto";
-      defenseAudio.volume = 1.0;
+      defenseAudio = new Audio(defenseSounds[randomIndex]);
       defenseAudio.play().catch(() => {});
     }
 
@@ -227,8 +239,6 @@
       }
 
       daggerAudio = new Audio("dague.mp3");
-      daggerAudio.preload = "auto";
-      daggerAudio.volume = 1.0;
       daggerAudio.play().catch(() => {});
     }
   </script>
