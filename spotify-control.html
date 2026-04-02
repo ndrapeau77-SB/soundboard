@@ -7,22 +7,41 @@
 
 <h2>Contrôle Spotify</h2>
 
+<button onclick="showToken()">Voir token</button>
 <button onclick="pauseSpotify()">Pause Spotify</button>
 <button onclick="playSpotify()">Play Spotify</button>
 
-<p id="status"></p>
+<pre id="status"></pre>
 
 <script>
-const token = localStorage.getItem("access_token");
 const statusEl = document.getElementById("status");
 
-if (!token) {
-  statusEl.textContent = "Aucun access token trouvé. Reconnecte-toi avec spotify-login.html";
+function getToken() {
+  return localStorage.getItem("access_token");
+}
+
+function setStatus(message) {
+  if (typeof message === "string") {
+    statusEl.textContent = message;
+  } else {
+    statusEl.textContent = JSON.stringify(message, null, 2);
+  }
+}
+
+function showToken() {
+  const token = getToken();
+  if (!token) {
+    setStatus("Aucun token trouvé.");
+    return;
+  }
+
+  setStatus("Token trouvé :\n" + token);
 }
 
 async function pauseSpotify() {
+  const token = getToken();
   if (!token) {
-    statusEl.textContent = "Token absent.";
+    setStatus("Token absent.");
     return;
   }
 
@@ -35,19 +54,20 @@ async function pauseSpotify() {
     });
 
     if (response.status === 204) {
-      statusEl.textContent = "Spotify mis en pause.";
+      setStatus("Spotify mis en pause.");
     } else {
       const text = await response.text();
-      statusEl.textContent = "Erreur pause Spotify : " + response.status + " " + text;
+      setStatus("Erreur pause Spotify : " + response.status + " " + text);
     }
   } catch (error) {
-    statusEl.textContent = "Erreur réseau : " + error.message;
+    setStatus("Erreur réseau : " + error.message);
   }
 }
 
 async function playSpotify() {
+  const token = getToken();
   if (!token) {
-    statusEl.textContent = "Token absent.";
+    setStatus("Token absent.");
     return;
   }
 
@@ -60,13 +80,13 @@ async function playSpotify() {
     });
 
     if (response.status === 204) {
-      statusEl.textContent = "Spotify relancé.";
+      setStatus("Spotify relancé.");
     } else {
       const text = await response.text();
-      statusEl.textContent = "Erreur play Spotify : " + response.status + " " + text;
+      setStatus("Erreur play Spotify : " + response.status + " " + text);
     }
   } catch (error) {
-    statusEl.textContent = "Erreur réseau : " + error.message;
+    setStatus("Erreur réseau : " + error.message);
   }
 }
 </script>
