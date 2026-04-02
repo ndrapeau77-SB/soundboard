@@ -94,7 +94,7 @@
           body: new URLSearchParams({
             client_id: clientId,
             grant_type: "authorization_code",
-            code: code,
+            code,
             redirect_uri: redirectUri,
             code_verifier: codeVerifier
           })
@@ -118,6 +118,10 @@
           localStorage.setItem("refresh_token", data.refresh_token);
         }
 
+        if (data.expires_in) {
+          localStorage.setItem("token_expires_at", String(Date.now() + (data.expires_in * 1000)));
+        }
+
         localStorage.removeItem("code_verifier");
 
         setStatus("Connexion réussie ✅\nRedirection vers le contrôle Spotify...");
@@ -126,8 +130,8 @@
           window.location.href = "spotify-control.html";
         }, 1200);
 
-      } catch (error) {
-        setStatus("Erreur réseau : " + error.message);
+      } catch (err) {
+        setStatus("Erreur réseau : " + err.message);
       }
     }
 
