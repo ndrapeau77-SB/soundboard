@@ -133,24 +133,25 @@
 
     <div class="grid">
 
-      <!-- 🎲 DES (SON) -->
-      <button class="btn" onclick="playDice()">
-        <img src="des_tete.png" alt="Dés">
+      <!-- 🎲 DÉS ATTAQUE -->
+      <button class="btn" onclick="playAttackDice()">
+        <img src="des_tete.png" alt="Dés attaque">
         <span>Dés Attaque</span>
       </button>
 
-         <button class="btn" onclick="playDice()">
-        <img src="des_bouclier.png" alt="Dés">
+      <!-- 🛡️ DÉS DÉFENSE -->
+      <button class="btn" onclick="playDefenseDice()">
+        <img src="des_bouclier.png" alt="Dés défense">
         <span>Dés Défense</span>
       </button>
 
-      <!-- ✨ MAGIE (PAGE) -->
+      <!-- ✨ MAGIE -->
       <a class="btn" href="magies.html">
         <img src="magie.png" alt="Magie">
         <span>Magie ✨</span>
       </a>
 
-      <!-- 🗡️ DAGUE (SON) -->
+      <!-- 🗡️ DAGUE -->
       <button class="btn" onclick="playDagger()">
         <img src="dague.png" alt="Dague">
         <span>Dague 🗡️</span>
@@ -161,26 +162,73 @@
   </div>
 
   <script>
-    let diceAudio = null;
-    let daggerAudio = null;
+    const attackSounds = [
+      "combat.mp3",
+      "combat2.mp3",
+      "combat3.mp3",
+      "combat4.mp3",
+      "combat5.mp3",
+      "combat6.mp3"
+    ];
 
-    function playDice() {
-      if (diceAudio) {
-        diceAudio.pause();
-        diceAudio.currentTime = 0;
+    let attackAudio = null;
+    let defenseAudio = null;
+    let daggerAudio = null;
+    let lastAttackIndex = -1;
+
+    function vibrate(pattern) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    function playAttackDice() {
+      vibrate(40);
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * attackSounds.length);
+      } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
+
+      lastAttackIndex = randomIndex;
+      const chosenSound = attackSounds[randomIndex];
+
+      if (attackAudio) {
+        attackAudio.pause();
+        attackAudio.currentTime = 0;
       }
 
-      diceAudio = new Audio("des.mp3");
-      diceAudio.play().catch(() => {});
+      attackAudio = new Audio(chosenSound);
+      attackAudio.preload = "auto";
+      attackAudio.volume = 1.0;
+      attackAudio.play().catch(() => {});
+    }
+
+    function playDefenseDice() {
+      vibrate(30);
+
+      if (defenseAudio) {
+        defenseAudio.pause();
+        defenseAudio.currentTime = 0;
+      }
+
+      defenseAudio = new Audio("des.mp3");
+      defenseAudio.preload = "auto";
+      defenseAudio.volume = 1.0;
+      defenseAudio.play().catch(() => {});
     }
 
     function playDagger() {
+      vibrate(30);
+
       if (daggerAudio) {
         daggerAudio.pause();
         daggerAudio.currentTime = 0;
       }
 
       daggerAudio = new Audio("dague.mp3");
+      daggerAudio.preload = "auto";
+      daggerAudio.volume = 1.0;
       daggerAudio.play().catch(() => {});
     }
   </script>
