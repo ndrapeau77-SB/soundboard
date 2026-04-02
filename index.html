@@ -152,6 +152,45 @@
       window.location.href = "spotify:playlist:3xaIM6iYEAGEOA7zCKd4lF?si=6b7a194991604ba2";
     }
   </script>
+  <script>
+function getToken() {
+  return localStorage.getItem("access_token");
+}
+
+async function playSpotify() {
+  const token = getToken();
+
+  if (!token) {
+    alert("Tu dois d'abord te connecter à Spotify.");
+    window.location.href = "spotify-login.html";
+    return;
+  }
+
+  try {
+    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    if (response.status === 204) {
+      console.log("Spotify lancé.");
+    } else {
+      const text = await response.text();
+      console.log("Erreur play Spotify:", response.status, text);
+      alert("Impossible de lancer Spotify. Assure-toi que Spotify est déjà ouvert sur ton téléphone ou ordi.");
+    }
+  } catch (error) {
+    console.log("Erreur réseau Spotify:", error);
+    alert("Erreur réseau avec Spotify.");
+  }
+}
+
+function launchAmbiance() {
+  playSpotify();
+}
+</script>
 
 </body>
 </html>
