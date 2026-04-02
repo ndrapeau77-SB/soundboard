@@ -168,6 +168,18 @@ function getToken() {
   return localStorage.getItem("access_token");
 }
 
+function clearSpotifySession() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+}
+
+function redirectToSpotifyLogin(message = "Session Spotify expirée. Reconnecte-toi.") {
+  setStatus(message);
+  setTimeout(() => {
+    window.location.href = "spotify-login.html";
+  }, 800);
+}
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -176,8 +188,7 @@ async function spotifyFetch(url, options = {}) {
   const token = getToken();
 
   if (!token) {
-    setStatus("Connecte-toi à Spotify d'abord.");
-    window.location.href = "spotify-login.html";
+    redirectToSpotifyLogin("Connecte-toi à Spotify d'abord.");
     throw new Error("Token Spotify absent");
   }
 
@@ -188,6 +199,16 @@ async function spotifyFetch(url, options = {}) {
       Authorization: "Bearer " + token
     }
   });
+
+  if (response.status === 401) {
+    clearSpotifySession();
+    redirectToSpotifyLogin("Session Spotify expirée. Reconnecte-toi.");
+    throw new Error("The access token expired");
+  }
+
+  if (response.status === 403) {
+    throw new Error("Ce compte Spotify n'est pas autorisé pour cette application.");
+  }
 
   return response;
 }
@@ -248,7 +269,7 @@ async function pauseSpotify() {
 
     if (response.status === 204) {
       setStatus("Spotify mis en pause.");
-      return;
+      return true;
     }
 
     if (!response.ok) {
@@ -257,9 +278,11 @@ async function pauseSpotify() {
     }
 
     setStatus("Commande pause envoyée.");
+    return true;
   } catch (e) {
     setStatus("Pause Spotify impossible : " + e.message);
     console.log(e);
+    return false;
   }
 }
 
@@ -267,9 +290,10 @@ async function playSpotify() {
   try {
     const deviceId = await ensurePlaybackDevice();
 
-    const response = await spotifyFetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(deviceId)}`, {
-      method: "PUT"
-    });
+    const response = await spotifyFetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(deviceId)}`,
+      { method: "PUT" }
+    );
 
     if (response.status === 204) {
       setStatus("Spotify relancé.");
@@ -306,6 +330,7 @@ async function playRandomDoor() {
   }
 
   doorAudio = new Audio(chosenSound);
+  doorAudio.preload = "auto";
   doorAudio.volume = 1.0;
 
   try {
