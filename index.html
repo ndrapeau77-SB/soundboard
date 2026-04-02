@@ -3,56 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HeroQuest</title>
+  <title>Héros</title>
 
   <style>
     body {
       margin: 0;
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       color: white;
+      min-height: 100vh;
       background:
         linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
         url('heroquestbackground.jpg');
       background-size: cover;
+      background-position: center;
     }
 
     .app {
-      max-width: 900px;
+      max-width: 980px;
       margin: auto;
-      padding: 20px;
-      text-align: center;
+      padding: 20px 16px 40px;
     }
 
-    .btn {
-      margin: 10px;
-      padding: 14px 20px;
-      border-radius: 12px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
+    /* 🔥 ENTÊTE IMAGE */
+    .header-img {
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .topbar a {
       color: white;
-      background: rgba(0,0,0,0.7);
+      text-decoration: none;
+      background: rgba(0,0,0,0.65);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
     }
 
-    .spotify {
-      background: #1db954;
+    .status {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+      opacity: 0.8;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 20px;
-      margin-top: 30px;
+      grid-template-columns: repeat(2, minmax(160px, 220px));
+      justify-content: center;
+      gap: 24px 36px;
     }
 
-    .card {
-      text-decoration: none;
-      color: white;
-    }
-
-    .card img {
+    .btn {
+      display: block;
       width: 100%;
-      border-radius: 12px;
+      height: 280px;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      cursor: pointer;
+      background: rgba(0,0,0,0.25);
+      border: none;
+      padding: 0;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .btn span {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+    }
+
+    @media (max-width: 560px) {
+      .btn {
+        height: 220px;
+      }
     }
   </style>
 </head>
@@ -60,30 +108,37 @@
 <body>
 <div class="app">
 
-  <h1>HeroQuest 🎲</h1>
+  <!-- 🔥 IMAGE HEROQUEST -->
+  <img src="hqentete.png" class="header-img">
 
-  <!-- LOGIN -->
-  <button class="btn" onclick="loginSpotify()" id="loginBtn">
-    🔐 Connexion Spotify
-  </button>
+  <div class="topbar">
+    <a href="index.html">← Retour</a>
+  </div>
 
-  <!-- IMMERSION -->
-  <button class="btn spotify" onclick="launchImmersion()">
-    🎵 Lancer l'immersion
-  </button>
-
-  <div id="status"></div>
+  <div id="status" class="status">Prêt.</div>
 
   <div class="grid">
-    <a class="card" href="heros.html">
-      <img src="heros.png">
-      <div>Héros</div>
+
+    <a class="btn" href="combats.html">
+      <img src="combats.png">
+      <span>Combats</span>
     </a>
 
-    <a class="card" href="zargon.html">
-      <img src="zargon.png">
-      <div>Zargon</div>
+    <a class="btn" href="pieges.html">
+      <img src="pieges.png">
+      <span>Pièges</span>
     </a>
+
+    <button class="btn" onclick="playDoor()">
+      <img src="portes.png">
+      <span>Portes</span>
+    </button>
+
+    <button class="btn" onclick="playSpotify()">
+      <img src="musique.png">
+      <span>Ambiance 🎵</span>
+    </button>
+
   </div>
 
 </div>
@@ -91,85 +146,64 @@
 <script>
 const clientId = "a0be0072df274f70ab0c1ab08a66b890";
 
-function getToken() {
+const doorSounds = [
+  "porte1.mp3",
+  "porte2.mp3",
+  "porte3.mp3",
+  "porte4.mp3"
+];
+
+let audio = null;
+
+function setStatus(msg){
+  document.getElementById("status").textContent = msg;
+}
+
+function getToken(){
   return localStorage.getItem("access_token");
 }
 
-function setStatus(msg){
-  document.getElementById("status").innerText = msg;
-}
+async function pauseSpotify(){
+  const token = getToken();
+  if(!token) return;
 
-function updateUI(){
-  if(getToken()){
-    document.getElementById("loginBtn").innerText = "✅ Spotify connecté";
-  }
-}
-
-function loginSpotify(){
-  window.location.href = "spotify-login.html";
-}
-
-async function refreshSpotifyToken(){
-  const refreshToken = localStorage.getItem("refresh_token");
-  if(!refreshToken) return false;
-
-  const res = await fetch("https://accounts.spotify.com/api/token",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/x-www-form-urlencoded"
-    },
-    body:new URLSearchParams({
-      grant_type:"refresh_token",
-      refresh_token:refreshToken,
-      client_id:clientId
-    })
+  await fetch("https://api.spotify.com/v1/me/player/pause",{
+    method:"PUT",
+    headers:{ Authorization:"Bearer "+token }
   });
-
-  const data = await res.json();
-
-  if(!data.access_token) return false;
-
-  localStorage.setItem("access_token", data.access_token);
-
-  if(data.expires_in){
-    localStorage.setItem("token_expires_at", Date.now()+data.expires_in*1000);
-  }
-
-  return true;
-}
-
-async function ensureValidToken(){
-  const exp = localStorage.getItem("token_expires_at");
-  if(!exp) return true;
-
-  if(Date.now() > exp - 60000){
-    return await refreshSpotifyToken();
-  }
-
-  return true;
 }
 
 async function playSpotify(){
-  if(!(await ensureValidToken())){
-    alert("Reconnecte Spotify");
+  const token = getToken();
+
+  if(!token){
+    alert("Connecte Spotify");
+    window.location.href="spotify-login.html";
     return;
   }
 
-  const token = getToken();
-
   await fetch("https://api.spotify.com/v1/me/player/play",{
     method:"PUT",
-    headers:{
-      Authorization:"Bearer "+token
-    }
+    headers:{ Authorization:"Bearer "+token }
   });
+
+  setStatus("Ambiance lancée 🎵");
 }
 
-function launchImmersion(){
-  playSpotify();
-}
+async function playDoor(){
+  await pauseSpotify();
 
-updateUI();
+  if(audio){
+    audio.pause();
+    audio.currentTime=0;
+  }
+
+  const rand=Math.floor(Math.random()*doorSounds.length);
+  audio=new Audio(doorSounds[rand]);
+  audio.play();
+
+  setStatus("Porte 🔊");
+}
 </script>
 
 </body>
