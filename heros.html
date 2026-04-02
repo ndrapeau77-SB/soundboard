@@ -88,6 +88,16 @@
       text-shadow: 0 2px 6px rgba(0,0,0,1);
     }
 
+    .status {
+      margin: 0 auto 20px;
+      max-width: 520px;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+
     @media (max-width: 560px) {
       .grid {
         grid-template-columns: repeat(2, minmax(130px, 1fr));
@@ -108,6 +118,8 @@
     <h1>Héros ⚔️</h1>
     <a href="index.html">← Retour</a>
   </div>
+
+  <div id="status" class="status">Prêt.</div>
 
   <div class="grid">
 
@@ -146,50 +158,133 @@ const doorSounds = [
 
 let doorAudio = null;
 let lastIndex = -1;
+const statusEl = document.getElementById("status");
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
 
 function getToken() {
   return localStorage.getItem("access_token");
 }
 
-async function pauseSpotify() {
-  const token = getToken();
-  if (!token) return;
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
+async function spotifyFetch(url, options = {}) {
+  const token = getToken();
+
+  if (!token) {
+    setStatus("Connecte-toi à Spotify d'abord.");
+    window.location.href = "spotify-login.html";
+    throw new Error("Token Spotify absent");
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: "Bearer " + token
+    }
+  });
+
+  return response;
+}
+
+async function getAvailableDevices() {
+  const response = await spotifyFetch("https://api.spotify.com/v1/me/player/devices");
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error("Devices " + response.status + " " + text);
+  }
+
+  const data = await response.json();
+  return data.devices || [];
+}
+
+async function ensurePlaybackDevice() {
+  const devices = await getAvailableDevices();
+
+  if (!devices.length) {
+    throw new Error("Aucun appareil Spotify disponible. Ouvre Spotify sur ton téléphone et lance une chanson une fois.");
+  }
+
+  const activeDevice = devices.find(device => device.is_active);
+  if (activeDevice) {
+    return activeDevice.id;
+  }
+
+  const fallbackDevice = devices.find(device => !device.is_restricted) || devices[0];
+
+  const transferResponse = await spotifyFetch("https://api.spotify.com/v1/me/player", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      device_ids: [fallbackDevice.id],
+      play: false
+    })
+  });
+
+  if (!transferResponse.ok && transferResponse.status !== 204) {
+    const text = await transferResponse.text();
+    throw new Error("Transfer " + transferResponse.status + " " + text);
+  }
+
+  await sleep(500);
+  return fallbackDevice.id;
+}
+
+async function pauseSpotify() {
   try {
-    await fetch("https://api.spotify.com/v1/me/player/pause", {
-      method: "PUT",
-      headers: {
-        Authorization: "Bearer " + token
-      }
+    await ensurePlaybackDevice();
+
+    const response = await spotifyFetch("https://api.spotify.com/v1/me/player/pause", {
+      method: "PUT"
     });
+
+    if (response.status === 204) {
+      setStatus("Spotify mis en pause.");
+      return;
+    }
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error("Pause " + response.status + " " + text);
+    }
+
+    setStatus("Commande pause envoyée.");
   } catch (e) {
-    console.log("Pause Spotify error:", e);
+    setStatus("Pause Spotify impossible : " + e.message);
+    console.log(e);
   }
 }
 
 async function playSpotify() {
-  const token = getToken();
-
-  if (!token) {
-    alert("Connecte-toi à Spotify d'abord");
-    window.location.href = "spotify-login.html";
-    return;
-  }
-
   try {
-    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
-      method: "PUT",
-      headers: {
-        Authorization: "Bearer " + token
-      }
+    const deviceId = await ensurePlaybackDevice();
+
+    const response = await spotifyFetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(deviceId)}`, {
+      method: "PUT"
     });
 
-    if (!response.ok && response.status !== 204) {
-      const text = await response.text();
-      console.log("Play Spotify error:", response.status, text);
+    if (response.status === 204) {
+      setStatus("Spotify relancé.");
+      return;
     }
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error("Play " + response.status + " " + text);
+    }
+
+    setStatus("Commande play envoyée.");
   } catch (e) {
-    console.log("Play Spotify error:", e);
+    setStatus("Play Spotify impossible : " + e.message);
+    console.log(e);
   }
 }
 
@@ -212,7 +307,14 @@ async function playRandomDoor() {
 
   doorAudio = new Audio(chosenSound);
   doorAudio.volume = 1.0;
-  doorAudio.play().catch(() => {});
+
+  try {
+    await doorAudio.play();
+    setStatus("Son de porte : " + chosenSound);
+  } catch (e) {
+    setStatus("Lecture du son impossible : " + e.message);
+    console.log(e);
+  }
 }
 </script>
 
