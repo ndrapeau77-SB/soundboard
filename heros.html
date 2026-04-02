@@ -8,176 +8,323 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       color: white;
+      min-height: 100vh;
       background:
         linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
         url('heroquestbackground.jpg');
       background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     .app {
-      max-width: 900px;
+      max-width: 980px;
       margin: auto;
-      padding: 20px;
+      padding: 20px 16px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      background: rgba(0,0,0,0.65);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .status {
+      margin: 0 auto 20px;
+      max-width: 520px;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.45);
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 20px;
+      grid-template-columns: repeat(2, minmax(160px, 220px));
+      justify-content: center;
+      gap: 24px 36px;
     }
 
     .btn {
-      position: relative;
-      border: none;
-      border-radius: 12px;
+      display: block;
+      width: 100%;
+      height: 280px;
+      border-radius: 18px;
       overflow: hidden;
+      position: relative;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      background: rgba(0,0,0,0.25);
+      border: none;
+      padding: 0;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
     }
 
     .btn img {
       width: 100%;
-      height: 200px;
+      height: 100%;
       object-fit: cover;
+      object-position: center;
+      display: block;
     }
 
     .btn span {
       position: absolute;
+      left: 0;
+      right: 0;
       bottom: 0;
-      width: 100%;
+      padding: 12px 10px;
       text-align: center;
-      background: rgba(0,0,0,0.7);
+      font-weight: bold;
+      font-size: 1.05rem;
+      color: #ffffff;
+      background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.25));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+      z-index: 2;
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+        gap: 16px;
+      }
+
+      .btn {
+        height: 220px;
+      }
+
+      .btn span {
+        font-size: 0.95rem;
+      }
+
+      .topbar h1 {
+        font-size: 1.7rem;
+      }
     }
   </style>
 </head>
 
 <body>
-<div class="app">
+  <div class="app">
 
-<h1>Héros ⚔️</h1>
+    <div class="topbar">
+      <h1>Héros ⚔️</h1>
+      <a href="index.html">← Retour</a>
+    </div>
 
-<div id="status"></div>
+    <div id="status" class="status">Prêt.</div>
 
-<div class="grid">
+    <div class="grid">
 
-<a class="btn" href="combats.html">
-<img src="combats.png"><span>Combats</span>
-</a>
+      <a class="btn" href="combats.html">
+        <img src="combats.png" alt="Combats">
+        <span>Combats</span>
+      </a>
 
-<a class="btn" href="pieges.html">
-<img src="pieges.png"><span>Pièges</span>
-</a>
+      <a class="btn" href="pieges.html">
+        <img src="pieges.png" alt="Pièges">
+        <span>Pièges</span>
+      </a>
 
-<button class="btn" onclick="playDoor()">
-<img src="portes.png"><span>Portes</span>
-</button>
+      <button class="btn" onclick="playDoor()">
+        <img src="portes.png" alt="Portes">
+        <span>Portes</span>
+      </button>
 
-<button class="btn" onclick="playSpotify()">
-<img src="musique.png"><span>Ambiance</span>
-</button>
+      <button class="btn" onclick="playSpotify()">
+        <img src="musique.png" alt="Ambiance">
+        <span>Ambiance</span>
+      </button>
 
-</div>
+    </div>
 
-</div>
+  </div>
 
-<script>
-const clientId = "a0be0072df274f70ab0c1ab08a66b890";
+  <script>
+    const clientId = "a0be0072df274f70ab0c1ab08a66b890";
 
-const doorSounds=[
-"porte1.mp3",
-"porte2.mp3",
-"porte3.mp3",
-"porte4.mp3"
-];
+    const doorSounds = [
+      "porte1.mp3",
+      "porte2.mp3",
+      "porte3.mp3",
+      "porte4.mp3"
+    ];
 
-let audio=null;
+    let audio = null;
 
-function getToken(){
-  return localStorage.getItem("access_token");
-}
-
-async function refreshSpotifyToken(){
-  const refreshToken=localStorage.getItem("refresh_token");
-  if(!refreshToken) return false;
-
-  const res=await fetch("https://accounts.spotify.com/api/token",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/x-www-form-urlencoded"
-    },
-    body:new URLSearchParams({
-      grant_type:"refresh_token",
-      refresh_token:refreshToken,
-      client_id:clientId
-    })
-  });
-
-  const data=await res.json();
-
-  if(!data.access_token) return false;
-
-  localStorage.setItem("access_token",data.access_token);
-
-  if(data.expires_in){
-    localStorage.setItem("token_expires_at",Date.now()+data.expires_in*1000);
-  }
-
-  return true;
-}
-
-async function ensureValidToken(){
-  const exp=localStorage.getItem("token_expires_at");
-  if(!exp) return true;
-
-  if(Date.now()>exp-60000){
-    return await refreshSpotifyToken();
-  }
-
-  return true;
-}
-
-async function pauseSpotify(){
-  if(!(await ensureValidToken())) return;
-
-  const token=getToken();
-
-  await fetch("https://api.spotify.com/v1/me/player/pause",{
-    method:"PUT",
-    headers:{
-      Authorization:"Bearer "+token
+    function setStatus(message) {
+      document.getElementById("status").textContent = message;
     }
-  });
-}
 
-async function playSpotify(){
-  if(!(await ensureValidToken())){
-    alert("Reconnecte Spotify");
-    return;
-  }
-
-  const token=getToken();
-
-  await fetch("https://api.spotify.com/v1/me/player/play",{
-    method:"PUT",
-    headers:{
-      Authorization:"Bearer "+token
+    function getToken() {
+      return localStorage.getItem("access_token");
     }
-  });
-}
 
-async function playDoor(){
-  await pauseSpotify();
+    async function refreshSpotifyToken() {
+      const refreshToken = localStorage.getItem("refresh_token");
+      if (!refreshToken) return false;
 
-  if(audio){
-    audio.pause();
-    audio.currentTime=0;
-  }
+      try {
+        const res = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({
+            grant_type: "refresh_token",
+            refresh_token: refreshToken,
+            client_id: clientId
+          })
+        });
 
-  const rand=Math.floor(Math.random()*doorSounds.length);
-  audio=new Audio(doorSounds[rand]);
-  audio.play();
-}
-</script>
+        const data = await res.json();
 
+        if (!data.access_token) return false;
+
+        localStorage.setItem("access_token", data.access_token);
+
+        if (data.refresh_token) {
+          localStorage.setItem("refresh_token", data.refresh_token);
+        }
+
+        if (data.expires_in) {
+          localStorage.setItem("token_expires_at", String(Date.now() + data.expires_in * 1000));
+        }
+
+        return true;
+      } catch (e) {
+        console.log("Erreur refresh token", e);
+        return false;
+      }
+    }
+
+    async function ensureValidToken() {
+      const exp = localStorage.getItem("token_expires_at");
+      if (!exp) return true;
+
+      if (Date.now() > Number(exp) - 60000) {
+        return await refreshSpotifyToken();
+      }
+
+      return true;
+    }
+
+    async function pauseSpotify() {
+      if (!(await ensureValidToken())) return false;
+
+      const token = getToken();
+      if (!token) return false;
+
+      try {
+        const res = await fetch("https://api.spotify.com/v1/me/player/pause", {
+          method: "PUT",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
+
+        if (res.status === 204) {
+          setStatus("Spotify mis en pause.");
+          return true;
+        }
+
+        if (res.status === 401) {
+          setStatus("Session Spotify expirée.");
+          return false;
+        }
+
+        return true;
+      } catch (e) {
+        console.log("Pause Spotify error", e);
+        return false;
+      }
+    }
+
+    async function playSpotify() {
+      if (!(await ensureValidToken())) {
+        alert("Reconnecte Spotify");
+        window.location.href = "spotify-login.html";
+        return;
+      }
+
+      const token = getToken();
+      if (!token) {
+        alert("Reconnecte Spotify");
+        window.location.href = "spotify-login.html";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://api.spotify.com/v1/me/player/play", {
+          method: "PUT",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
+
+        if (res.status === 204) {
+          setStatus("Ambiance relancée.");
+          return;
+        }
+
+        if (res.status === 401) {
+          setStatus("Token Spotify expiré.");
+          return;
+        }
+
+        const text = await res.text();
+        console.log("Play Spotify:", res.status, text);
+        setStatus("Impossible de lancer Spotify.");
+      } catch (e) {
+        console.log("Play Spotify error", e);
+        setStatus("Erreur réseau Spotify.");
+      }
+    }
+
+    async function playDoor() {
+      await pauseSpotify();
+
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+
+      const rand = Math.floor(Math.random() * doorSounds.length);
+      audio = new Audio(doorSounds[rand]);
+
+      try {
+        await audio.play();
+        setStatus("Son de porte lancé.");
+      } catch (e) {
+        console.log("Lecture porte impossible", e);
+        setStatus("Impossible de jouer le son.");
+      }
+    }
+  </script>
 </body>
 </html>
