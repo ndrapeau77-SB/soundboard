@@ -16,7 +16,6 @@
         url('heroquestbackground.jpg');
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
     }
 
     .app {
@@ -30,13 +29,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
-      gap: 12px;
       flex-wrap: wrap;
-    }
-
-    .topbar h1 {
-      margin: 0;
-      font-size: 2rem;
     }
 
     .topbar a {
@@ -65,191 +58,154 @@
       text-decoration: none;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       cursor: pointer;
-      transition: transform 0.1s ease;
-      background: rgba(0,0,0,0.25);
       border: none;
       padding: 0;
-    }
-
-    .btn:active {
-      transform: scale(0.97);
     }
 
     .btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center;
-      display: block;
     }
 
     .btn span {
       position: absolute;
-      left: 0;
-      right: 0;
       bottom: 0;
-      padding: 12px 10px;
+      width: 100%;
+      padding: 12px;
       text-align: center;
       font-weight: bold;
-      font-size: 1.05rem;
-      color: #ffffff;
-      background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.25));
-      text-shadow: 0 2px 6px rgba(0,0,0,1);
-      z-index: 2;
-    }
-
-    @media (max-width: 560px) {
-      .grid {
-        grid-template-columns: repeat(2, minmax(130px, 1fr));
-        gap: 16px;
-      }
-
-      .btn {
-        height: 220px;
-      }
-
-      .btn span {
-        font-size: 0.95rem;
-      }
-
-      .topbar h1 {
-        font-size: 1.7rem;
-      }
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
     }
   </style>
 </head>
 
 <body>
-  <div class="app">
+<div class="app">
 
-    <div class="topbar">
-      <h1>Héros ⚔️</h1>
-      <a href="index.html">← Retour</a>
-    </div>
+  <div class="topbar">
+    <h1>Héros ⚔️</h1>
+    <a href="index.html">← Retour</a>
+  </div>
 
-    <div class="grid">
+  <div class="grid">
 
-      <a class="btn" href="combats.html">
-        <img src="combats.png" alt="Combats">
-        <span>Combats</span>
-      </a>
+    <a class="btn" href="combats.html">
+      <img src="combats.png">
+      <span>Combats</span>
+    </a>
 
-      <a class="btn" href="pieges.html">
-        <img src="pieges.png" alt="Pièges">
-        <span>Pièges</span>
-      </a>
+    <a class="btn" href="pieges.html">
+      <img src="pieges.png">
+      <span>Pièges</span>
+    </a>
 
-      <button class="btn" onclick="playRandomDoor()">
-        <img src="portes.png" alt="Portes">
-        <span>Portes</span>
-      </button>
+    <button class="btn" onclick="playRandomDoor()">
+      <img src="portes.png">
+      <span>Portes</span>
+    </button>
 
-      <button class="btn" onclick="playRandomMusic()">
-  <img src="musique.png" alt="Musique">
-  <span>Musique </span>
-</button>
-
-      <button class="btn" onclick="playRandomMusic()">
-  <img src="placement.png" alt="Musique">
-  <span>Placement</span>
-</button>
-
-    </div>
+    <button class="btn" onclick="launchAmbiance()">
+      <img src="musique.png">
+      <span>Lancer ambiance 🎵</span>
+    </button>
 
   </div>
 
-  <!-- Média principal caché -->
-  <audio id="doorPlayer" preload="auto"></audio>
+</div>
 
-  <script>
-    const doorSounds = [
-      "porte4.mp3"
-    ];
+<script>
+const doorSounds = [
+  "porte1.mp3",
+  "porte2.mp3",
+  "porte3.mp3",
+  "porte4.mp3",
+  "porte5.m4a"
+];
 
-    const doorPlayer = document.getElementById("doorPlayer");
-    let lastIndex = -1;
+let doorAudio = null;
+let lastIndex = -1;
 
-    function pickRandomDoorSound() {
-      let randomIndex;
+function getToken() {
+  return localStorage.getItem("access_token");
+}
 
-      do {
-        randomIndex = Math.floor(Math.random() * doorSounds.length);
-      } while (randomIndex === lastIndex && doorSounds.length > 1);
+// 🔴 PAUSE SPOTIFY
+async function pauseSpotify() {
+  const token = getToken();
+  if (!token) return;
 
-      lastIndex = randomIndex;
-      return doorSounds[randomIndex];
-    }
-
-    function stopDoorSound() {
-      doorPlayer.pause();
-      doorPlayer.currentTime = 0;
-      doorPlayer.removeAttribute("src");
-      doorPlayer.load();
-    }
-
-    function playRandomDoor() {
-      const chosenSound = pickRandomDoorSound();
-
-      try {
-        // Stoppe le son précédent
-        stopDoorSound();
-
-        // Force un nouveau média principal
-        doorPlayer.src = chosenSound;
-        doorPlayer.preload = "auto";
-        doorPlayer.volume = 1.0;
-        doorPlayer.muted = false;
-        doorPlayer.loop = false;
-        doorPlayer.autoplay = false;
-
-        // Ne pas mettre playsinline ici pour laisser le système
-        // gérer ça comme un média "prioritaire" si possible.
-
-        // Recharge explicitement
-        doorPlayer.load();
-
-        const playPromise = doorPlayer.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            console.log("Lecture impossible :", error);
-          });
-        }
-      } catch (error) {
-        console.log("Erreur audio :", error);
+  try {
+    await fetch("https://api.spotify.com/v1/me/player/pause", {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + token
       }
-    }
-  </script>
-  <script>
-  const musicSounds = [
-    "donjon.mp3",
-    "combat.mp3",
-    "exploration.mp3"
-  ];
-
-  let musicAudio = null;
-  let lastMusicIndex = -1;
-
-  function playRandomMusic() {
-    let randomIndex;
-
-    do {
-      randomIndex = Math.floor(Math.random() * musicSounds.length);
-    } while (randomIndex === lastMusicIndex && musicSounds.length > 1);
-
-    lastMusicIndex = randomIndex;
-    const chosenSound = musicSounds[randomIndex];
-
-    if (musicAudio) {
-      musicAudio.pause();
-      musicAudio.currentTime = 0;
-    }
-
-    musicAudio = new Audio(chosenSound);
-    musicAudio.preload = "auto";
-    musicAudio.volume = 1.0;
-
-    musicAudio.play().catch(() => {});
+    });
+  } catch (e) {
+    console.log("Pause Spotify error:", e);
   }
+}
+
+// 🟢 PLAY SPOTIFY
+async function playSpotify() {
+  const token = getToken();
+
+  if (!token) {
+    alert("Connecte-toi à Spotify d'abord");
+    window.location.href = "spotify-login.html";
+    return;
+  }
+
+  try {
+    await fetch("https://api.spotify.com/v1/me/player/play", {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+  } catch (e) {
+    console.log("Play Spotify error:", e);
+  }
+}
+
+// 🎵 BOUTON AMBIANCE
+function launchAmbiance() {
+  playSpotify();
+}
+
+// 🎲 PORTES
+async function playRandomDoor() {
+  let randomIndex;
+
+  do {
+    randomIndex = Math.floor(Math.random() * doorSounds.length);
+  } while (randomIndex === lastIndex && doorSounds.length > 1);
+
+  lastIndex = randomIndex;
+  const chosenSound = doorSounds[randomIndex];
+
+  // STOP SPOTIFY
+  await pauseSpotify();
+
+  // STOP ancien son
+  if (doorAudio) {
+    doorAudio.pause();
+    doorAudio.currentTime = 0;
+  }
+
+  // JOUE SON
+  doorAudio = new Audio(chosenSound);
+  doorAudio.volume = 1.0;
+
+  doorAudio.play().catch(() => {});
+
+  // REPREND SPOTIFY après
+  doorAudio.onended = () => {
+    playSpotify();
+  };
+}
 </script>
+
 </body>
 </html>
