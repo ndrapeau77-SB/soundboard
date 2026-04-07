@@ -173,9 +173,9 @@
       <a href="index.html">← Retour</a>
     </div>
 
-    <!-- Bouton Spotify séparé pour relancer la musique -->
+    <!-- Bouton Relancer Spotify -->
     <div class="spotify-relancer">
-      <button onclick="relancerSpotify()">🎵 Relancer Spotify</button>
+      <button onclick="playSpotify()">🎵 Relancer Spotify</button>
     </div>
 
     <div class="grid">
@@ -210,106 +210,177 @@
   <div id="toast"></div>
 
   <script>
-    const PLAYLIST_ID = "3xaIM6iYEAGEOA7zCKd4lF";
-    const spotifyAppUrl = "spotify:playlist:" + PLAYLIST_ID;
-    const spotifyWebUrl = "https://open.spotify.com/playlist/" + PLAYLIST_ID;
+    const CLIENT_ID    = "a0be0072df274f70ab0c1ab08a66b890";
+    const PLAYLIST_ID  = "3xaIM6iYEAGEOA7zCKd4lF";
 
-    const doorSounds = [
-      "porte1.mp3",
-      "porte2.mp3",
-      "porte3.mp3",
-      "porte4.mp3",
-      "porte5.m4a"
-    ];
+    const doorSounds = ["porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"];
 
-    // ⬇️ Ajoute ici tes fichiers sons d'ambiance quand tu les auras
+    // ⬇️ Ajoute tes sons d'ambiance ici quand tu les auras
     const ambianceSounds = [
-      "ambiance1.mp3"
-      // "ambiance2.mp3",
+      // "ambiance1.mp3",
     ];
 
     let currentAudio = null;
-    let toastTimer = null;
+    let toastTimer   = null;
 
-    // Fichier WAV silence 0.5s encodé en base64 directement dans le code.
-    // Jouer ce fichier via new Audio() suffit pour que Chrome Android
-    // prenne le focus audio du système et mette Spotify en pause.
-    // Aucun fetch, aucun CORS, fonctionne sur GitHub Pages.
-    const SILENCE_WAV = "data:audio/wav;base64,UklGRsQPAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAPAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=";
-
-    // --- Toast ---
+    // ── Toast ──────────────────────────────────────────────
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.classList.add("show");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
     }
 
-    // --- Vibration ---
-    function vibrate(ms) {
-      if ("vibrate" in navigator) navigator.vibrate(ms);
-    }
+    function vibrate(ms) { if ("vibrate" in navigator) navigator.vibrate(ms); }
 
-    // --- Jouer un son ---
-    // Étape 1 : jouer le silence WAV embarqué → Chrome Android prend le focus
-    //           audio du système → Spotify se met en pause automatiquement
-    // Étape 2 : quand le silence est terminé → jouer le vrai son de porte
-    function playSound(file) {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
+    // ── Gestion token Spotify ──────────────────────────────
+    function getToken()   { return localStorage.getItem("sp_access")  || ""; }
+    function getRefresh() { return localStorage.getItem("sp_refresh") || ""; }
+    function getExpiry()  { return Number(localStorage.getItem("sp_expires") || 0); }
 
-      const silence = new Audio(SILENCE_WAV);
-      silence.volume = 0.001; // quasi-inaudible mais compte comme audio actif
-      const playPromise = silence.play();
+    function isLoggedIn() { return !!getToken(); }
 
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          // Le silence joue → focus audio volé à Spotify
-          // On enchaîne immédiatement avec le vrai son
-          silence.pause();
-          currentAudio = new Audio(file);
-          currentAudio.play().catch(() => {});
-        }).catch(() => {
-          // Si même le silence échoue, on joue quand même
-          currentAudio = new Audio(file);
-          currentAudio.play().catch(() => {});
+    async function refreshToken() {
+      const refresh = getRefresh();
+      if (!refresh) return false;
+      try {
+        const res  = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type:    "refresh_token",
+            refresh_token: refresh,
+            client_id:     CLIENT_ID,
+          }),
         });
+        const data = await res.json();
+        if (!data.access_token) return false;
+        localStorage.setItem("sp_access",  data.access_token);
+        localStorage.setItem("sp_expires", String(Date.now() + data.expires_in * 1000));
+        if (data.refresh_token) localStorage.setItem("sp_refresh", data.refresh_token);
+        return true;
+      } catch { return false; }
+    }
+
+    // Renouvelle le token si expiré ou proche de l'expiration (2 min marge)
+    async function ensureToken() {
+      if (!getToken()) return false;
+      if (Date.now() > getExpiry() - 120_000) {
+        return await refreshToken();
+      }
+      return true;
+    }
+
+    // ── Appel API Spotify avec retry auto si 401 ───────────
+    async function spotifyAPI(method, endpoint, body) {
+      const valid = await ensureToken();
+      if (!valid) return null;
+
+      const opts = {
+        method,
+        headers: { Authorization: "Bearer " + getToken() },
+      };
+      if (body) {
+        opts.headers["Content-Type"] = "application/json";
+        opts.body = JSON.stringify(body);
+      }
+
+      let res = await fetch("https://api.spotify.com/v1" + endpoint, opts);
+
+      // Token expiré → on rafraîchit et on réessaie une fois
+      if (res.status === 401) {
+        const ok = await refreshToken();
+        if (!ok) return null;
+        opts.headers.Authorization = "Bearer " + getToken();
+        res = await fetch("https://api.spotify.com/v1" + endpoint, opts);
+      }
+
+      return res;
+    }
+
+    // ── Pause Spotify ──────────────────────────────────────
+    async function pauseSpotify() {
+      if (!isLoggedIn()) return false;
+      try {
+        const res = await spotifyAPI("PUT", "/me/player/pause");
+        return res && (res.status === 204 || res.status === 200);
+      } catch { return false; }
+    }
+
+    // ── Play Spotify (relancer la playlist) ───────────────
+    async function playSpotify() {
+      if (!isLoggedIn()) {
+        showToast("⚠️ Connecte Spotify d'abord");
+        return;
+      }
+      showToast("🎵 Relance Spotify...");
+      try {
+        // Tente de reprendre la lecture en cours
+        let res = await spotifyAPI("PUT", "/me/player/play");
+
+        // Si pas de device actif (404/403) → relancer la playlist directement
+        if (!res || res.status === 404 || res.status === 403) {
+          res = await spotifyAPI("PUT", "/me/player/play", {
+            context_uri: "spotify:playlist:" + PLAYLIST_ID,
+          });
+        }
+
+        if (res && (res.status === 204 || res.status === 200)) {
+          showToast("🎵 Spotify relancé !");
+        } else {
+          showToast("⚠️ Spotify ouvert — lance la playlist manuellement");
+        }
+      } catch {
+        showToast("Erreur réseau Spotify");
       }
     }
 
-    // --- Relancer Spotify ---
-    function relancerSpotify() {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-      window.location.href = spotifyAppUrl;
-      setTimeout(() => window.open(spotifyWebUrl, "_blank"), 1500);
-      showToast("🎵 Ouverture de Spotify...");
+    // ── Son local ──────────────────────────────────────────
+    function playLocal(file) {
+      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+      currentAudio = new Audio(file);
+      currentAudio.play().catch(() => {});
     }
 
-    // --- Bouton Porte ---
+    // ── Bouton Porte : pause Spotify + son de porte ────────
     async function playDoor() {
       vibrate(40);
-      const rand = Math.floor(Math.random() * doorSounds.length);
-      showToast("🚪 Son de porte...");
-      await playSound(doorSounds[rand]);
+      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
+
+      if (isLoggedIn()) {
+        showToast("🚪 Porte...");
+        // Pause Spotify en parallèle du son pour éviter le délai
+        pauseSpotify();
+        playLocal(file);
+      } else {
+        // Pas connecté → juste jouer le son
+        showToast("🚪 Porte (Spotify non connecté)");
+        playLocal(file);
+      }
     }
 
-    // --- Bouton Ambiance ---
-    async function playAmbiance() {
+    // ── Bouton Ambiance : son local ────────────────────────
+    function playAmbiance() {
       vibrate(30);
       if (!ambianceSounds.length) {
         showToast("Aucun son d'ambiance configuré.");
         return;
       }
-      const rand = Math.floor(Math.random() * ambianceSounds.length);
+      const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
       showToast("🎵 Ambiance lancée.");
-      await playSound(ambianceSounds[rand]);
+      playLocal(file);
     }
+
+    // ── Vérif au chargement ────────────────────────────────
+    window.addEventListener("load", () => {
+      if (!isLoggedIn()) {
+        showToast("⚠️ Spotify non connecté — appuie sur Connexion");
+      } else {
+        // Rafraîchit le token silencieusement si nécessaire
+        ensureToken();
+      }
+    });
   </script>
 
 </body>

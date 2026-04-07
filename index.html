@@ -43,7 +43,11 @@
 
     .spotify-container {
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
 
     .spotify-btn {
@@ -57,10 +61,34 @@
       cursor: pointer;
       box-shadow: 0 6px 15px rgba(0,0,0,0.3);
       transition: transform 0.1s ease;
+      width: 100%;
+      max-width: 340px;
     }
 
-    .spotify-btn:active {
-      transform: scale(0.96);
+    .spotify-btn:active { transform: scale(0.96); }
+
+    .login-btn {
+      background: rgba(0,0,0,0.55);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+      padding: 11px 28px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .login-btn:active { transform: scale(0.96); }
+
+    .status {
+      text-align: center;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 20px;
+      min-height: 18px;
     }
 
     .grid {
@@ -83,9 +111,7 @@
       transition: transform 0.1s ease;
     }
 
-    .folder-btn:active {
-      transform: scale(0.97);
-    }
+    .folder-btn:active { transform: scale(0.97); }
 
     .folder-btn img {
       width: 100%;
@@ -109,13 +135,8 @@
     }
 
     @media (max-width: 480px) {
-      .grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .folder-btn {
-        height: 240px;
-      }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .folder-btn { height: 240px; }
     }
   </style>
 </head>
@@ -127,20 +148,22 @@
       <img src="hqentete.png" alt="Hero Quest">
     </div>
 
-    <!-- LANCER IMMERSION -->
     <div class="spotify-container">
       <button class="spotify-btn" onclick="lancerImmersion()">
         🎲 Lancer l'immersion
       </button>
+      <button class="login-btn" id="loginBtn" onclick="handleLogin()">
+        🔐 Connexion Spotify
+      </button>
     </div>
 
-    <!-- DOSSIERS -->
+    <div class="status" id="status"></div>
+
     <div class="grid">
       <a class="folder-btn" href="heros.html">
         <img src="heros.png" alt="Héros">
         <span>Héros</span>
       </a>
-
       <a class="folder-btn" href="zargon.html">
         <img src="zargon.png" alt="Zargon">
         <span>Zargon</span>
@@ -150,23 +173,144 @@
   </div>
 
   <script>
+    const CLIENT_ID   = "a0be0072df274f70ab0c1ab08a66b890";
     const PLAYLIST_ID = "3xaIM6iYEAGEOA7zCKd4lF";
-    const spotifyAppUrl = "spotify:playlist:" + PLAYLIST_ID;
-    const spotifyWebUrl = "https://open.spotify.com/playlist/" + PLAYLIST_ID;
 
-    function lancerImmersion() {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const statusEl = document.getElementById("status");
+    const loginBtn = document.getElementById("loginBtn");
 
-      if (isMobile) {
-        // Sur mobile : tente d'ouvrir l'app Spotify, fallback vers le web
-        window.location.href = spotifyAppUrl;
-        setTimeout(() => {
-          window.open(spotifyWebUrl, "_blank");
-        }, 1500);
+    function setStatus(msg) { statusEl.textContent = msg; }
+    function getToken()     { return localStorage.getItem("sp_access")  || ""; }
+    function getRefresh()   { return localStorage.getItem("sp_refresh") || ""; }
+    function getExpiry()    { return Number(localStorage.getItem("sp_expires") || 0); }
+    function isLoggedIn()   { return !!getToken(); }
+
+    function updateLoginBtn() {
+      if (isLoggedIn()) {
+        loginBtn.textContent = "✅ Spotify connecté";
+        loginBtn.style.borderColor = "#1db954";
+        loginBtn.style.color = "#1db954";
       } else {
-        // Sur desktop : ouvre le web player dans un nouvel onglet
-        window.open(spotifyWebUrl, "_blank");
+        loginBtn.textContent = "🔐 Connexion Spotify";
+        loginBtn.style.borderColor = "rgba(255,255,255,0.3)";
+        loginBtn.style.color = "white";
       }
+    }
+
+    function handleLogin() {
+      if (isLoggedIn()) {
+        if (confirm("Spotify est déjà connecté. Déconnecter ?")) {
+          localStorage.removeItem("sp_access");
+          localStorage.removeItem("sp_refresh");
+          localStorage.removeItem("sp_expires");
+          updateLoginBtn();
+          setStatus("Déconnecté de Spotify.");
+        }
+      } else {
+        location.href = "spotify-login.html";
+      }
+    }
+
+    async function refreshToken() {
+      const refresh = getRefresh();
+      if (!refresh) return false;
+      try {
+        const res  = await fetch("https://accounts.spotify.com/api/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type:    "refresh_token",
+            refresh_token: refresh,
+            client_id:     CLIENT_ID,
+          }),
+        });
+        const data = await res.json();
+        if (!data.access_token) return false;
+        localStorage.setItem("sp_access",  data.access_token);
+        localStorage.setItem("sp_expires", String(Date.now() + data.expires_in * 1000));
+        if (data.refresh_token) localStorage.setItem("sp_refresh", data.refresh_token);
+        return true;
+      } catch { return false; }
+    }
+
+    async function ensureToken() {
+      if (!getToken()) return false;
+      if (Date.now() > getExpiry() - 120_000) return await refreshToken();
+      return true;
+    }
+
+    async function spotifyAPI(method, endpoint, body) {
+      const valid = await ensureToken();
+      if (!valid) return null;
+      const opts = {
+        method,
+        headers: { Authorization: "Bearer " + getToken() },
+      };
+      if (body) {
+        opts.headers["Content-Type"] = "application/json";
+        opts.body = JSON.stringify(body);
+      }
+      let res = await fetch("https://api.spotify.com/v1" + endpoint, opts);
+      if (res.status === 401) {
+        const ok = await refreshToken();
+        if (!ok) return null;
+        opts.headers.Authorization = "Bearer " + getToken();
+        res = await fetch("https://api.spotify.com/v1" + endpoint, opts);
+      }
+      return res;
+    }
+
+    async function lancerImmersion() {
+      if (!isLoggedIn()) {
+        // Pas connecté → ouvre Spotify directement
+        setStatus("💡 Connecte Spotify pour le contrôle complet.");
+        const uri = "spotify:playlist:" + PLAYLIST_ID;
+        const web = "https://open.spotify.com/playlist/" + PLAYLIST_ID;
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isMobile) {
+          location.href = uri;
+          setTimeout(() => window.open(web, "_blank"), 1500);
+        } else {
+          window.open(web, "_blank");
+        }
+        return;
+      }
+
+      setStatus("🎵 Lancement de l'ambiance...");
+      try {
+        // Tente de reprendre la lecture en cours
+        let res = await spotifyAPI("PUT", "/me/player/play");
+
+        // Pas de device actif → lancer la playlist depuis le début
+        if (!res || res.status === 404 || res.status === 403) {
+          res = await spotifyAPI("PUT", "/me/player/play", {
+            context_uri: "spotify:playlist:" + PLAYLIST_ID,
+          });
+        }
+
+        if (res && (res.status === 204 || res.status === 200)) {
+          setStatus("🎵 Ambiance lancée !");
+        } else {
+          setStatus("⚠️ Ouvre Spotify et lance la playlist manuellement.");
+        }
+      } catch {
+        setStatus("Erreur réseau. Vérifie ta connexion.");
+      }
+    }
+
+    // Au chargement
+    updateLoginBtn();
+    if (isLoggedIn()) {
+      ensureToken().then(ok => {
+        if (!ok) {
+          setStatus("⚠️ Session expirée — reconnecte-toi.");
+          updateLoginBtn();
+        } else {
+          setStatus("✅ Spotify prêt.");
+        }
+      });
+    } else {
+      setStatus("Connecte ton compte Spotify pour commencer.");
     }
   </script>
 
