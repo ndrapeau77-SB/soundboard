@@ -163,83 +163,69 @@
 
   <script>
     const attackSounds = [
-      "combat.mp3",
-      "combat2.mp3",
-      "combat3.mp3",
-      "combat4.mp3",
-      "combat5.mp3",
-      "combat6.mp3"
+      "combat.mp3","combat2.mp3","combat3.mp3",
+      "combat4.mp3","combat5.mp3","combat6.mp3"
     ];
-
     const defenseSounds = [
-      "block1.mp3",
-      "block2.mp3",
-      "block3.mp3",
-      "block4.mp3",
-      "block5.mp3"
+      "block1.mp3","block2.mp3","block3.mp3","block4.mp3","block5.mp3"
     ];
-
-    let attackAudio = null;
-    let defenseAudio = null;
-    let daggerAudio = null;
 
     let lastAttackIndex = -1;
     let lastDefenseIndex = -1;
+    let currentAudio = null;
 
-    function vibrate(pattern) {
-      if ("vibrate" in navigator) {
-        navigator.vibrate(pattern);
-      }
+    function vibrate(ms) {
+      if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
-    function playAttackDice() {
+    // Joue un silence via AudioContext pour voler le focus audio à Spotify,
+    // puis enchaîne avec le vrai son. Android met Spotify en pause automatiquement.
+    function stealAudioFocus() {
+      return new Promise((resolve) => {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          src.connect(ctx.destination);
+          src.start(0);
+          src.onended = () => { ctx.close(); resolve(); };
+          setTimeout(resolve, 400);
+        } catch(e) { resolve(); }
+      });
+    }
+
+    async function playSound(file) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      await stealAudioFocus();
+      currentAudio = new Audio(file);
+      currentAudio.play().catch(() => {});
+    }
+
+    async function playAttackDice() {
       vibrate(40);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * attackSounds.length);
-      } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
-
-      lastAttackIndex = randomIndex;
-
-      if (attackAudio) {
-        attackAudio.pause();
-        attackAudio.currentTime = 0;
-      }
-
-      attackAudio = new Audio(attackSounds[randomIndex]);
-      attackAudio.play().catch(() => {});
+      let idx;
+      do { idx = Math.floor(Math.random() * attackSounds.length); }
+      while (idx === lastAttackIndex && attackSounds.length > 1);
+      lastAttackIndex = idx;
+      await playSound(attackSounds[idx]);
     }
 
-    function playDefenseDice() {
+    async function playDefenseDice() {
       vibrate(30);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * defenseSounds.length);
-      } while (randomIndex === lastDefenseIndex && defenseSounds.length > 1);
-
-      lastDefenseIndex = randomIndex;
-
-      if (defenseAudio) {
-        defenseAudio.pause();
-        defenseAudio.currentTime = 0;
-      }
-
-      defenseAudio = new Audio(defenseSounds[randomIndex]);
-      defenseAudio.play().catch(() => {});
+      let idx;
+      do { idx = Math.floor(Math.random() * defenseSounds.length); }
+      while (idx === lastDefenseIndex && defenseSounds.length > 1);
+      lastDefenseIndex = idx;
+      await playSound(defenseSounds[idx]);
     }
 
-    function playDagger() {
+    async function playDagger() {
       vibrate(30);
-
-      if (daggerAudio) {
-        daggerAudio.pause();
-        daggerAudio.currentTime = 0;
-      }
-
-      daggerAudio = new Audio("dague.mp3");
-      daggerAudio.play().catch(() => {});
+      await playSound("dague.mp3");
     }
   </script>
 

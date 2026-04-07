@@ -226,123 +226,97 @@
     const ambianceSounds = [
       "ambiance1.mp3"
       // "ambiance2.mp3",
-      // "ambiance3.mp3"
     ];
 
-    // AudioContext partagé — créé une seule fois, réutilisé à chaque son
-    // C'est ce qui force Android à couper Spotify : le focus audio passe au navigateur
-    let audioCtx = null;
-    let currentSource = null;
+    let currentAudio = null;
     let toastTimer = null;
 
-    function getAudioContext() {
-      if (!audioCtx || audioCtx.state === "closed") {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      // Sur Android, l'AudioContext peut être suspendu jusqu'au premier geste
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-      return audioCtx;
-    }
-
-    // --- Joue un fichier via AudioContext (coupe Spotify sur Android) ---
-    async function playViaAudioContext(url) {
-      const ctx = getAudioContext();
-
-      // Arrête le son en cours si présent
-      if (currentSource) {
-        try { currentSource.stop(); } catch(e) {}
-        currentSource = null;
-      }
-
-      // Charge le fichier audio
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-
-      // Connecte et joue — ceci prend le focus audio Android = Spotify se coupe
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-      source.start(0);
-      currentSource = source;
-
-      return source;
-    }
-
-    // --- Toast notification ---
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      toast.textContent = message;
-      toast.classList.add("show");
+    // --- Toast ---
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 2500);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
     }
 
     // --- Vibration ---
-    function vibrate(pattern) {
-      if ("vibrate" in navigator) navigator.vibrate(pattern);
+    function vibrate(ms) {
+      if ("vibrate" in navigator) navigator.vibrate(ms);
+    }
+
+    // --- Voler le focus audio à Spotify via un silence AudioContext ---
+    // Android donne le focus audio exclusif au navigateur dès qu'on joue
+    // quelque chose via AudioContext. Spotify se met en pause automatiquement.
+    function stealAudioFocus() {
+      return new Promise((resolve) => {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          // Crée un buffer silencieux de 0.3 secondes
+          const silenceBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+          const source = ctx.createBufferSource();
+          source.buffer = silenceBuffer;
+          source.connect(ctx.destination);
+          source.start(0);
+          // Une fois le silence terminé, le focus est volé → on joue le vrai son
+          source.onended = () => {
+            ctx.close();
+            resolve();
+          };
+          // Sécurité : si ça prend trop longtemps, on continue quand même
+          setTimeout(resolve, 400);
+        } catch(e) {
+          resolve(); // Si AudioContext non supporté, on joue quand même
+        }
+      });
+    }
+
+    // --- Jouer un son (après avoir volé le focus) ---
+    async function playSound(file) {
+      // Arrête le son précédent
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      // Étape 1 : voler le focus audio à Spotify via silence AudioContext
+      await stealAudioFocus();
+
+      // Étape 2 : jouer le vrai son avec new Audio()
+      // À ce stade Android a déjà mis Spotify en pause
+      currentAudio = new Audio(file);
+      currentAudio.play().catch(() => {});
     }
 
     // --- Relancer Spotify ---
     function relancerSpotify() {
-      // Coupe d'abord l'AudioContext pour rendre le focus à Spotify
-      if (audioCtx) {
-        try { audioCtx.suspend(); } catch(e) {}
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
       }
-      if (currentSource) {
-        try { currentSource.stop(); } catch(e) {}
-        currentSource = null;
-      }
-
       window.location.href = spotifyAppUrl;
-      setTimeout(() => {
-        window.open(spotifyWebUrl, "_blank");
-      }, 1500);
-
+      setTimeout(() => window.open(spotifyWebUrl, "_blank"), 1500);
       showToast("🎵 Ouverture de Spotify...");
     }
 
     // --- Bouton Porte ---
-    // AudioContext prend le focus audio Android → Spotify se coupe automatiquement
     async function playDoor() {
       vibrate(40);
-
       const rand = Math.floor(Math.random() * doorSounds.length);
-
-      try {
-        await playViaAudioContext(doorSounds[rand]);
-        showToast("🚪 Son de porte...");
-      } catch(e) {
-        // Fallback : Audio classique si AudioContext échoue
-        const audio = new Audio(doorSounds[rand]);
-        audio.play().catch(() => {});
-        showToast("🚪 Son de porte...");
-      }
+      showToast("🚪 Son de porte...");
+      await playSound(doorSounds[rand]);
     }
 
     // --- Bouton Ambiance ---
     async function playAmbiance() {
       vibrate(30);
-
-      if (ambianceSounds.length === 0) {
+      if (!ambianceSounds.length) {
         showToast("Aucun son d'ambiance configuré.");
         return;
       }
-
       const rand = Math.floor(Math.random() * ambianceSounds.length);
-
-      try {
-        await playViaAudioContext(ambianceSounds[rand]);
-        showToast("🎵 Ambiance lancée.");
-      } catch(e) {
-        const audio = new Audio(ambianceSounds[rand]);
-        audio.play().catch(() => {});
-        showToast("🎵 Ambiance lancée.");
-      }
+      showToast("🎵 Ambiance lancée.");
+      await playSound(ambianceSounds[rand]);
     }
   </script>
 
