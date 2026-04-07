@@ -300,13 +300,18 @@
     }
 
     // ── Pause Spotify ──────────────────────────────────────
-    async function pauseSpotify() {
-      if (!isLoggedIn()) return false;
-      try {
-        const res = await spotifyAPI("PUT", "/me/player/pause");
-        return res && (res.status === 204 || res.status === 200);
-      } catch { return false; }
-    }
+   async function pauseSpotify() {
+  if (!isLoggedIn()) return false;
+  try {
+    const res = await spotifyAPI("PUT", "/me/player/pause");
+    const status = res ? res.status : "null";
+    showToast("Pause status: " + status);
+    return res && (res.status === 204 || res.status === 200);
+  } catch(e) {
+    showToast("Erreur: " + e.message);
+    return false;
+  }
+}
 
     // ── Play Spotify (relancer la playlist) ───────────────
     async function playSpotify() {
