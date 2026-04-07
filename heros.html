@@ -48,14 +48,27 @@
       font-weight: bold;
     }
 
-    .status {
-      margin: 0 auto 20px;
-      max-width: 520px;
-      padding: 10px 12px;
-      background: rgba(0,0,0,0.45);
-      border-radius: 10px;
-      font-size: 14px;
+    /* Bouton Spotify relancer - centré au-dessus de la grille */
+    .spotify-relancer {
       text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .spotify-relancer button {
+      background: #1db954;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.35);
+      transition: transform 0.1s ease;
+    }
+
+    .spotify-relancer button:active {
+      transform: scale(0.96);
     }
 
     .grid {
@@ -108,6 +121,29 @@
       z-index: 2;
     }
 
+    /* Toast notification discrète */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(0,0,0,0.82);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     @media (max-width: 560px) {
       .grid {
         grid-template-columns: repeat(2, minmax(130px, 1fr));
@@ -137,9 +173,10 @@
       <a href="index.html">← Retour</a>
     </div>
 
-    <div id="status" class="status">Prêt.</div>
-
-    <button onclick="debugSpotifyDevices()" style="margin-bottom:12px;">Debug Spotify</button>
+    <!-- Bouton Spotify séparé pour relancer la musique -->
+    <div class="spotify-relancer">
+      <button onclick="relancerSpotify()">🎵 Relancer Spotify</button>
+    </div>
 
     <div class="grid">
 
@@ -153,12 +190,14 @@
         <span>Pièges</span>
       </a>
 
+      <!-- PORTE : arrête Spotify + joue son de porte -->
       <button class="btn" onclick="playDoor()">
         <img src="portes.png" alt="Portes">
         <span>Portes</span>
       </button>
 
-      <button class="btn" onclick="playSpotify()">
+      <!-- AMBIANCE : joue un son d'ambiance local (pas Spotify) -->
+      <button class="btn" onclick="playAmbiance()">
         <img src="musique.png" alt="Ambiance">
         <span>Ambiance</span>
       </button>
@@ -167,8 +206,13 @@
 
   </div>
 
+  <!-- Toast notification -->
+  <div id="toast"></div>
+
   <script>
-    const clientId = "a0be0072df274f70ab0c1ab08a66b890";
+    const PLAYLIST_ID = "3xaIM6iYEAGEOA7zCKd4lF";
+    const spotifyAppUrl = "spotify:playlist:" + PLAYLIST_ID;
+    const spotifyWebUrl = "https://open.spotify.com/playlist/" + PLAYLIST_ID;
 
     const doorSounds = [
       "porte1.mp3",
@@ -178,193 +222,111 @@
       "porte5.m4a"
     ];
 
-    let audio = null;
+    // ⬇️ Ajoute ici tes fichiers sons d'ambiance quand tu les auras
+    const ambianceSounds = [
+      "ambiance1.mp3"
+      // "ambiance2.mp3",
+      // "ambiance3.mp3"
+    ];
 
-    function setStatus(message) {
-      document.getElementById("status").textContent = message;
+    let doorAudio = null;
+    let ambianceAudio = null;
+    let toastTimer = null;
+
+    // --- Toast notification ---
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
     }
 
-    function getToken() {
-      return localStorage.getItem("access_token");
+    // --- Vibration ---
+    function vibrate(pattern) {
+      if ("vibrate" in navigator) navigator.vibrate(pattern);
     }
 
-    async function refreshSpotifyToken() {
-      const refreshToken = localStorage.getItem("refresh_token");
-      if (!refreshToken) return false;
-
-      try {
-        const res = await fetch("https://accounts.spotify.com/api/token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: new URLSearchParams({
-            grant_type: "refresh_token",
-            refresh_token: refreshToken,
-            client_id: clientId
-          })
-        });
-
-        const data = await res.json();
-
-        if (!data.access_token) return false;
-
-        localStorage.setItem("access_token", data.access_token);
-
-        if (data.refresh_token) {
-          localStorage.setItem("refresh_token", data.refresh_token);
-        }
-
-        if (data.expires_in) {
-          localStorage.setItem("token_expires_at", String(Date.now() + data.expires_in * 1000));
-        }
-
-        return true;
-      } catch (e) {
-        console.log("Erreur refresh token", e);
-        return false;
+    // --- Arrêter tous les sons locaux ---
+    function stopAllLocalAudio() {
+      if (doorAudio) {
+        doorAudio.pause();
+        doorAudio.currentTime = 0;
+      }
+      if (ambianceAudio) {
+        ambianceAudio.pause();
+        ambianceAudio.currentTime = 0;
       }
     }
 
-    async function ensureValidToken() {
-      const exp = localStorage.getItem("token_expires_at");
-      if (!exp) return true;
+    // --- Relancer Spotify ---
+    function relancerSpotify() {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      if (Date.now() > Number(exp) - 60000) {
-        return await refreshSpotifyToken();
+      if (isMobile) {
+        window.location.href = spotifyAppUrl;
+        setTimeout(() => {
+          window.open(spotifyWebUrl, "_blank");
+        }, 1500);
+      } else {
+        window.open(spotifyWebUrl, "_blank");
       }
 
-      return true;
+      showToast("🎵 Ouverture de Spotify...");
     }
 
-    async function pauseSpotify() {
-      if (!(await ensureValidToken())) return false;
-
-      const token = getToken();
-      if (!token) return false;
-
-      try {
-        const res = await fetch("https://api.spotify.com/v1/me/player/pause", {
-          method: "PUT",
-          headers: {
-            Authorization: "Bearer " + token
-          }
-        });
-
-        if (res.status === 204) {
-          setStatus("Spotify mis en pause.");
-          return true;
-        }
-
-        if (res.status === 401) {
-          setStatus("Session Spotify expirée.");
-          return false;
-        }
-
-        return true;
-      } catch (e) {
-        console.log("Pause Spotify error", e);
-        return false;
-      }
-    }
-
-    async function playSpotify() {
-      if (!(await ensureValidToken())) {
-        alert("Reconnecte Spotify");
-        window.location.href = "spotify-login.html";
-        return;
-      }
-
-      const token = getToken();
-      if (!token) {
-        alert("Reconnecte Spotify");
-        window.location.href = "spotify-login.html";
-        return;
-      }
-
-      try {
-        const res = await fetch("https://api.spotify.com/v1/me/player/play", {
-          method: "PUT",
-          headers: {
-            Authorization: "Bearer " + token
-          }
-        });
-
-        if (res.status === 204) {
-          setStatus("Ambiance relancée.");
-          return;
-        }
-
-        if (res.status === 401) {
-          setStatus("Token Spotify expiré.");
-          return;
-        }
-
-        const text = await res.text();
-        console.log("Play Spotify:", res.status, text);
-        setStatus("Impossible de lancer Spotify.");
-      } catch (e) {
-        console.log("Play Spotify error", e);
-        setStatus("Erreur réseau Spotify.");
-      }
-    }
-
+    // --- Bouton Porte ---
+    // Arrête Spotify (via lien pause) + joue un son de porte aléatoire
     async function playDoor() {
-      await pauseSpotify();
+      vibrate(40);
+      stopAllLocalAudio();
 
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
+      // Arrêter Spotify côté utilisateur : on envoie l'URL de pause
+      // (fonctionne seulement si Spotify est ouvert et actif sur leur appareil)
+      try {
+        // Tente d'envoyer un MediaSession pause (fonctionne dans certains navigateurs)
+        if ("mediaSession" in navigator) {
+          navigator.mediaSession.playbackState = "paused";
+        }
+      } catch(e) {}
 
+      // Joue le son de porte
       const rand = Math.floor(Math.random() * doorSounds.length);
-      audio = new Audio(doorSounds[rand]);
+      doorAudio = new Audio(doorSounds[rand]);
 
       try {
-        await audio.play();
-        setStatus("Son de porte lancé.");
-      } catch (e) {
-        console.log("Lecture porte impossible", e);
-        setStatus("Impossible de jouer le son.");
+        await doorAudio.play();
+        showToast("🚪 Son de porte...");
+      } catch(e) {
+        showToast("Impossible de jouer le son.");
+      }
+    }
+
+    // --- Bouton Ambiance ---
+    // Joue un son d'ambiance local (arrête Spotify d'abord)
+    async function playAmbiance() {
+      vibrate(30);
+      stopAllLocalAudio();
+
+      if (ambianceSounds.length === 0) {
+        showToast("Aucun son d'ambiance configuré.");
+        return;
+      }
+
+      const rand = Math.floor(Math.random() * ambianceSounds.length);
+      ambianceAudio = new Audio(ambianceSounds[rand]);
+
+      try {
+        await ambianceAudio.play();
+        showToast("🎵 Ambiance lancée.");
+      } catch(e) {
+        showToast("Impossible de jouer le son.");
       }
     }
   </script>
-  <script>
-async function debugSpotifyDevices() {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    setStatus("Pas de token Spotify.");
-    return;
-  }
 
-  const response = await fetch("https://api.spotify.com/v1/me/player/devices", {
-    headers: {
-      Authorization: "Bearer " + token
-    }
-  });
-
-  const text = await response.text();
-  console.log("DEVICES RAW:", text);
-
-  if (!response.ok) {
-    setStatus("Devices error: " + response.status + " " + text);
-    return;
-  }
-
-  const data = JSON.parse(text);
-
-  if (!data.devices || !data.devices.length) {
-    setStatus("Aucun device Spotify vu par l'API.");
-    return;
-  }
-
-  const summary = data.devices.map(d =>
-    `${d.name} | active=${d.is_active} | restricted=${d.is_restricted} | type=${d.type}`
-  ).join(" || ");
-
-  setStatus(summary);
-}
-</script>
- 
 </body>
 </html>
