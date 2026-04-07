@@ -229,16 +229,53 @@
       // "ambiance3.mp3"
     ];
 
-    let doorAudio = null;
-    let ambianceAudio = null;
+    // AudioContext partagé — créé une seule fois, réutilisé à chaque son
+    // C'est ce qui force Android à couper Spotify : le focus audio passe au navigateur
+    let audioCtx = null;
+    let currentSource = null;
     let toastTimer = null;
+
+    function getAudioContext() {
+      if (!audioCtx || audioCtx.state === "closed") {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      // Sur Android, l'AudioContext peut être suspendu jusqu'au premier geste
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // --- Joue un fichier via AudioContext (coupe Spotify sur Android) ---
+    async function playViaAudioContext(url) {
+      const ctx = getAudioContext();
+
+      // Arrête le son en cours si présent
+      if (currentSource) {
+        try { currentSource.stop(); } catch(e) {}
+        currentSource = null;
+      }
+
+      // Charge le fichier audio
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+      // Connecte et joue — ceci prend le focus audio Android = Spotify se coupe
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      currentSource = source;
+
+      return source;
+    }
 
     // --- Toast notification ---
     function showToast(message) {
       const toast = document.getElementById("toast");
       toast.textContent = message;
       toast.classList.add("show");
-
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => {
         toast.classList.remove("show");
@@ -250,66 +287,46 @@
       if ("vibrate" in navigator) navigator.vibrate(pattern);
     }
 
-    // --- Arrêter tous les sons locaux ---
-    function stopAllLocalAudio() {
-      if (doorAudio) {
-        doorAudio.pause();
-        doorAudio.currentTime = 0;
-      }
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
-    }
-
     // --- Relancer Spotify ---
     function relancerSpotify() {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        window.location.href = spotifyAppUrl;
-        setTimeout(() => {
-          window.open(spotifyWebUrl, "_blank");
-        }, 1500);
-      } else {
-        window.open(spotifyWebUrl, "_blank");
+      // Coupe d'abord l'AudioContext pour rendre le focus à Spotify
+      if (audioCtx) {
+        try { audioCtx.suspend(); } catch(e) {}
       }
+      if (currentSource) {
+        try { currentSource.stop(); } catch(e) {}
+        currentSource = null;
+      }
+
+      window.location.href = spotifyAppUrl;
+      setTimeout(() => {
+        window.open(spotifyWebUrl, "_blank");
+      }, 1500);
 
       showToast("🎵 Ouverture de Spotify...");
     }
 
     // --- Bouton Porte ---
-    // Arrête Spotify (via lien pause) + joue un son de porte aléatoire
+    // AudioContext prend le focus audio Android → Spotify se coupe automatiquement
     async function playDoor() {
       vibrate(40);
-      stopAllLocalAudio();
 
-      // Arrêter Spotify côté utilisateur : on envoie l'URL de pause
-      // (fonctionne seulement si Spotify est ouvert et actif sur leur appareil)
-      try {
-        // Tente d'envoyer un MediaSession pause (fonctionne dans certains navigateurs)
-        if ("mediaSession" in navigator) {
-          navigator.mediaSession.playbackState = "paused";
-        }
-      } catch(e) {}
-
-      // Joue le son de porte
       const rand = Math.floor(Math.random() * doorSounds.length);
-      doorAudio = new Audio(doorSounds[rand]);
 
       try {
-        await doorAudio.play();
+        await playViaAudioContext(doorSounds[rand]);
         showToast("🚪 Son de porte...");
       } catch(e) {
-        showToast("Impossible de jouer le son.");
+        // Fallback : Audio classique si AudioContext échoue
+        const audio = new Audio(doorSounds[rand]);
+        audio.play().catch(() => {});
+        showToast("🚪 Son de porte...");
       }
     }
 
     // --- Bouton Ambiance ---
-    // Joue un son d'ambiance local (arrête Spotify d'abord)
     async function playAmbiance() {
       vibrate(30);
-      stopAllLocalAudio();
 
       if (ambianceSounds.length === 0) {
         showToast("Aucun son d'ambiance configuré.");
@@ -317,13 +334,14 @@
       }
 
       const rand = Math.floor(Math.random() * ambianceSounds.length);
-      ambianceAudio = new Audio(ambianceSounds[rand]);
 
       try {
-        await ambianceAudio.play();
+        await playViaAudioContext(ambianceSounds[rand]);
         showToast("🎵 Ambiance lancée.");
       } catch(e) {
-        showToast("Impossible de jouer le son.");
+        const audio = new Audio(ambianceSounds[rand]);
+        audio.play().catch(() => {});
+        showToast("🎵 Ambiance lancée.");
       }
     }
   </script>
