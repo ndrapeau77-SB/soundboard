@@ -11,12 +11,7 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
-        url('heroquestbackground.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+      background: transparent;
     }
 
     .app {
@@ -112,7 +107,7 @@
 
     <div class="topbar">
       <h1>Monstres</h1>
-      <a class="back-btn" href="zargon.html">← Retour</a>
+      <button class="back-btn" onclick="parent.navigateTo('zargon.html')" style="border:none;cursor:pointer;">← Retour</button>
     </div>
 
     <div class="grid">

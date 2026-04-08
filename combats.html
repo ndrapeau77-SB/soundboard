@@ -11,11 +11,7 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)),
-        url('heroquestbackground.jpg');
-      background-size: cover;
-      background-position: center;
+      background: transparent;
     }
 
     .app {
@@ -128,7 +124,7 @@
 
     <div class="topbar">
       <h1>Combats ⚔️</h1>
-      <a href="heros.html">← Retour</a>
+      <button onclick="parent.navigateTo('heros.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;white-space:nowrap;">← Retour</button>
     </div>
 
     <div class="grid">
@@ -146,10 +142,10 @@
       </button>
 
       <!-- ✨ MAGIE -->
-      <a class="btn" href="magies.html">
+      <button class="btn" onclick="parent.navigateTo('magies.html')">
         <img src="magie.png" alt="Magie">
         <span>Magie ✨</span>
-      </a>
+      </button>
 
       <!-- 🗡️ DAGUE -->
       <button class="btn" onclick="playDagger()">
@@ -163,64 +159,83 @@
 
   <script>
     const attackSounds = [
-      "combat.mp3","combat2.mp3","combat3.mp3",
-      "combat4.mp3","combat5.mp3","combat6.mp3"
+      "combat.mp3",
+      "combat2.mp3",
+      "combat3.mp3",
+      "combat4.mp3",
+      "combat5.mp3",
+      "combat6.mp3"
     ];
+
     const defenseSounds = [
-      "block1.mp3","block2.mp3","block3.mp3","block4.mp3","block5.mp3"
+      "block1.mp3",
+      "block2.mp3",
+      "block3.mp3",
+      "block4.mp3",
+      "block5.mp3"
     ];
+
+    let attackAudio = null;
+    let defenseAudio = null;
+    let daggerAudio = null;
 
     let lastAttackIndex = -1;
     let lastDefenseIndex = -1;
-    let currentAudio = null;
 
-    const SILENCE_WAV = "data:audio/wav;base64,UklGRsQPAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAPAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=";
-
-    function vibrate(ms) {
-      if ("vibrate" in navigator) navigator.vibrate(ms);
-    }
-
-    function playSound(file) {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-      const silence = new Audio(SILENCE_WAV);
-      silence.volume = 0.001;
-      const p = silence.play();
-      if (p !== undefined) {
-        p.then(() => {
-          silence.pause();
-          currentAudio = new Audio(file);
-          currentAudio.play().catch(() => {});
-        }).catch(() => {
-          currentAudio = new Audio(file);
-          currentAudio.play().catch(() => {});
-        });
+    function vibrate(pattern) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(pattern);
       }
     }
 
-    async function playAttackDice() {
+    function playAttackDice() {
       vibrate(40);
-      let idx;
-      do { idx = Math.floor(Math.random() * attackSounds.length); }
-      while (idx === lastAttackIndex && attackSounds.length > 1);
-      lastAttackIndex = idx;
-      playSound(attackSounds[idx]);
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * attackSounds.length);
+      } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
+
+      lastAttackIndex = randomIndex;
+
+      if (attackAudio) {
+        attackAudio.pause();
+        attackAudio.currentTime = 0;
+      }
+
+      attackAudio = new Audio(attackSounds[randomIndex]);
+      attackAudio.play().catch(() => {});
     }
 
-    async function playDefenseDice() {
+    function playDefenseDice() {
       vibrate(30);
-      let idx;
-      do { idx = Math.floor(Math.random() * defenseSounds.length); }
-      while (idx === lastDefenseIndex && defenseSounds.length > 1);
-      lastDefenseIndex = idx;
-      playSound(defenseSounds[idx]);
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * defenseSounds.length);
+      } while (randomIndex === lastDefenseIndex && defenseSounds.length > 1);
+
+      lastDefenseIndex = randomIndex;
+
+      if (defenseAudio) {
+        defenseAudio.pause();
+        defenseAudio.currentTime = 0;
+      }
+
+      defenseAudio = new Audio(defenseSounds[randomIndex]);
+      defenseAudio.play().catch(() => {});
     }
 
     function playDagger() {
       vibrate(30);
-      playSound("dague.mp3");
+
+      if (daggerAudio) {
+        daggerAudio.pause();
+        daggerAudio.currentTime = 0;
+      }
+
+      daggerAudio = new Audio("dague.mp3");
+      daggerAudio.play().catch(() => {});
     }
   </script>
 

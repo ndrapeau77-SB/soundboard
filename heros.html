@@ -4,24 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Héros</title>
-
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
-        url('heroquestbackground.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    .app {
-      max-width: 980px;
-      margin: auto;
+      background: transparent;
       padding: 20px 16px 40px;
     }
 
@@ -36,13 +25,15 @@
 
     .topbar h1 { margin: 0; font-size: 2rem; }
 
-    .topbar a {
+    .back-btn {
       color: white;
-      text-decoration: none;
       background: rgba(0,0,0,0.65);
       padding: 10px 14px;
       border-radius: 10px;
       font-weight: bold;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
     }
 
     .grid {
@@ -59,7 +50,6 @@
       border-radius: 18px;
       overflow: hidden;
       position: relative;
-      text-decoration: none;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       cursor: pointer;
       transition: transform 0.1s ease;
@@ -126,38 +116,34 @@
     }
   </style>
 </head>
-
 <body>
-  <div class="app">
 
-    <div class="topbar">
-      <h1>Héros ⚔️</h1>
-      <a href="index.html">← Retour</a>
-    </div>
+  <div class="topbar">
+    <h1>Héros ⚔️</h1>
+    <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+  </div>
 
-    <div class="grid">
+  <div class="grid">
 
-      <a class="btn" href="combats.html">
-        <img src="combats.png" alt="Combats">
-        <span>Combats</span>
-      </a>
+    <button class="btn" onclick="parent.navigateTo('combats.html')">
+      <img src="combats.png" alt="Combats">
+      <span>Combats</span>
+    </button>
 
-      <a class="btn" href="pieges.html">
-        <img src="pieges.png" alt="Pièges">
-        <span>Pièges</span>
-      </a>
+    <button class="btn" onclick="parent.navigateTo('pieges.html')">
+      <img src="pieges.png" alt="Pièges">
+      <span>Pièges</span>
+    </button>
 
-      <button class="btn" onclick="playDoor()">
-        <img src="portes.png" alt="Portes">
-        <span>Portes</span>
-      </button>
+    <button class="btn" onclick="playDoor()">
+      <img src="portes.png" alt="Portes">
+      <span>Portes</span>
+    </button>
 
-      <button class="btn" onclick="playAmbiance()">
-        <img src="musique.png" alt="Ambiance">
-        <span>Ambiance</span>
-      </button>
-
-    </div>
+    <button class="btn" onclick="playAmbiance()">
+      <img src="musique.png" alt="Ambiance">
+      <span>Ambiance</span>
+    </button>
 
   </div>
 
@@ -165,11 +151,7 @@
 
   <script>
     const doorSounds = [
-      "porte1.mp3",
-      "porte2.mp3",
-      "porte3.mp3",
-      "porte4.mp3",
-      "porte5.m4a"
+      "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
     ];
 
     // ⬇️ Ajoute tes sons d'ambiance locale ici
@@ -193,25 +175,26 @@
       if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
-    function stopAll() {
-      // Arrête le son de porte en cours
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+    // Bouton Portes : arrête la musique d'ambiance + joue un son de porte
+    function playDoor() {
+      vibrate(40);
+
+      // Arrête la musique dans index.html (le parent)
+      if (parent && parent.stopAmbianceFromFrame) {
+        parent.stopAmbianceFromFrame();
       }
-      // Arrête la musique d'ambiance locale
+
+      // Arrête aussi l'ambiance locale si elle jouait
       if (ambianceAudio) {
         ambianceAudio.pause();
         ambianceAudio.currentTime = 0;
       }
-      // Signale à index.html d'arrêter aussi (si l'ambiance joue là-bas)
-      sessionStorage.setItem("stopAmbiance", "1");
-    }
 
-    // Bouton Portes : arrête tout + joue un son de porte aléatoire
-    function playDoor() {
-      vibrate(40);
-      stopAll();
+      // Arrête le son précédent
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
 
       const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
       currentAudio = new Audio(file);
@@ -219,7 +202,7 @@
       showToast("🚪 Porte...");
     }
 
-    // Bouton Ambiance : joue un son d'ambiance en boucle
+    // Bouton Ambiance : joue un son d'ambiance locale en boucle
     function playAmbiance() {
       vibrate(30);
 
@@ -228,7 +211,6 @@
         return;
       }
 
-      // Arrête le son précédent
       if (ambianceAudio) {
         ambianceAudio.pause();
         ambianceAudio.currentTime = 0;

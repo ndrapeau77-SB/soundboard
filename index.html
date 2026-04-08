@@ -10,172 +10,141 @@
   <title>Hero Quest Soundboard</title>
 
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
       color: white;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       background:
         linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
         url('heroquestbackground.jpg');
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
     }
 
-    .app {
-      max-width: 1000px;
-      margin: auto;
-      padding: 20px 16px 40px;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .header img {
-      width: 100%;
-      max-width: 500px;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .immersion-container {
-      text-align: center;
-      margin-bottom: 24px;
+    /* ── Barre du haut fixe ── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
       display: flex;
-      flex-direction: column;
       align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.75);
       gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .immersion-btn {
+    .topbar img.logo {
+      height: 48px;
+      object-fit: contain;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-play {
       background: #1db954;
       color: white;
       border: none;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-      transition: transform 0.1s ease;
-      width: 100%;
-      max-width: 340px;
-    }
-
-    .immersion-btn:active { transform: scale(0.96); }
-
-    .stop-btn {
-      background: rgba(180,0,0,0.7);
-      color: white;
-      border: none;
-      padding: 11px 28px;
-      border-radius: 12px;
+      padding: 9px 18px;
+      border-radius: 10px;
       font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
-      transition: transform 0.1s ease;
-      width: 100%;
-      max-width: 340px;
+      white-space: nowrap;
     }
 
-    .stop-btn:active { transform: scale(0.96); }
+    .btn-play:active { transform: scale(0.96); }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 18px;
-      justify-items: center;
+    .btn-stop {
+      background: rgba(180,0,0,0.8);
+      color: white;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
-    .folder-btn {
-      position: relative;
-      width: 100%;
-      max-width: 200px;
-      height: 280px;
-      border-radius: 18px;
-      overflow: hidden;
-      text-decoration: none;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      display: block;
-      transition: transform 0.1s ease;
+    .btn-stop:active { transform: scale(0.96); }
+
+    .btn-home {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
-    .folder-btn:active { transform: scale(0.97); }
+    .btn-home:active { transform: scale(0.96); }
 
-    .folder-btn img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: rgba(0,0,0,0.4);
-      display: block;
-    }
-
-    .folder-btn span {
-      position: absolute;
-      bottom: 0;
+    /* ── Iframe qui prend tout l'espace sous la topbar ── */
+    #frame {
+      position: fixed;
+      top: 70px;
       left: 0;
       right: 0;
-      padding: 14px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-align: center;
-      color: white;
-      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+      bottom: 0;
+      width: 100%;
+      height: calc(100vh - 70px);
+      border: none;
+      background: transparent;
     }
 
+    /* Ajustement si la topbar prend plus de place sur petit écran */
     @media (max-width: 480px) {
-      .grid { grid-template-columns: repeat(2, 1fr); }
-      .folder-btn { height: 240px; }
+      .topbar { padding: 8px 12px; }
+      .topbar img.logo { height: 36px; }
+      .btn-play, .btn-stop, .btn-home {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="app">
 
-    <div class="header">
-      <img src="hqentete.png" alt="Hero Quest">
+  <!-- Barre fixe avec logo + contrôles musique -->
+  <div class="topbar">
+    <img class="logo" src="hqentete.png" alt="Hero Quest" onclick="goHome()">
+    <div class="controls">
+      <button class="btn-home" onclick="goHome()">🏠 Accueil</button>
+      <button class="btn-play" onclick="lancerImmersion()">🎲 Lancer l'immersion</button>
+      <button class="btn-stop" onclick="stopImmersion()">⏹ Stop</button>
     </div>
-
-    <div class="immersion-container">
-      <button class="immersion-btn" onclick="lancerImmersion()">
-        🎲 Lancer l'immersion
-      </button>
-      <button class="stop-btn" onclick="stopImmersion()">
-        ⏹ Arrêter la musique
-      </button>
-    </div>
-
-    <div class="grid">
-      <a class="folder-btn" href="heros.html">
-        <img src="heros.png" alt="Héros">
-        <span>Héros</span>
-      </a>
-      <a class="folder-btn" href="zargon.html">
-        <img src="zargon.png" alt="Zargon">
-        <span>Zargon</span>
-      </a>
-    </div>
-
   </div>
 
-  <script>
-    // Musique d'ambiance principale — remplace par ton fichier
-    const AMBIANCE_FILE = "ambiance1.mp3";
+  <!-- Toutes les pages chargent ici — la musique ne s'arrête jamais -->
+  <iframe id="frame" src="accueil.html"></iframe>
 
+  <script>
+    const AMBIANCE_FILE = "ambiance1.mp3";
     let ambianceAudio = null;
 
     function lancerImmersion() {
-      // Si déjà en train de jouer → on repart du début
       if (ambianceAudio) {
         ambianceAudio.pause();
         ambianceAudio.currentTime = 0;
       }
       ambianceAudio = new Audio(AMBIANCE_FILE);
-      ambianceAudio.loop = true; // boucle infinie
+      ambianceAudio.loop = true;
       ambianceAudio.volume = 0.8;
       ambianceAudio.play().catch(() => {});
     }
@@ -187,14 +156,21 @@
       }
     }
 
-    // Expose globalement pour que heros.html puisse arrêter la musique
-    // quand un son de porte joue (via sessionStorage)
-    window.addEventListener("focus", () => {
-      if (sessionStorage.getItem("stopAmbiance") === "1") {
-        sessionStorage.removeItem("stopAmbiance");
-        stopImmersion();
-      }
-    });
+    function goHome() {
+      document.getElementById("frame").src = "accueil.html";
+    }
+
+    // Les pages dans l'iframe appellent cette fonction pour naviguer
+    // sans quitter index.html
+    function navigateTo(page) {
+      document.getElementById("frame").src = page;
+    }
+
+    // Les pages dans l'iframe appellent ça pour arrêter la musique
+    // (ex: quand un son de porte joue)
+    function stopAmbianceFromFrame() {
+      stopImmersion();
+    }
   </script>
 
 </body>

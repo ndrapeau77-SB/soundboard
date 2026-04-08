@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accueil</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background: transparent;
+      padding: 20px 16px 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+      justify-items: center;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .folder-btn {
+      position: relative;
+      width: 100%;
+      max-width: 200px;
+      height: 280px;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: block;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      border: none;
+      padding: 0;
+      background: transparent;
+    }
+
+    .folder-btn:active { transform: scale(0.97); }
+
+    .folder-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: rgba(0,0,0,0.4);
+      display: block;
+    }
+
+    .folder-btn span {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 14px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      color: white;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2));
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .folder-btn { height: 240px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid">
+    <button class="folder-btn" onclick="parent.navigateTo('heros.html')">
+      <img src="heros.png" alt="Héros">
+      <span>Héros</span>
+    </button>
+    <button class="folder-btn" onclick="parent.navigateTo('zargon.html')">
+      <img src="zargon.png" alt="Zargon">
+      <span>Zargon</span>
+    </button>
+  </div>
+
+</body>
+</html>
