@@ -154,142 +154,162 @@
 
   <div id="toast"></div>
 
-  <script>
-    const doorSounds = [
-      "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
-    ];
+<script>
+  const doorSounds = [
+    "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
+  ];
 
-    const ambianceSounds = [
-      "ambiance1.mp3"
-    ];
+  const ambianceSounds = [
+    "ambiance1.mp3"
+  ];
 
-    const placementSounds = [
-      "tick1.mp3",
-      "tick2.mp3",
-      "tick3.mp3",
-      "tick4.mp3"
-    ];
+  const placementSounds = [
+    "tick1.mp3",
+    "tick2.mp3",
+    "tick3.mp3",
+    "tick4.mp3"
+  ];
 
-    let currentAudio = null;
-    let ambianceAudio = null;
-    let placementAudio = null;
+  let currentAudio = null;
+  let ambianceAudio = null;
+  let placementAudio = null;
 
-    let placementActive = false;
-    let placementIndex = 0;
+  let placementActive = false;
+  let placementIndex = 0;
 
-    let toastTimer = null;
+  let toastTimer = null;
 
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+  }
+
+  function vibrate(ms) {
+    if ("vibrate" in navigator) navigator.vibrate(ms);
+  }
+
+  function stopPlacement() {
+    placementActive = false;
+
+    if (placementAudio) {
+      placementAudio.pause();
+      placementAudio.currentTime = 0;
+      placementAudio = null;
+    }
+  }
+
+  function playNextPlacement() {
+    if (!placementActive) return;
+
+    const file = placementSounds[placementIndex];
+    console.log("Placement play:", file);
+
+    if (placementAudio) {
+      placementAudio.pause();
+      placementAudio.currentTime = 0;
     }
 
-    function vibrate(ms) {
-      if ("vibrate" in navigator) navigator.vibrate(ms);
-    }
+    placementAudio = new Audio(file);
+    placementAudio.preload = "auto";
+    placementAudio.volume = 1.0;
 
-    function stopPlacement() {
-      placementActive = false;
-
-      if (placementAudio) {
-        placementAudio.pause();
-        placementAudio.currentTime = 0;
-      }
-    }
-
-    function playNextPlacement() {
-      if (!placementActive) return;
-
-      const file = placementSounds[placementIndex];
-
-      if (placementAudio) {
-        placementAudio.pause();
-        placementAudio.currentTime = 0;
-      }
-
-      placementAudio = new Audio(file);
-
-      placementAudio.onended = () => {
-        placementIndex = (placementIndex + 1) % placementSounds.length;
-        playNextPlacement();
-      };
-
-      placementAudio.play().catch(() => {});
-    }
-
-    function playPlacement() {
-      vibrate(25);
-
-      if (placementActive) {
-        stopPlacement();
-        showToast("⛔ Placement arrêté");
-        return;
-      }
-
-      // stop autres sons si besoin
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      placementActive = true;
-      placementIndex = 0;
-
+    placementAudio.onended = () => {
+      placementIndex = (placementIndex + 1) % placementSounds.length;
       playNextPlacement();
-      showToast("🧩 Placement...");
-    }
+    };
 
-    function playDoor() {
-      vibrate(40);
-
-      if (parent && parent.stopAmbianceFromFrame) {
-        parent.stopAmbianceFromFrame();
-      }
-
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
-
+    placementAudio.onerror = () => {
+      console.log("Erreur audio placement:", file);
+      showToast("❌ Impossible de lire " + file);
       stopPlacement();
+    };
 
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
+    placementAudio.play()
+      .then(() => {
+        showToast("🧩 Placement...");
+      })
+      .catch((err) => {
+        console.log("Play bloqué:", file, err);
+        showToast("❌ Son bloqué : " + file);
+        stopPlacement();
+      });
+  }
 
-      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
-      currentAudio = new Audio(file);
-      currentAudio.play().catch(() => {});
-      showToast("🚪 Porte...");
-    }
+  function playPlacement() {
+    vibrate(25);
 
-    function playAmbiance() {
-      vibrate(30);
-
-      if (!ambianceSounds.length) {
-        showToast("Aucun son configuré.");
-        return;
-      }
-
+    if (placementActive) {
       stopPlacement();
-
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
-
-      const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
-      ambianceAudio = new Audio(file);
-      ambianceAudio.loop = true;
-      ambianceAudio.volume = 0.8;
-      ambianceAudio.play().catch(() => {});
-      showToast("🎵 Ambiance lancée.");
+      showToast("⛔ Placement arrêté");
+      return;
     }
-  </script>
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+
+    if (ambianceAudio) {
+      ambianceAudio.pause();
+      ambianceAudio.currentTime = 0;
+    }
+
+    placementActive = true;
+    placementIndex = 0;
+    playNextPlacement();
+  }
+
+  function playDoor() {
+    vibrate(40);
+
+    if (parent && parent.stopAmbianceFromFrame) {
+      parent.stopAmbianceFromFrame();
+    }
+
+    if (ambianceAudio) {
+      ambianceAudio.pause();
+      ambianceAudio.currentTime = 0;
+    }
+
+    stopPlacement();
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+
+    const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
+    currentAudio = new Audio(file);
+    currentAudio.play().catch(() => {});
+    showToast("🚪 Porte...");
+  }
+
+  function playAmbiance() {
+    vibrate(30);
+
+    if (!ambianceSounds.length) {
+      showToast("Aucun son configuré.");
+      return;
+    }
+
+    stopPlacement();
+
+    if (ambianceAudio) {
+      ambianceAudio.pause();
+      ambianceAudio.currentTime = 0;
+    }
+
+    const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
+    ambianceAudio = new Audio(file);
+    ambianceAudio.loop = true;
+    ambianceAudio.volume = 0.8;
+    ambianceAudio.play().catch(() => {});
+    showToast("🎵 Ambiance lancée.");
+  }
+</script>
 
 </body>
 </html>
