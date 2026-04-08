@@ -159,14 +159,25 @@
       "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
     ];
 
-    // ⬇️ Ajoute tes sons d'ambiance locale ici
     const ambianceSounds = [
       "ambiance1.mp3"
     ];
 
-    let currentAudio  = null;
+    const placementSounds = [
+      "tick1.mp3",
+      "tick2.mp3",
+      "tick3.mp3",
+      "tick4.mp3"
+    ];
+
+    let currentAudio = null;
     let ambianceAudio = null;
-    let toastTimer    = null;
+    let placementAudio = null;
+
+    let placementActive = false;
+    let placementIndex = 0;
+
+    let toastTimer = null;
 
     function showToast(msg) {
       const t = document.getElementById("toast");
@@ -180,22 +191,71 @@
       if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
-    // Bouton Portes : arrête la musique d'ambiance + joue un son de porte
+    function stopPlacement() {
+      placementActive = false;
+
+      if (placementAudio) {
+        placementAudio.pause();
+        placementAudio.currentTime = 0;
+      }
+    }
+
+    function playNextPlacement() {
+      if (!placementActive) return;
+
+      const file = placementSounds[placementIndex];
+
+      if (placementAudio) {
+        placementAudio.pause();
+        placementAudio.currentTime = 0;
+      }
+
+      placementAudio = new Audio(file);
+
+      placementAudio.onended = () => {
+        placementIndex = (placementIndex + 1) % placementSounds.length;
+        playNextPlacement();
+      };
+
+      placementAudio.play().catch(() => {});
+    }
+
+    function playPlacement() {
+      vibrate(25);
+
+      if (placementActive) {
+        stopPlacement();
+        showToast("⛔ Placement arrêté");
+        return;
+      }
+
+      // stop autres sons si besoin
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      placementActive = true;
+      placementIndex = 0;
+
+      playNextPlacement();
+      showToast("🧩 Placement...");
+    }
+
     function playDoor() {
       vibrate(40);
 
-      // Arrête la musique dans index.html (le parent)
       if (parent && parent.stopAmbianceFromFrame) {
         parent.stopAmbianceFromFrame();
       }
 
-      // Arrête aussi l'ambiance locale si elle jouait
       if (ambianceAudio) {
         ambianceAudio.pause();
         ambianceAudio.currentTime = 0;
       }
 
-      // Arrête le son précédent
+      stopPlacement();
+
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
@@ -207,7 +267,6 @@
       showToast("🚪 Porte...");
     }
 
-    // Bouton Ambiance : joue un son d'ambiance locale en boucle
     function playAmbiance() {
       vibrate(30);
 
@@ -215,6 +274,8 @@
         showToast("Aucun son configuré.");
         return;
       }
+
+      stopPlacement();
 
       if (ambianceAudio) {
         ambianceAudio.pause();
