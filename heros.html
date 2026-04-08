@@ -34,10 +34,7 @@
       flex-wrap: wrap;
     }
 
-    .topbar h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
+    .topbar h1 { margin: 0; font-size: 2rem; }
 
     .topbar a {
       color: white;
@@ -46,29 +43,6 @@
       padding: 10px 14px;
       border-radius: 10px;
       font-weight: bold;
-    }
-
-    /* Bouton Spotify relancer - centré au-dessus de la grille */
-    .spotify-relancer {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .spotify-relancer button {
-      background: #1db954;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.35);
-      transition: transform 0.1s ease;
-    }
-
-    .spotify-relancer button:active {
-      transform: scale(0.96);
     }
 
     .grid {
@@ -94,9 +68,7 @@
       padding: 0;
     }
 
-    .btn:active {
-      transform: scale(0.97);
-    }
+    .btn:active { transform: scale(0.97); }
 
     .btn img {
       width: 100%;
@@ -121,7 +93,6 @@
       z-index: 2;
     }
 
-    /* Toast notification discrète */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -149,18 +120,9 @@
         grid-template-columns: repeat(2, minmax(130px, 1fr));
         gap: 16px;
       }
-
-      .btn {
-        height: 220px;
-      }
-
-      .btn span {
-        font-size: 0.95rem;
-      }
-
-      .topbar h1 {
-        font-size: 1.7rem;
-      }
+      .btn { height: 220px; }
+      .btn span { font-size: 0.95rem; }
+      .topbar h1 { font-size: 1.7rem; }
     }
   </style>
 </head>
@@ -171,11 +133,6 @@
     <div class="topbar">
       <h1>Héros ⚔️</h1>
       <a href="index.html">← Retour</a>
-    </div>
-
-    <!-- Bouton Relancer Spotify -->
-    <div class="spotify-relancer">
-      <button onclick="playSpotify()">🎵 Relancer Spotify</button>
     </div>
 
     <div class="grid">
@@ -190,13 +147,11 @@
         <span>Pièges</span>
       </a>
 
-      <!-- PORTE : arrête Spotify + joue son de porte -->
       <button class="btn" onclick="playDoor()">
         <img src="portes.png" alt="Portes">
         <span>Portes</span>
       </button>
 
-      <!-- AMBIANCE : joue un son d'ambiance local (pas Spotify) -->
       <button class="btn" onclick="playAmbiance()">
         <img src="musique.png" alt="Ambiance">
         <span>Ambiance</span>
@@ -206,186 +161,86 @@
 
   </div>
 
-  <!-- Toast notification -->
   <div id="toast"></div>
 
   <script>
-    const CLIENT_ID    = "a0be0072df274f70ab0c1ab08a66b890";
-    const PLAYLIST_ID  = "3xaIM6iYEAGEOA7zCKd4lF";
-
-    const doorSounds = ["porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"];
-
-    // ⬇️ Ajoute tes sons d'ambiance ici quand tu les auras
-    const ambianceSounds = [
-      // "ambiance1.mp3",
+    const doorSounds = [
+      "porte1.mp3",
+      "porte2.mp3",
+      "porte3.mp3",
+      "porte4.mp3",
+      "porte5.m4a"
     ];
 
-    let currentAudio = null;
-    let toastTimer   = null;
+    // ⬇️ Ajoute tes sons d'ambiance locale ici
+    const ambianceSounds = [
+      "ambiance1.mp3"
+    ];
 
-    // ── Toast ──────────────────────────────────────────────
+    let currentAudio  = null;
+    let ambianceAudio = null;
+    let toastTimer    = null;
+
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.classList.add("show");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
     }
 
-    function vibrate(ms) { if ("vibrate" in navigator) navigator.vibrate(ms); }
-
-    // ── Gestion token Spotify ──────────────────────────────
-    function getToken()   { return localStorage.getItem("sp_access")  || ""; }
-    function getRefresh() { return localStorage.getItem("sp_refresh") || ""; }
-    function getExpiry()  { return Number(localStorage.getItem("sp_expires") || 0); }
-
-    function isLoggedIn() { return !!getToken(); }
-
-    async function refreshToken() {
-      const refresh = getRefresh();
-      if (!refresh) return false;
-      try {
-        const res  = await fetch("https://accounts.spotify.com/api/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            grant_type:    "refresh_token",
-            refresh_token: refresh,
-            client_id:     CLIENT_ID,
-          }),
-        });
-        const data = await res.json();
-        if (!data.access_token) return false;
-        localStorage.setItem("sp_access",  data.access_token);
-        localStorage.setItem("sp_expires", String(Date.now() + data.expires_in * 1000));
-        if (data.refresh_token) localStorage.setItem("sp_refresh", data.refresh_token);
-        return true;
-      } catch { return false; }
+    function vibrate(ms) {
+      if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
-    // Renouvelle le token si expiré ou proche de l'expiration (2 min marge)
-    async function ensureToken() {
-      if (!getToken()) return false;
-      if (Date.now() > getExpiry() - 120_000) {
-        return await refreshToken();
+    function stopAll() {
+      // Arrête le son de porte en cours
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
       }
-      return true;
+      // Arrête la musique d'ambiance locale
+      if (ambianceAudio) {
+        ambianceAudio.pause();
+        ambianceAudio.currentTime = 0;
+      }
+      // Signale à index.html d'arrêter aussi (si l'ambiance joue là-bas)
+      sessionStorage.setItem("stopAmbiance", "1");
     }
 
-    // ── Appel API Spotify avec retry auto si 401 ───────────
-    async function spotifyAPI(method, endpoint, body) {
-      const valid = await ensureToken();
-      if (!valid) return null;
+    // Bouton Portes : arrête tout + joue un son de porte aléatoire
+    function playDoor() {
+      vibrate(40);
+      stopAll();
 
-      const opts = {
-        method,
-        headers: { Authorization: "Bearer " + getToken() },
-      };
-      if (body) {
-        opts.headers["Content-Type"] = "application/json";
-        opts.body = JSON.stringify(body);
-      }
-
-      let res = await fetch("https://api.spotify.com/v1" + endpoint, opts);
-
-      // Token expiré → on rafraîchit et on réessaie une fois
-      if (res.status === 401) {
-        const ok = await refreshToken();
-        if (!ok) return null;
-        opts.headers.Authorization = "Bearer " + getToken();
-        res = await fetch("https://api.spotify.com/v1" + endpoint, opts);
-      }
-
-      return res;
-    }
-
-    // ── Pause Spotify ──────────────────────────────────────
-   async function pauseSpotify() {
-  if (!isLoggedIn()) return false;
-  try {
-    const res = await spotifyAPI("PUT", "/me/player/pause");
-    const status = res ? res.status : "null";
-    showToast("Pause status: " + status);
-    return res && (res.status === 204 || res.status === 200);
-  } catch(e) {
-    showToast("Erreur: " + e.message);
-    return false;
-  }
-}
-
-    // ── Play Spotify (relancer la playlist) ───────────────
-    async function playSpotify() {
-      if (!isLoggedIn()) {
-        showToast("⚠️ Connecte Spotify d'abord");
-        return;
-      }
-      showToast("🎵 Relance Spotify...");
-      try {
-        // Tente de reprendre la lecture en cours
-        let res = await spotifyAPI("PUT", "/me/player/play");
-
-        // Si pas de device actif (404/403) → relancer la playlist directement
-        if (!res || res.status === 404 || res.status === 403) {
-          res = await spotifyAPI("PUT", "/me/player/play", {
-            context_uri: "spotify:playlist:" + PLAYLIST_ID,
-          });
-        }
-
-        if (res && (res.status === 204 || res.status === 200)) {
-          showToast("🎵 Spotify relancé !");
-        } else {
-          showToast("⚠️ Spotify ouvert — lance la playlist manuellement");
-        }
-      } catch {
-        showToast("Erreur réseau Spotify");
-      }
-    }
-
-    // ── Son local ──────────────────────────────────────────
-    function playLocal(file) {
-      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
       currentAudio = new Audio(file);
       currentAudio.play().catch(() => {});
+      showToast("🚪 Porte...");
     }
 
-    // ── Bouton Porte : pause Spotify + son de porte ────────
-    async function playDoor() {
-      vibrate(40);
-      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
-
-      if (isLoggedIn()) {
-        showToast("🚪 Porte...");
-        // Pause Spotify en parallèle du son pour éviter le délai
-        pauseSpotify();
-        playLocal(file);
-      } else {
-        // Pas connecté → juste jouer le son
-        showToast("🚪 Porte (Spotify non connecté)");
-        playLocal(file);
-      }
-    }
-
-    // ── Bouton Ambiance : son local ────────────────────────
+    // Bouton Ambiance : joue un son d'ambiance en boucle
     function playAmbiance() {
       vibrate(30);
+
       if (!ambianceSounds.length) {
-        showToast("Aucun son d'ambiance configuré.");
+        showToast("Aucun son configuré.");
         return;
       }
-      const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
-      showToast("🎵 Ambiance lancée.");
-      playLocal(file);
-    }
 
-    // ── Vérif au chargement ────────────────────────────────
-    window.addEventListener("load", () => {
-      if (!isLoggedIn()) {
-        showToast("⚠️ Spotify non connecté — appuie sur Connexion");
-      } else {
-        // Rafraîchit le token silencieusement si nécessaire
-        ensureToken();
+      // Arrête le son précédent
+      if (ambianceAudio) {
+        ambianceAudio.pause();
+        ambianceAudio.currentTime = 0;
       }
-    });
+
+      const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
+      ambianceAudio = new Audio(file);
+      ambianceAudio.loop = true;
+      ambianceAudio.volume = 0.8;
+      ambianceAudio.play().catch(() => {});
+      showToast("🎵 Ambiance lancée.");
+    }
   </script>
 
 </body>
