@@ -26,6 +26,7 @@
       align-items: center;
       margin-bottom: 25px;
       gap: 15px;
+      flex-wrap: wrap;
     }
 
     .topbar h1 {
@@ -33,14 +34,29 @@
       font-size: 32px;
     }
 
-    .topbar a {
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .topbar-btn {
       color: white;
-      text-decoration: none;
-      background: rgba(0,0,0,0.6);
       padding: 10px 14px;
       border-radius: 10px;
       font-weight: bold;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
       white-space: nowrap;
+    }
+
+    .turn-btn {
+      background: rgba(255,140,0,0.85);
+    }
+
+    .back-btn {
+      background: rgba(0,0,0,0.6);
     }
 
     .grid {
@@ -53,6 +69,7 @@
     .btn {
       display: block;
       width: 100%;
+      max-width: 220px;
       height: 280px;
       border-radius: 18px;
       overflow: hidden;
@@ -74,7 +91,7 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      background: rgba(0,0,0,0.4);
+      background: transparent;
     }
 
     .btn span {
@@ -92,13 +109,31 @@
       z-index: 2;
     }
 
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(0,0,0,0.82);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     @media (max-width: 480px) {
       .app {
         padding: 16px;
-      }
-
-      .topbar {
-        flex-wrap: wrap;
       }
 
       .topbar h1 {
@@ -123,7 +158,11 @@
 
     <div class="topbar">
       <h1>Zargon</h1>
-      <button onclick="parent.navigateTo('accueil.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;white-space:nowrap;">← Retour</button>
+
+      <div class="topbar-actions">
+        <button class="topbar-btn turn-btn" onclick="startTurn()">🔥 Début du tour</button>
+        <button class="topbar-btn back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+      </div>
     </div>
 
     <div class="grid">
@@ -134,29 +173,144 @@
       </button>
 
       <button class="btn" onclick="parent.navigateTo('sortdelaterreur.html')">
-        <img src="sortdelaterreur.png" alt="Sort de la terreur">
+        <img src="sortdelaterreur.png" alt="Sorts de la terreur">
         <span>Sorts de la terreur</span>
       </button>
 
-            <!-- 🎲 DÉS ATTAQUE -->
       <button class="btn" onclick="playAttackDice()">
         <img src="des_att_zargon.png" alt="Dés attaque">
         <span>Dés Attaque</span>
       </button>
 
-      <!-- 🛡️ DÉS DÉFENSE -->
       <button class="btn" onclick="playDefenseDice()">
         <img src="des_def_zargon.png" alt="Dés défense">
         <span>Dés Défense</span>
       </button>
 
       <button class="btn" onclick="playAmbiance()">
-      <img src="musique_zargon.png" alt="Combats">
-      <span>Musique</span>
-    </button>
+        <img src="musique_zargon.png" alt="Musique">
+        <span>Musique</span>
+      </button>
 
     </div>
 
   </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const attackSounds = [
+      "combat.mp3",
+      "combat2.mp3",
+      "combat3.mp3",
+      "combat4.mp3",
+      "combat5.mp3",
+      "combat6.mp3"
+    ];
+
+    const defenseSounds = [
+      "block1.mp3",
+      "block2.mp3",
+      "block3.mp3",
+      "block4.mp3",
+      "block5.mp3"
+    ];
+
+    const ambianceSounds = [
+      "ambiance_zargon.mp3"
+    ];
+
+    let attackAudio = null;
+    let defenseAudio = null;
+    let ambianceAudio = null;
+    let toastTimer = null;
+
+    let lastAttackIndex = -1;
+    let lastDefenseIndex = -1;
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    function vibrate(pattern) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    function startTurn() {
+      vibrate(40);
+      showToast("🔥 Début du tour !");
+    }
+
+    function playAttackDice() {
+      vibrate(40);
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * attackSounds.length);
+      } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
+
+      lastAttackIndex = randomIndex;
+
+      if (attackAudio) {
+        attackAudio.pause();
+        attackAudio.currentTime = 0;
+      }
+
+      attackAudio = new Audio(attackSounds[randomIndex]);
+      attackAudio.preload = "auto";
+      attackAudio.volume = 1.0;
+      attackAudio.play().catch(() => {});
+      showToast("💀 Dés attaque");
+    }
+
+    function playDefenseDice() {
+      vibrate(30);
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * defenseSounds.length);
+      } while (randomIndex === lastDefenseIndex && defenseSounds.length > 1);
+
+      lastDefenseIndex = randomIndex;
+
+      if (defenseAudio) {
+        defenseAudio.pause();
+        defenseAudio.currentTime = 0;
+      }
+
+      defenseAudio = new Audio(defenseSounds[randomIndex]);
+      defenseAudio.preload = "auto";
+      defenseAudio.volume = 1.0;
+      defenseAudio.play().catch(() => {});
+      showToast("🛡️ Dés défense");
+    }
+
+    function playAmbiance() {
+      vibrate(30);
+
+      if (!ambianceSounds.length) {
+        showToast("Aucun son configuré.");
+        return;
+      }
+
+      if (ambianceAudio) {
+        ambianceAudio.pause();
+        ambianceAudio.currentTime = 0;
+      }
+
+      const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
+      ambianceAudio = new Audio(file);
+      ambianceAudio.loop = true;
+      ambianceAudio.volume = 0.8;
+      ambianceAudio.play().catch(() => {});
+      showToast("🎵 Musique lancée");
+    }
+  </script>
 </body>
 </html>
