@@ -43,6 +43,7 @@
     .topbar img.logo {
       height: 48px;
       object-fit: contain;
+      cursor: pointer;
     }
 
     .controls {
@@ -65,6 +66,34 @@
     }
 
     .btn-play:active { transform: scale(0.96); }
+
+    .btn-heroes {
+      background: rgba(40,120,255,0.9);
+      color: white;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-heroes:active { transform: scale(0.96); }
+
+    .btn-zargon {
+      background: rgba(170,40,255,0.9);
+      color: white;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-zargon:active { transform: scale(0.96); }
 
     .btn-stop {
       background: rgba(180,0,0,0.8);
@@ -94,6 +123,27 @@
 
     .btn-home:active { transform: scale(0.96); }
 
+    #statusBar {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 101;
+      background: rgba(0,0,0,0.65);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      white-space: nowrap;
+    }
+
+    #statusBar.show {
+      opacity: 1;
+    }
+
     /* ── Iframe qui prend tout l'espace sous la topbar ── */
     #frame {
       position: fixed;
@@ -107,13 +157,16 @@
       background: transparent;
     }
 
-    /* Ajustement si la topbar prend plus de place sur petit écran */
     @media (max-width: 480px) {
       .topbar { padding: 8px 12px; }
       .topbar img.logo { height: 36px; }
-      .btn-play, .btn-stop, .btn-home {
+      .btn-play, .btn-stop, .btn-home, .btn-heroes, .btn-zargon {
         font-size: 0.85rem;
         padding: 8px 12px;
+      }
+      #statusBar {
+        top: 96px;
+        font-size: 0.82rem;
       }
     }
   </style>
@@ -125,51 +178,169 @@
   <div class="topbar">
     <img class="logo" src="hqentete.png" alt="Hero Quest" onclick="goHome()">
     <div class="controls">
-      <button class="btn-home" onclick="goHome()">🏠 Accueil</button>
-      <button class="btn-play" onclick="lancerImmersion()">🎵 Immersion</button>
-      <button class="btn-stop" onclick="stopImmersion()">⏹ Stop</button>
+      <button class="btn-home" onclick="goHome()"> 🏠 </button>
+      <button class="btn-play" onclick="lancerImmersion()">🎵 Amb </button>
+      <button class="btn-heroes" onclick="playHeroMusic()">🎵 Héros</button>
+      <button class="btn-zargon" onclick="playZargonMusic()">🎵 Zargon</button>
+      <button class="btn-stop" onclick="stopAllMusic()">⏹ Stop</button>
     </div>
   </div>
 
-  <!-- Toutes les pages chargent ici — la musique ne s'arrête jamais -->
+  <div id="statusBar"></div>
+
+  <!-- Toutes les pages chargent ici — la musique continue -->
   <iframe id="frame" src="accueil.html"></iframe>
 
   <script>
-    const AMBIANCE_FILE = "ambiance1.mp3";
-    let ambianceAudio = null;
+    const immersionSounds = [
+      "ambiance1.mp3"
+    ];
+
+    const heroMusicSounds = [
+      "muz_heros1.mp3",
+      "muz_heros2.mp3",
+      "muz_heros3.mp3",
+      "muz_heros4.mp3",
+      "muz_heros5.mp3",
+      "muz_heros6.mp3",
+      "muz_heros7.mp3",
+      "muz_heros8.mp3"
+    ];
+
+    const zargonMusicSounds = [
+      "muz_zargon1.mp3",
+      "muz_zargon2.mp3",
+      "muz_zargon3.mp3",
+      "muz_zargon4.mp3",
+      "muz_zargon5.mp3",
+      "muz_zargon6.mp3",
+      "muz_zargon7.mp3",
+      "muz_zargon8.mp3"
+    ];
+
+    let fixedAudio = null;
+    let fixedMode = null; // "immersion" | "heroes" | "zargon" | null
+    let fixedPlaylist = [];
+    let fixedIndex = 0;
+    let statusTimer = null;
+
+    function showStatus(message) {
+      const bar = document.getElementById("statusBar");
+      bar.textContent = message;
+      bar.classList.add("show");
+
+      clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => {
+        bar.classList.remove("show");
+      }, 1800);
+    }
+
+    function stopCurrentFixedAudio() {
+      if (fixedAudio) {
+        fixedAudio.pause();
+        fixedAudio.currentTime = 0;
+        fixedAudio.onended = null;
+        fixedAudio.onerror = null;
+      }
+      fixedAudio = null;
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildPlaylist(sourceArray) {
+      fixedPlaylist = shuffleArray(sourceArray);
+      fixedIndex = 0;
+    }
+
+    function playNextFixedTrack() {
+      if (!fixedMode || !fixedPlaylist.length) return;
+
+      if (fixedIndex >= fixedPlaylist.length) {
+        buildPlaylist(fixedPlaylist);
+      }
+
+      const file = fixedPlaylist[fixedIndex];
+      stopCurrentFixedAudio();
+
+      fixedAudio = new Audio(file);
+      fixedAudio.preload = "auto";
+      fixedAudio.volume = 0.8;
+
+      fixedAudio.onended = () => {
+        fixedIndex++;
+        if (fixedIndex >= fixedPlaylist.length) {
+          if (fixedMode === "immersion") {
+            buildPlaylist(immersionSounds);
+          } else if (fixedMode === "heroes") {
+            buildPlaylist(heroMusicSounds);
+          } else if (fixedMode === "zargon") {
+            buildPlaylist(zargonMusicSounds);
+          }
+        }
+        playNextFixedTrack();
+      };
+
+      fixedAudio.onerror = () => {
+        console.log("Erreur audio fixe:", file);
+        fixedIndex++;
+        playNextFixedTrack();
+      };
+
+      fixedAudio.play().catch((err) => {
+        console.log("Lecture impossible:", file, err);
+      });
+    }
+
+    function startFixedPlaylist(mode, sounds, label) {
+      fixedMode = mode;
+      buildPlaylist(sounds);
+      playNextFixedTrack();
+      showStatus(label);
+    }
 
     function lancerImmersion() {
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
-      ambianceAudio = new Audio(AMBIANCE_FILE);
-      ambianceAudio.loop = true;
-      ambianceAudio.volume = 0.8;
-      ambianceAudio.play().catch(() => {});
+      startFixedPlaylist("immersion", immersionSounds, "🎵 Immersion lancée");
+    }
+
+    function playHeroMusic() {
+      startFixedPlaylist("heroes", heroMusicSounds, "🛡️ Musique Héros lancée");
+    }
+
+    function playZargonMusic() {
+      startFixedPlaylist("zargon", zargonMusicSounds, "💀 Musique Zargon lancée");
+    }
+
+    function stopAllMusic() {
+      stopCurrentFixedAudio();
+      fixedMode = null;
+      fixedPlaylist = [];
+      fixedIndex = 0;
+      showStatus("⏹ Musique arrêtée");
     }
 
     function stopImmersion() {
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
+      stopAllMusic();
     }
 
     function goHome() {
       document.getElementById("frame").src = "accueil.html";
     }
 
-    // Les pages dans l'iframe appellent cette fonction pour naviguer
-    // sans quitter index.html
     function navigateTo(page) {
       document.getElementById("frame").src = page;
     }
 
-    // Les pages dans l'iframe appellent ça pour arrêter la musique
-    // (ex: quand un son de porte joue)
+    // Les pages dans l'iframe peuvent appeler ça,
+    // mais maintenant on ne stoppe plus automatiquement la musique fixe.
     function stopAmbianceFromFrame() {
-      stopImmersion();
+      // volontairement vide
     }
   </script>
 
