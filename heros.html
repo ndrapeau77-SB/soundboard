@@ -160,7 +160,14 @@
   ];
 
   const ambianceSounds = [
-    "ambiance1.mp3"
+    "muz_heros1.mp3",
+    "muz_heros2.mp3",
+    "muz_heros3.mp3",
+    "muz_heros4.mp3",
+    "muz_heros5.mp3",
+    "muz_heros6.mp3",
+    "muz_heros7.mp3",
+    "muz_heros8.mp3"
   ];
 
   const placementSounds = [
@@ -176,6 +183,10 @@
 
   let placementActive = false;
   let placementIndex = 0;
+
+  let ambianceActive = false;
+  let ambianceOrder = [];
+  let ambianceOrderIndex = 0;
 
   let toastTimer = null;
 
@@ -199,6 +210,74 @@
       placementAudio.currentTime = 0;
       placementAudio = null;
     }
+  }
+
+  function stopAmbiance() {
+    ambianceActive = false;
+    ambianceOrder = [];
+    ambianceOrderIndex = 0;
+
+    if (ambianceAudio) {
+      ambianceAudio.pause();
+      ambianceAudio.currentTime = 0;
+      ambianceAudio = null;
+    }
+  }
+
+  function shuffleArray(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function buildAmbianceOrder() {
+    ambianceOrder = shuffleArray(ambianceSounds);
+    ambianceOrderIndex = 0;
+  }
+
+  function playNextAmbiance() {
+    if (!ambianceActive) return;
+
+    if (!ambianceOrder.length || ambianceOrderIndex >= ambianceOrder.length) {
+      buildAmbianceOrder();
+    }
+
+    const file = ambianceOrder[ambianceOrderIndex];
+
+    if (ambianceAudio) {
+      ambianceAudio.pause();
+      ambianceAudio.currentTime = 0;
+    }
+
+    ambianceAudio = new Audio(file);
+    ambianceAudio.preload = "auto";
+    ambianceAudio.volume = 0.8;
+
+    ambianceAudio.onended = () => {
+      ambianceOrderIndex++;
+      playNextAmbiance();
+    };
+
+    ambianceAudio.onerror = () => {
+      console.log("Erreur audio ambiance:", file);
+      showToast("❌ Impossible de lire " + file);
+      ambianceOrderIndex++;
+      if (ambianceActive) playNextAmbiance();
+    };
+
+    ambianceAudio.play()
+      .then(() => {
+        showToast("🎵 Musique...");
+      })
+      .catch((err) => {
+        console.log("Play ambiance bloqué:", file, err);
+        showToast("❌ Son bloqué : " + file);
+        ambianceOrderIndex++;
+        if (ambianceActive) playNextAmbiance();
+      });
   }
 
   function playNextPlacement() {
@@ -252,9 +331,10 @@
       currentAudio.currentTime = 0;
     }
 
-    if (ambianceAudio) {
-      ambianceAudio.pause();
-      ambianceAudio.currentTime = 0;
+    stopAmbiance();
+
+    if (parent && parent.stopAmbianceFromFrame) {
+      parent.stopAmbianceFromFrame();
     }
 
     placementActive = true;
@@ -269,11 +349,7 @@
       parent.stopAmbianceFromFrame();
     }
 
-    if (ambianceAudio) {
-      ambianceAudio.pause();
-      ambianceAudio.currentTime = 0;
-    }
-
+    stopAmbiance();
     stopPlacement();
 
     if (currentAudio) {
@@ -295,19 +371,28 @@
       return;
     }
 
-    stopPlacement();
-
-    if (ambianceAudio) {
-      ambianceAudio.pause();
-      ambianceAudio.currentTime = 0;
+    // stop immersion du parent
+    if (parent && parent.stopAmbianceFromFrame) {
+      parent.stopAmbianceFromFrame();
     }
 
-    const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
-    ambianceAudio = new Audio(file);
-    ambianceAudio.loop = true;
-    ambianceAudio.volume = 0.8;
-    ambianceAudio.play().catch(() => {});
-    showToast("🎵 Ambiance lancée.");
+    // toggle ON/OFF
+    if (ambianceActive) {
+      stopAmbiance();
+      showToast("⛔ Musique arrêtée");
+      return;
+    }
+
+    stopPlacement();
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+
+    ambianceActive = true;
+    buildAmbianceOrder();
+    playNextAmbiance();
   }
 </script>
 
