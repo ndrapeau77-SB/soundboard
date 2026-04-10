@@ -149,24 +149,20 @@
   <div class="topbar">
     <img class="logo" src="hqentete.png" alt="Hero Quest" onclick="goHome()">
     <div class="controls">
-      <button class="btn-home" onclick="goHome()"> 🏠 </button>
-      <button class="btn-play" onclick="lancerImmersion()">Amb</button>
+      <button class="btn-home" onclick="goHome()">🏠</button>
+      <button class="btn-play" onclick="toggleImmersion()">Amb</button>
       <button class="btn-heroes" onclick="playHeroMusic()">Héros</button>
       <button class="btn-zargon" onclick="playZargonMusic()">Zargon</button>
-      <button class="btn-stop" onclick="stopAllMusic()"> ⏹ </button>
+      <button class="btn-stop" onclick="stopAllMusic()">⏹</button>
     </div>
   </div>
 
   <div id="statusBar"></div>
-
   <iframe id="frame" src="accueil.html"></iframe>
 
   <script src="audio-utils.js"></script>
   <script>
-    const immersionSounds = [
-      "ambiance1.mp3"
-    ];
-
+    const immersionSounds = ["ambiance1.mp3"];
     const heroMusicSounds = [
       "muz_heros1.mp3",
       "muz_heros2.mp3",
@@ -177,10 +173,7 @@
       "muz_heros7.mp3",
       "muz_heros8.mp3"
     ];
-
-    const zargonMusicSounds = [
-      "war_drums.mp3"
-    ];
+    const zargonMusicSounds = ["war_drums.mp3"];
 
     let fixedAudio = null;
     let fixedMode = null;
@@ -188,19 +181,26 @@
     let fixedIndex = 0;
     let statusTimer = null;
 
+    let immersionPaused = false;
+    let immersionResumeTrack = null;
+    let immersionResumeTime = 0;
+
     function showStatus(message) {
       const bar = document.getElementById("statusBar");
       bar.textContent = message;
       bar.classList.add("show");
-
       clearTimeout(statusTimer);
-      statusTimer = setTimeout(() => {
-        bar.classList.remove("show");
-      }, 1800);
+      statusTimer = setTimeout(() => bar.classList.remove("show"), 1800);
     }
 
-    function stopCurrentFixedAudio() {
+    function stopCurrentFixedAudio({ preserveImmersion = false } = {}) {
       if (fixedAudio) {
+        if (preserveImmersion && fixedMode === "immersion") {
+          immersionResumeTrack = fixedPlaylist[fixedIndex] || null;
+          immersionResumeTime = fixedAudio.currentTime || 0;
+          immersionPaused = true;
+        }
+
         fixedAudio.pause();
         fixedAudio.currentTime = 0;
         fixedAudio.onended = null;
@@ -223,7 +223,20 @@
       fixedIndex = 0;
     }
 
-    function playNextFixedTrack() {
+    async function playFixedFile(file, volume = 0.8, resumeTime = 0) {
+      stopCurrentFixedAudio();
+
+      fixedAudio = new Audio(file);
+      fixedAudio.preload = "auto";
+      fixedAudio.volume = 0;
+      fixedAudio.currentTime = resumeTime;
+
+      await fixedAudio.play();
+      fadeIn(fixedAudio, 250, volume);
+      return fixedAudio;
+    }
+
+    async function playNextFixedTrack() {
       if (!fixedMode || !fixedPlaylist.length) return;
 
       if (fixedIndex >= fixedPlaylist.length) {
@@ -237,37 +250,87 @@
       }
 
       const file = fixedPlaylist[fixedIndex];
-      stopCurrentFixedAudio();
 
-      fixedAudio = new Audio(file);
-      fixedAudio.preload = "auto";
-      fixedAudio.volume = 0.8;
+      try {
+        const audio = await playFixedFile(file, 0.8, 0);
 
-      fixedAudio.onended = () => {
-        fixedIndex++;
-        playNextFixedTrack();
-      };
+        audio.onended = () => {
+          fixedIndex++;
+          playNextFixedTrack();
+        };
 
-      fixedAudio.onerror = () => {
-        console.log("Erreur audio fixe:", file);
-        fixedIndex++;
-        playNextFixedTrack();
-      };
-
-      fixedAudio.play().catch((err) => {
+        audio.onerror = () => {
+          console.log("Erreur audio fixe:", file);
+          fixedIndex++;
+          playNextFixedTrack();
+        };
+      } catch (err) {
         console.log("Lecture impossible:", file, err);
-      });
+      }
+    }
+
+    async function resumeImmersion() {
+      if (!immersionResumeTrack) {
+        buildPlaylist(immersionSounds);
+        fixedMode = "immersion";
+        await playNextFixedTrack();
+        return;
+      }
+
+      fixedMode = "immersion";
+      fixedPlaylist = [immersionResumeTrack];
+      fixedIndex = 0;
+
+      try {
+        const audio = await playFixedFile(immersionResumeTrack, 0.8, immersionResumeTime);
+
+        audio.onended = () => {
+          immersionPaused = false;
+          immersionResumeTrack = null;
+          immersionResumeTime = 0;
+          buildPlaylist(immersionSounds);
+          playNextFixedTrack();
+        };
+
+        audio.onerror = () => {
+          immersionPaused = false;
+          immersionResumeTrack = null;
+          immersionResumeTime = 0;
+          buildPlaylist(immersionSounds);
+          playNextFixedTrack();
+        };
+
+        immersionPaused = false;
+        showStatus("🎵 Immersion reprise");
+      } catch (err) {
+        console.log("Reprise impossible:", err);
+      }
     }
 
     function startFixedPlaylist(mode, sounds, label) {
-      stopCurrentFixedAudio();
+      immersionPaused = false;
+      immersionResumeTrack = null;
+      immersionResumeTime = 0;
+
       fixedMode = mode;
       buildPlaylist(sounds);
       playNextFixedTrack();
       showStatus(label);
     }
 
-    function lancerImmersion() {
+    function toggleImmersion() {
+      if (fixedMode === "immersion" && fixedAudio) {
+        stopCurrentFixedAudio({ preserveImmersion: true });
+        fixedMode = null;
+        showStatus("⏸ Immersion en pause");
+        return;
+      }
+
+      if (immersionPaused) {
+        resumeImmersion();
+        return;
+      }
+
       startFixedPlaylist("immersion", immersionSounds, "🎵 Immersion lancée");
     }
 
@@ -279,8 +342,18 @@
       startFixedPlaylist("zargon", zargonMusicSounds, "💀 Musique Zargon lancée");
     }
 
-    function stopAllMusic() {
-      stopCurrentFixedAudio();
+    async function stopAllMusic() {
+      immersionPaused = false;
+      immersionResumeTrack = null;
+      immersionResumeTime = 0;
+
+      if (fixedAudio) {
+        await fadeOut(fixedAudio, 220);
+        fixedAudio.onended = null;
+        fixedAudio.onerror = null;
+      }
+
+      fixedAudio = null;
       fixedMode = null;
       fixedPlaylist = [];
       fixedIndex = 0;
@@ -299,7 +372,6 @@
       document.getElementById("frame").src = page;
     }
 
-    // IMPORTANT : les pages enfants peuvent couper toute musique fixe
     function stopAmbianceFromFrame() {
       stopAllMusic();
     }
