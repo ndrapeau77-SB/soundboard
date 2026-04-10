@@ -211,13 +211,11 @@
       "block5.mp3"
     ];
 
-    const ambianceSounds = [
-      "war_horn.mp3"
-    ];
+    const turnStartSound = "war_horn.mp3";
 
     let attackAudio = null;
     let defenseAudio = null;
-    let ambianceAudio = null;
+    let turnAudio = null;
     let toastTimer = null;
 
     let lastAttackIndex = -1;
@@ -238,7 +236,17 @@
     }
 
     function startTurn() {
-      vibrate(40);
+      vibrate([40, 60, 40]);
+
+      if (turnAudio) {
+        turnAudio.pause();
+        turnAudio.currentTime = 0;
+      }
+
+      turnAudio = new Audio(turnStartSound);
+      turnAudio.preload = "auto";
+      turnAudio.volume = 1.0;
+      turnAudio.play().catch(() => {});
       showToast("🔥 Début du tour !");
     }
 
@@ -284,27 +292,6 @@
       defenseAudio.volume = 1.0;
       defenseAudio.play().catch(() => {});
       showToast("🛡️ Dés défense");
-    }
-
-    function playAmbiance() {
-      vibrate(30);
-
-      if (!ambianceSounds.length) {
-        showToast("Aucun son configuré.");
-        return;
-      }
-
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
-
-      const file = ambianceSounds[Math.floor(Math.random() * ambianceSounds.length)];
-      ambianceAudio = new Audio(file);
-      ambianceAudio.loop = true;
-      ambianceAudio.volume = 0.8;
-      ambianceAudio.play().catch(() => {});
-      showToast("🎵 Musique lancée");
     }
   </script>
 </body>
