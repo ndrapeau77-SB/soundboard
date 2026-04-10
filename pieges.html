@@ -96,6 +96,12 @@
         <span>Flèche</span>
       </button>
 
+      <!-- Lance -->
+      <button class="btn" onclick="playSound('lance')">
+        <img src="piegelance.png">
+        <span>Lance</span>
+      </button>
+
       <!-- Éboulis -->
       <button class="btn" onclick="playSound('eboulis')">
         <img src="piegeeboulis.png">
@@ -120,8 +126,9 @@
 
   <script>
     const soundFiles = {
-      fleche: "piegefleche.mp3",
-      eboulis: "piegeeboulis.mp3",
+      fleche: "many_arrows.mp3",
+      lance: "piege_lance.mp3",
+      eboulis: "eboulement.mp3",
       oubliette: "piegeoubliette.mp3",
       coffre: "piegecoffre.mp3"
     };
