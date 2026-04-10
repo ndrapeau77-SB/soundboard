@@ -132,23 +132,10 @@
     }
 
     @media (max-width: 480px) {
-      .app {
-        padding: 16px;
-      }
-
-      .topbar h1 {
-        font-size: 28px;
-      }
-
-      .btn {
-        height: 220px;
-        max-width: 100%;
-      }
-
-      .btn span {
-        font-size: 16px;
-        padding: 7px 12px;
-      }
+      .app { padding: 16px; }
+      .topbar h1 { font-size: 28px; }
+      .btn { height: 220px; max-width: 100%; }
+      .btn span { font-size: 16px; padding: 7px 12px; }
     }
   </style>
 </head>
@@ -166,7 +153,6 @@
     </div>
 
     <div class="grid">
-
       <button class="btn" onclick="parent.navigateTo('monstres.html')">
         <img src="monstres.png" alt="Monstres">
         <span>Monstres</span>
@@ -186,7 +172,6 @@
         <img src="des_def_zargon.png" alt="Dés défense">
         <span>Dés Défense</span>
       </button>
-
     </div>
 
   </div>
@@ -236,22 +221,19 @@
       }
     }
 
-    function startTurn() {
+    async function startTurn() {
       vibrate([40, 60, 40]);
 
-      if (turnAudio) {
-        turnAudio.pause();
-        turnAudio.currentTime = 0;
-      }
+      await playManagedAudio("turnAudio", turnStartSound, {
+        volume: 1,
+        fadeInDuration: 180,
+        fadeOutDuration: 120
+      }).catch(() => {});
 
-      turnAudio = new Audio(turnStartSound);
-      turnAudio.preload = "auto";
-      turnAudio.volume = 1.0;
-      turnAudio.play().catch(() => {});
       showToast("🔥 Début du tour !");
     }
 
-    function playAttackDice() {
+    async function playAttackDice() {
       vibrate(40);
 
       let randomIndex;
@@ -261,19 +243,16 @@
 
       lastAttackIndex = randomIndex;
 
-      if (attackAudio) {
-        attackAudio.pause();
-        attackAudio.currentTime = 0;
-      }
+      await playManagedAudio("attackAudio", attackSounds[randomIndex], {
+        volume: 1,
+        fadeInDuration: 100,
+        fadeOutDuration: 100
+      }).catch(() => {});
 
-      attackAudio = new Audio(attackSounds[randomIndex]);
-      attackAudio.preload = "auto";
-      attackAudio.volume = 1.0;
-      attackAudio.play().catch(() => {});
       showToast("💀 Dés attaque");
     }
 
-    function playDefenseDice() {
+    async function playDefenseDice() {
       vibrate(30);
 
       let randomIndex;
@@ -283,15 +262,12 @@
 
       lastDefenseIndex = randomIndex;
 
-      if (defenseAudio) {
-        defenseAudio.pause();
-        defenseAudio.currentTime = 0;
-      }
+      await playManagedAudio("defenseAudio", defenseSounds[randomIndex], {
+        volume: 1,
+        fadeInDuration: 100,
+        fadeOutDuration: 100
+      }).catch(() => {});
 
-      defenseAudio = new Audio(defenseSounds[randomIndex]);
-      defenseAudio.preload = "auto";
-      defenseAudio.volume = 1.0;
-      defenseAudio.play().catch(() => {});
       showToast("🛡️ Dés défense");
     }
   </script>
