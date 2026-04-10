@@ -26,6 +26,7 @@
       align-items: center;
       margin-bottom: 25px;
       gap: 15px;
+      flex-wrap: wrap;
     }
 
     .grid {
@@ -51,7 +52,9 @@
       display: block;
     }
 
-    .btn:active { transform: scale(0.97); }
+    .btn:active {
+      transform: scale(0.97);
+    }
 
     .btn img {
       width: 100%;
@@ -79,12 +82,47 @@
       pointer-events: none;
     }
 
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(0,0,0,0.82);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     @media (max-width: 480px) {
-      .app { padding: 16px; }
-      .topbar { flex-wrap: wrap; }
-      .topbar h1 { margin: 0; font-size: 32px; }
-      .btn { height: 220px; max-width: 100%; }
-      .btn span { font-size: 18px; padding: 12px 8px; }
+      .app {
+        padding: 16px;
+      }
+
+      .topbar h1 {
+        margin: 0;
+        font-size: 32px;
+      }
+
+      .btn {
+        height: 220px;
+        max-width: 100%;
+      }
+
+      .btn span {
+        font-size: 18px;
+        padding: 12px 8px;
+      }
     }
   </style>
 </head>
@@ -94,7 +132,9 @@
 
     <div class="topbar">
       <h1>Combats ⚔️</h1>
-      <button onclick="parent.navigateTo('heros.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;white-space:nowrap;">← Retour</button>
+      <button onclick="parent.navigateTo('heros.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;white-space:nowrap;">
+        ← Retour
+      </button>
     </div>
 
     <div class="grid">
@@ -121,6 +161,8 @@
 
   </div>
 
+  <div id="toast"></div>
+
   <script src="audio-utils.js"></script>
   <script>
     const attackSounds = [
@@ -146,6 +188,15 @@
 
     let lastAttackIndex = -1;
     let lastDefenseIndex = -1;
+    let toastTimer = null;
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+    }
 
     function vibrate(pattern) {
       if ("vibrate" in navigator) {
@@ -168,6 +219,8 @@
         fadeInDuration: 100,
         fadeOutDuration: 100
       }).catch(() => {});
+
+      showToast("⚔️ Attaque");
     }
 
     async function playDefenseDice() {
@@ -185,6 +238,8 @@
         fadeInDuration: 100,
         fadeOutDuration: 100
       }).catch(() => {});
+
+      showToast("🛡️ Défense");
     }
 
     async function playDagger() {
@@ -195,6 +250,8 @@
         fadeInDuration: 100,
         fadeOutDuration: 100
       }).catch(() => {});
+
+      showToast("🗡️ Dague");
     }
   </script>
 
