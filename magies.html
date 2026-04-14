@@ -10,9 +10,7 @@
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
-      min-height: 100vh;
-
-      background: transparent;
+      background: linear-gradient(180deg, #0f172a, #020617);
     }
 
     .app {
@@ -21,79 +19,63 @@
       padding: 20px;
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
     }
 
-    .topbar a {
-      color: white;
-      text-decoration: none;
-      background: rgba(0,0,0,0.6);
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: bold;
+    h2 {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      padding-left: 10px;
+      border-left: 4px solid #38bdf8;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      justify-items: center;
+      gap: 15px;
     }
 
     .btn {
-      width: 100%;
-      max-width: 220px;
-      height: 260px;
-      border-radius: 18px;
-      overflow: hidden;
       position: relative;
       cursor: pointer;
-      border: none;
-      padding: 0;
-      background: transparent;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      transition: transform 0.1s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.97);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: 0.2s;
     }
 
     .btn img {
       width: 100%;
-      height: 100%;
+      height: 120px;
       object-fit: cover;
       display: block;
     }
 
-  .btn span {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  
-  padding: 8px 14px;
-  font-weight: bold;
-  font-size: 18px;
-  color: white;
+    .btn span {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 8px;
+      background: rgba(0,0,0,0.6);
+      font-weight: bold;
+      text-align: center;
+      font-size: 14px;
+    }
 
-  text-shadow: 2px 2px 6px rgba(0,0,0,1);
-  background: rgba(0,0,0,0.6);
-  border-radius: 10px;
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #38bdf8;
+    }
 
-  white-space: nowrap;
-  z-index: 2;
-}
-
-    @media (max-width: 480px) {
-      .btn {
-        height: 220px;
-        max-width: 100%;
-      }
+    .back {
+      margin-bottom: 20px;
+      cursor: pointer;
+      display: inline-block;
+      padding: 8px 12px;
+      background: #334155;
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -101,37 +83,76 @@
 <body>
   <div class="app">
 
-    <div class="topbar">
-      <h1>Magies ✨</h1>
-      <button onclick="parent.navigateTo('combats.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;">← Retour</button>
+    <div class="back" onclick="history.back()">⬅ Retour</div>
+
+    <h1>Magies</h1>
+
+    <!-- 🌊 EAU -->
+    <h2>Eau</h2>
+    <div class="grid">
+      <div class="btn" onclick="playSound('veil_of_mist.mp3')">
+        <img src="spell_veil.png">
+        <span>Veil of Mist</span>
+      </div>
+      <div class="btn" onclick="playSound('water_of_healing.mp3')">
+        <img src="spell_waterhealing.png">
+        <span>Water of Healing</span>
+      </div>
+      <div class="btn" onclick="playSound('sleep.mp3')">
+        <img src="spell_sleep.png">
+        <span>Sleep</span>
+      </div>
     </div>
 
+    <!-- 🔥 FEU -->
+    <h2>Feu</h2>
     <div class="grid">
+      <div class="btn" onclick="playSound('courage.mp3')">
+        <img src="spell_courage.png">
+        <span>Courage</span>
+      </div>
+      <div class="btn" onclick="playSound('ball_of_flame.mp3')">
+        <img src="spell_ballofflame.png">
+        <span>Ball of Flame</span>
+      </div>
+      <div class="btn" onclick="playSound('fire_of_wrath.mp3')">
+        <img src="spell_fireofwrath.png">
+        <span>Fire of Wrath</span>
+      </div>
+    </div>
 
-      <!-- 🌊 EAU -->
-      <button class="btn" onclick="playSound('magie_eau.mp3')">
-        <img src="magie_eau.png" alt="Eau">
-        <span>Eau 🌊</span>
-      </button>
+    <!-- 💨 AIR -->
+    <h2>Air</h2>
+    <div class="grid">
+      <div class="btn" onclick="playSound('swift_wind.mp3')">
+        <img src="spell_wind.png">
+        <span>Swift Wind</span>
+      </div>
+      <div class="btn" onclick="playSound('genie.mp3')">
+        <img src="spell_genie.png">
+        <span>Genie</span>
+      </div>
+      <div class="btn" onclick="playSound('tempest.mp3')">
+        <img src="spell_tempest.png">
+        <span>Tempest</span>
+      </div>
+    </div>
 
-      <!-- 🔥 FEU -->
-      <button class="btn" onclick="playSound('magie_feu.mp3')">
-        <img src="magie_feu.png" alt="Feu">
-        <span>Feu 🔥</span>
-      </button>
-
-      <!-- 🌪️ AIR -->
-      <button class="btn" onclick="playSound('magie_air.mp3')">
-        <img src="magie_air.png" alt="Air">
-        <span>Air 🌪️</span>
-      </button>
-
-      <!-- 🌱 TERRE -->
-      <button class="btn" onclick="playSound('magie_terre.mp3')">
-        <img src="magie_terre.png" alt="Terre">
-        <span>Terre 🌱</span>
-      </button>
-
+    <!-- 🌍 TERRE -->
+    <h2>Terre</h2>
+    <div class="grid">
+      <div class="btn" onclick="playSound('pass_through_rock.mp3')">
+        <img src="spell_passrock.png">
+        <span>Pass Through Rock</span>
+      </div>
+      <div class="btn" onclick="playSound('heal_body.mp3')">
+        <img src="spell_healbody.png">
+        <span>Heal Body</span>
+      </div>
+      <div class="btn" onclick="playSound('rock_skin.mp3')">
+        <img src="spell_rockskin.png">
+        <span>Rock Skin</span>
+      </div>
     </div>
 
   </div>
@@ -145,8 +166,8 @@
         currentAudio.currentTime = 0;
       }
 
-      currentAudio = new Audio(file);
-      currentAudio.play().catch(() => {});
+      currentAudio = new Audio("sounds/" + file);
+      currentAudio.play();
     }
   </script>
 
