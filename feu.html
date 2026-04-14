@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Magie - Feu</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(5, 10, 20, 0.55), rgba(5, 10, 20, 0.75)),
+        url("images/heroquestbackground.jpg") center/cover no-repeat fixed;
+    }
+
+    .app { max-width: 900px; margin: auto; padding: 20px; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; margin-bottom: 25px; flex-wrap: wrap;
+    }
+    h1 { margin: 0; font-size: 32px; text-shadow: 0 2px 8px rgba(0,0,0,0.7); }
+    .back-btn {
+      background: rgba(20, 30, 50, 0.85); color: white;
+      border: 1px solid rgba(255,255,255,0.18); border-radius: 12px;
+      padding: 10px 16px; cursor: pointer; font-size: 15px; font-weight: bold;
+    }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .sound-btn {
+      position: relative; border-radius: 18px; overflow: hidden; cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      min-height: 190px; background: rgba(0,0,0,0.25);
+    }
+    .sound-btn:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 14px 30px rgba(0,0,0,0.45); }
+    .sound-btn img { width: 100%; height: 190px; object-fit: cover; display: block; }
+    .sound-btn span {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 10px;
+      text-align: center; font-weight: bold; font-size: 18px; color: white;
+      background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0.18));
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .sound-btn, .sound-btn img { min-height: 150px; height: 150px; }
+      .sound-btn span { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <button class="back-btn" onclick="window.location.href='magies.html'">⬅ Retour</button>
+      <h1>Feu</h1>
+    </div>
+
+    <div class="grid">
+      <div class="sound-btn" onclick="playSound('courage.mp3')">
+        <img src="spell_courage.png" alt="Courage">
+        <span>Courage</span>
+      </div>
+
+      <div class="sound-btn" onclick="playSound('ball_of_flame.mp3')">
+        <img src="spell_ballofflame.png" alt="Ball of Flame">
+        <span>Ball of Flame</span>
+      </div>
+
+      <div class="sound-btn" onclick="playSound('fire_of_wrath.mp3')">
+        <img src="spell_fireofwrath.png" alt="Fire of Wrath">
+        <span>Fire of Wrath</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAudio = null;
+    function playSound(file) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio("sounds/" + file);
+      currentAudio.play();
+    }
+  </script>
+</body>
+</html>
