@@ -91,11 +91,12 @@
       currentAudio.currentTime = 0;
     }
 
-    currentAudio = new Audio(file);
+    const audioPath = "/soundboard/" + file;
+    currentAudio = new Audio(audioPath);
 
     currentAudio.play().catch(error => {
       console.error("Erreur audio :", error);
-      alert("Le son ne charge pas : " + file);
+      alert("Le son ne charge pas : " + audioPath);
     });
   }
 </script>
