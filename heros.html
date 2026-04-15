@@ -146,14 +146,14 @@
     </button>
 
     <button class="btn" onclick="playTreasure()">
-  <img src="tresor.png" alt="Cherche trésor">
-  <span>🧰 Cherche trésor</span>
-</button>
+      <img src="tresor.png" alt="Cherche trésor">
+      <span>🧰 Cherche trésor</span>
+    </button>
 
-<button class="btn" onclick="playReward()">
-  <img src="recompense.png" alt="Récompense">
-  <span>🎁 Récompense</span>
-</button>
+    <button class="btn" onclick="playReward()">
+      <img src="recompense.png" alt="Récompense">
+      <span>🎁 Récompense</span>
+    </button>
 
   </div>
 
@@ -161,42 +161,48 @@
 
   <script src="audio-utils.js"></script>
 <script>
-  async function playTreasure() {
-  vibrate(40);
 
-  await playManagedAudio("treasureAudio", "tresor.mp3", {
-    volume: 1,
-    fadeInDuration: 150,
-    fadeOutDuration: 120
-  }).catch(() => {});
-
-  showToast("🧰 Trésor !");
-}
-
-async function playReward() {
-  vibrate(40);
-
-  await playManagedAudio("rewardAudio", "recompense.mp3", {
-    volume: 1,
-    fadeInDuration: 180,
-    fadeOutDuration: 120
-  }).catch(() => {});
-
-  showToast("🎁 Récompense !");
-}
-  const doorSounds = [
-    "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
+  const rewardSounds = [
+    "recompense1.mp3",
+    "recompense2.mp3",
+    "recompense3.mp3"
   ];
 
-  const ambianceSounds = [
-    "muz_heros1.mp3",
-    "muz_heros2.mp3",
-    "muz_heros3.mp3",
-    "muz_heros4.mp3",
-    "muz_heros5.mp3",
-    "muz_heros6.mp3",
-    "muz_heros7.mp3",
-    "muz_heros8.mp3"
+  let lastRewardIndex = -1;
+
+  async function playTreasure() {
+    vibrate(40);
+
+    await playManagedAudio("treasureAudio", "tresor.mp3", {
+      volume: 1,
+      fadeInDuration: 150,
+      fadeOutDuration: 120
+    }).catch(() => {});
+
+    showToast("🧰 Trésor !");
+  }
+
+  async function playReward() {
+    vibrate(40);
+
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * rewardSounds.length);
+    } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
+
+    lastRewardIndex = randomIndex;
+
+    await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
+      volume: 1,
+      fadeInDuration: 180,
+      fadeOutDuration: 120
+    }).catch(() => {});
+
+    showToast("🎁 Récompense !");
+  }
+
+  const doorSounds = [
+    "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
   ];
 
   const placementSounds = [
@@ -207,15 +213,10 @@ async function playReward() {
   ];
 
   let currentAudio = null;
-  let ambianceAudio = null;
   let placementAudio = null;
 
   let placementActive = false;
   let placementIndex = 0;
-
-  let ambianceActive = false;
-  let ambianceOrder = [];
-  let ambianceOrderIndex = 0;
 
   let toastTimer = null;
 
@@ -233,7 +234,6 @@ async function playReward() {
 
   function stopPlacement() {
     placementActive = false;
-
     if (placementAudio) {
       placementAudio.pause();
       placementAudio.currentTime = 0;
@@ -241,79 +241,10 @@ async function playReward() {
     }
   }
 
-  function stopAmbiance() {
-    ambianceActive = false;
-    ambianceOrder = [];
-    ambianceOrderIndex = 0;
-
-    if (ambianceAudio) {
-      ambianceAudio.pause();
-      ambianceAudio.currentTime = 0;
-      ambianceAudio = null;
-    }
-  }
-
-  function shuffleArray(arr) {
-    const copy = [...arr];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  }
-
-  function buildAmbianceOrder() {
-    ambianceOrder = shuffleArray(ambianceSounds);
-    ambianceOrderIndex = 0;
-  }
-
-  function playNextAmbiance() {
-    if (!ambianceActive) return;
-
-    if (!ambianceOrder.length || ambianceOrderIndex >= ambianceOrder.length) {
-      buildAmbianceOrder();
-    }
-
-    const file = ambianceOrder[ambianceOrderIndex];
-
-    if (ambianceAudio) {
-      ambianceAudio.pause();
-      ambianceAudio.currentTime = 0;
-    }
-
-    ambianceAudio = new Audio(file);
-    ambianceAudio.preload = "auto";
-    ambianceAudio.volume = 0.8;
-
-    ambianceAudio.onended = () => {
-      ambianceOrderIndex++;
-      playNextAmbiance();
-    };
-
-    ambianceAudio.onerror = () => {
-      console.log("Erreur audio ambiance:", file);
-      showToast("❌ Impossible de lire " + file);
-      ambianceOrderIndex++;
-      if (ambianceActive) playNextAmbiance();
-    };
-
-    ambianceAudio.play()
-      .then(() => {
-        showToast("🎵 Musique...");
-      })
-      .catch((err) => {
-        console.log("Play ambiance bloqué:", file, err);
-        showToast("❌ Son bloqué : " + file);
-        ambianceOrderIndex++;
-        if (ambianceActive) playNextAmbiance();
-      });
-  }
-
   function playNextPlacement() {
     if (!placementActive) return;
 
     const file = placementSounds[placementIndex];
-    console.log("Placement play:", file);
 
     if (placementAudio) {
       placementAudio.pause();
@@ -321,29 +252,13 @@ async function playReward() {
     }
 
     placementAudio = new Audio(file);
-    placementAudio.preload = "auto";
-    placementAudio.volume = 1.0;
 
     placementAudio.onended = () => {
       placementIndex = (placementIndex + 1) % placementSounds.length;
       playNextPlacement();
     };
 
-    placementAudio.onerror = () => {
-      console.log("Erreur audio placement:", file);
-      showToast("❌ Impossible de lire " + file);
-      stopPlacement();
-    };
-
-    placementAudio.play()
-      .then(() => {
-        showToast("🧩 Placement...");
-      })
-      .catch((err) => {
-        console.log("Play bloqué:", file, err);
-        showToast("❌ Son bloqué : " + file);
-        stopPlacement();
-      });
+    placementAudio.play().catch(() => {});
   }
 
   function playPlacement() {
@@ -355,17 +270,6 @@ async function playReward() {
       return;
     }
 
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
-
-    stopAmbiance();
-
-    if (parent && parent.stopAmbianceFromFrame) {
-      parent.stopAmbianceFromFrame();
-    }
-
     placementActive = true;
     placementIndex = 0;
     playNextPlacement();
@@ -374,55 +278,18 @@ async function playReward() {
   function playDoor() {
     vibrate(40);
 
-    if (parent && parent.stopAmbianceFromFrame) {
-      parent.stopAmbianceFromFrame();
-    }
-
-    stopAmbiance();
     stopPlacement();
 
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
-
     const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
-    currentAudio = new Audio(file);
-    currentAudio.play().catch(() => {});
+    playManagedAudio("currentAudio", file, {
+      volume: 1,
+      fadeInDuration: 120,
+      fadeOutDuration: 120
+    });
+
     showToast("🚪 Porte...");
   }
 
-  function playAmbiance() {
-    vibrate(30);
-
-    if (!ambianceSounds.length) {
-      showToast("Aucun son configuré.");
-      return;
-    }
-
-    // stop immersion du parent
-    if (parent && parent.stopAmbianceFromFrame) {
-      parent.stopAmbianceFromFrame();
-    }
-
-    // toggle ON/OFF
-    if (ambianceActive) {
-      stopAmbiance();
-      showToast("⛔ Musique arrêtée");
-      return;
-    }
-
-    stopPlacement();
-
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
-
-    ambianceActive = true;
-    buildAmbianceOrder();
-    playNextAmbiance();
-  }
 </script>
 
 </body>
