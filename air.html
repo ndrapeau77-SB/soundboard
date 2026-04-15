@@ -129,24 +129,31 @@
         <span>Genie</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('tempest.mp3')">
+      <div class="sound-btn" onclick="playSound('air_tempest.mp3')">
         <img src="spell_tempest.png" alt="Tempest">
         <span>Tempest</span>
       </div>
     </div>
   </div>
 
-  <script>
-    let currentAudio = null;
+<script>
+  let currentAudio = null;
 
-    function playSound(file) {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-      currentAudio = new Audio("sounds/" + file);
-      currentAudio.play();
+  function playSound(file) {
+    console.log("Tentative lecture :", file);
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
     }
-  </script>
+
+currentAudio = new Audio("soundboard/" + file);
+
+    currentAudio.play().catch(error => {
+      console.error("Erreur audio :", error);
+      alert("Le son ne charge pas : " + file);
+    });
+  }
+</script>
 </body>
 </html>
