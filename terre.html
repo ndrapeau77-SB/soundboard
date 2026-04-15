@@ -63,33 +63,41 @@
     </div>
 
     <div class="grid">
-      <div class="sound-btn" onclick="playSound('pass_through_rock.mp3')">
+      <div class="sound-btn" onclick="playSound('terre_pass.mp3')">
         <img src="spell_passrock.png" alt="Pass Through Rock">
         <span>Pass Through Rock</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('heal_body.mp3')">
+      <div class="sound-btn" onclick="playSound('terre_healing.mp3')">
         <img src="spell_healbody.png" alt="Heal Body">
         <span>Heal Body</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('rock_skin.mp3')">
+      <div class="sound-btn" onclick="playSound('terre_rockskin.mp3')">
         <img src="spell_rockskin.png" alt="Rock Skin">
         <span>Rock Skin</span>
       </div>
     </div>
   </div>
 
-  <script>
-    let currentAudio = null;
-    function playSound(file) {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-      currentAudio = new Audio("sounds/" + file);
-      currentAudio.play();
+<script>
+  let currentAudio = null;
+
+  function playSound(file) {
+    console.log("Tentative lecture :", file);
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
     }
-  </script>
+
+currentAudio = new Audio("soundboard/" + file);
+
+    currentAudio.play().catch(error => {
+      console.error("Erreur audio :", error);
+      alert("Le son ne charge pas : " + file);
+    });
+  }
+</script>
 </body>
 </html>
