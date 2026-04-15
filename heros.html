@@ -161,6 +161,29 @@
 
   <script src="audio-utils.js"></script>
 <script>
+  async function playTreasure() {
+  vibrate(40);
+
+  await playManagedAudio("treasureAudio", "tresor.mp3", {
+    volume: 1,
+    fadeInDuration: 150,
+    fadeOutDuration: 120
+  }).catch(() => {});
+
+  showToast("🧰 Trésor !");
+}
+
+async function playReward() {
+  vibrate(40);
+
+  await playManagedAudio("rewardAudio", "recompense.mp3", {
+    volume: 1,
+    fadeInDuration: 180,
+    fadeOutDuration: 120
+  }).catch(() => {});
+
+  showToast("🎁 Récompense !");
+}
   const doorSounds = [
     "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
   ];
