@@ -121,17 +121,17 @@
     </div>
 
     <div class="grid">
-      <div class="sound-btn" onclick="playSound('eau_veil.mp3')">
+      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/eau_veil.mp3')">
         <img src="spell_veil.png" alt="Veil of Mist">
         <span>Veil of Mist</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('eau_healing.mp3')">
+      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/eau_healing.mp3')">
         <img src="spell_waterhealing.png" alt="Water of Healing">
         <span>Water of Healing</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('eau_sleep.mp3')">
+      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/eau_sleep.mp3')">
         <img src="spell_sleep.png" alt="Sleep">
         <span>Sleep</span>
       </div>
@@ -141,23 +141,26 @@
   <script>
     let currentAudio = null;
 
-    function playSound(file) {
-      console.log("Tentative lecture :", file);
+    function playSound(audioPath) {
+      console.log("Lecture audio :", audioPath);
 
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
 
-      const audioPath = new URL(file, window.location.href).href;
-      console.log("Chemin audio :", audioPath);
+      currentAudio = new Audio();
+      currentAudio.src = audioPath;
+      currentAudio.preload = "auto";
 
-      currentAudio = new Audio(audioPath);
-      currentAudio.load();
+      currentAudio.addEventListener("error", () => {
+        console.error("Erreur audio pour :", audioPath, currentAudio.error);
+        alert("Le son ne charge pas : " + audioPath);
+      }, { once: true });
 
       currentAudio.play().catch(error => {
-        console.error("Erreur audio :", error);
-        alert("Le son ne charge pas : " + audioPath);
+        console.error("Erreur play() :", error);
+        alert("Impossible de lire : " + audioPath);
       });
     }
   </script>
