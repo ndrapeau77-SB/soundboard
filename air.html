@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Magie - Air</title>
-
   <style>
     body {
       margin: 0;
@@ -15,26 +14,22 @@
         linear-gradient(rgba(5, 10, 20, 0.55), rgba(5, 10, 20, 0.75)),
         url("images/heroquestbackground.jpg") center/cover no-repeat fixed;
     }
-
     .app {
       max-width: 1000px;
       margin: auto;
       padding: 20px;
     }
-
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 25px;
     }
-
     h1 {
       margin: 0;
       font-size: 32px;
       text-shadow: 0 2px 8px rgba(0,0,0,0.7);
     }
-
     .back-btn {
       background: rgba(20, 30, 50, 0.85);
       color: white;
@@ -44,14 +39,12 @@
       cursor: pointer;
       font-weight: bold;
     }
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
-  justify-items: center;
-}
-
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      justify-items: center;
+    }
     .sound-btn {
       position: relative;
       border-radius: 18px;
@@ -63,19 +56,16 @@
       min-height: 190px;
       background: rgba(0,0,0,0.25);
     }
-
     .sound-btn:hover {
       transform: translateY(-3px) scale(1.01);
       box-shadow: 0 14px 30px rgba(0,0,0,0.45);
     }
-
     .sound-btn img {
       width: 100%;
       height: 190px;
       object-fit: cover;
       display: block;
     }
-
     .sound-btn span {
       position: absolute;
       left: 0;
@@ -89,77 +79,71 @@
       background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0.18));
       text-shadow: 0 2px 6px rgba(0,0,0,0.8);
     }
-
     @media (max-width: 700px) {
       .grid {
         grid-template-columns: 1fr 1fr;
         gap: 14px;
       }
-
       .sound-btn,
       .sound-btn img {
         min-height: 150px;
         height: 150px;
       }
-
       .sound-btn span {
         font-size: 16px;
       }
     }
   </style>
 </head>
-
 <body>
   <div class="app">
-
     <div class="topbar">
       <h1>Air</h1>
       <button class="back-btn" onclick="window.location.href='magies.html'">⬅ Retour</button>
     </div>
-
     <div class="grid">
       <div class="sound-btn" onclick="playAudioById('swift')">
         <img src="spell_wind.png">
         <span>Swift Wind</span>
       </div>
-
       <div class="sound-btn" onclick="playAudioById('genie')">
         <img src="spell_genie.png">
         <span>Genie</span>
       </div>
-
       <div class="sound-btn" onclick="playAudioById('tempest')">
         <img src="spell_tempest.png">
         <span>Tempest</span>
       </div>
     </div>
-
   </div>
 
-  <!-- AUDIO (ne touche pas à ça 👇) -->
-  <audio id="swift" src="https://ndrapeau77-sb.github.io/soundboard/air_wind.mp3"></audio>
-  <audio id="genie" src="https://ndrapeau77-sb.github.io/soundboard/air_genie.mp3"></audio>
-  <audio id="tempest" src="https://ndrapeau77-sb.github.io/soundboard/air_tempest.mp3"></audio>
+  <!-- AUDIO -->
+  <audio id="swift" src="https://ndrapeau77-sb.github.io/soundboard/air_wind.mp3" preload="auto"></audio>
+  <audio id="genie" src="https://ndrapeau77-sb.github.io/soundboard/air_genie.mp3" preload="auto"></audio>
+  <audio id="tempest" src="https://ndrapeau77-sb.github.io/soundboard/air_tempest.mp3" preload="auto"></audio>
 
   <script>
     let currentAudio = null;
 
     function playAudioById(id) {
       const audio = document.getElementById(id);
-
       if (currentAudio && currentAudio !== audio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
-
-      audio.currentTime = 0;
       currentAudio = audio;
 
-      audio.play().catch(() => {
-        alert("Le son ne charge pas.");
-      });
+      if (audio.readyState >= 2) {
+        audio.currentTime = 0;
+        audio.play().catch(() => alert("Le son ne charge pas."));
+      } else {
+        audio.load();
+        audio.addEventListener('canplay', function handler() {
+          audio.removeEventListener('canplay', handler);
+          audio.play().catch(() => alert("Le son ne charge pas."));
+        });
+      }
     }
   </script>
-
 </body>
 </html>
