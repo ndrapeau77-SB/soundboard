@@ -115,45 +115,63 @@
   <div class="app">
     <div class="topbar">
       <h1>Air</h1>
-       <button class="back-btn" onclick="window.location.href='magies.html'">⬅ Retour</button>
+      <button class="back-btn" onclick="window.location.href='magies.html'">⬅ Retour</button>
     </div>
 
     <div class="grid">
-      <div class="sound-btn" onclick="playSound('air_swift.mp3')">
+      <div class="sound-btn" onclick="playAudioById('air-swift')">
         <img src="spell_wind.png" alt="Swift Wind">
         <span>Swift Wind</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('air_genie.mp3')">
+      <div class="sound-btn" onclick="playAudioById('air-genie')">
         <img src="spell_genie.png" alt="Genie">
         <span>Genie</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('air_tempest.mp3')">
+      <div class="sound-btn" onclick="playAudioById('air-tempest')">
         <img src="spell_tempest.png" alt="Tempest">
         <span>Tempest</span>
       </div>
     </div>
   </div>
 
-<script>
-  let currentAudio = null;
+  <audio id="air-swift" preload="auto">
+    <source src="https://ndrapeau77-sb.github.io/soundboard/air_swift.mp3" type="audio/mpeg">
+  </audio>
 
-  function playSound(file) {
-    console.log("Tentative lecture :", file);
+  <audio id="air-genie" preload="auto">
+    <source src="https://ndrapeau77-sb.github.io/soundboard/air_genie.mp3" type="audio/mpeg">
+  </audio>
 
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
+  <audio id="air-tempest" preload="auto">
+    <source src="https://ndrapeau77-sb.github.io/soundboard/air_tempest.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    let currentAudio = null;
+
+    function playAudioById(audioId) {
+      const audio = document.getElementById(audioId);
+
+      if (!audio) {
+        alert("Audio introuvable : " + audioId);
+        return;
+      }
+
+      if (currentAudio && currentAudio !== audio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      audio.currentTime = 0;
+      currentAudio = audio;
+
+      audio.play().catch((error) => {
+        console.error("Erreur audio :", error);
+        alert("Le son ne charge pas.");
+      });
     }
-
-currentAudio = new Audio("soundboard/" + file);
-
-    currentAudio.play().catch(error => {
-      console.error("Erreur audio :", error);
-      alert("Le son ne charge pas : " + file);
-    });
-  }
-</script>
+  </script>
 </body>
 </html>
