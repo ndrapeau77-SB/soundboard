@@ -91,7 +91,7 @@
       currentAudio.currentTime = 0;
     }
 
-currentAudio = new Audio("soundboard/" + file);
+    currentAudio = new Audio(file);
 
     currentAudio.play().catch(error => {
       console.error("Erreur audio :", error);
