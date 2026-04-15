@@ -153,9 +153,9 @@
         <span>Magie ✨</span>
       </button>
 
-      <button class="btn" onclick="playDagger()">
-        <img src="dague.png" alt="Dague">
-        <span>Dague 🗡️</span>
+      <button class="btn" onclick="playVictoire()">
+        <img src="victoire.png" alt="Dague">
+        <span>Victoire 🏆</span>
       </button>
     </div>
 
@@ -184,7 +184,7 @@
 
     let attackAudio = null;
     let defenseAudio = null;
-    let daggerAudio = null;
+    let victoireAudio = null;
 
     let lastAttackIndex = -1;
     let lastDefenseIndex = -1;
@@ -242,16 +242,16 @@
       showToast("🛡️ Défense");
     }
 
-    async function playDagger() {
+    async function playVictoire() {
       vibrate(30);
 
-      await playManagedAudio("daggerAudio", "dague.mp3", {
+      await playManagedAudio("victoireAudio", "victoire.mp3", {
         volume: 1,
         fadeInDuration: 100,
         fadeOutDuration: 100
       }).catch(() => {});
 
-      showToast("🗡️ Dague");
+      showToast("🏆 Victoire");
     }
   </script>
 
