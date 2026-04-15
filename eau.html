@@ -121,46 +121,58 @@
     </div>
 
     <div class="grid">
-      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/eau_veil.mp3')">
+      <div class="sound-btn" onclick="playAudioById('audio-veil')">
         <img src="spell_veil.png" alt="Veil of Mist">
         <span>Veil of Mist</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/eau_healing.mp3')">
+      <div class="sound-btn" onclick="playAudioById('audio-healing')">
         <img src="spell_waterhealing.png" alt="Water of Healing">
         <span>Water of Healing</span>
       </div>
 
-      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/eau_sleep.mp3')">
+      <div class="sound-btn" onclick="playAudioById('audio-sleep')">
         <img src="spell_sleep.png" alt="Sleep">
         <span>Sleep</span>
       </div>
     </div>
   </div>
 
+  <!-- Audios cachés -->
+  <audio id="audio-veil" preload="auto">
+    <source src="https://ndrapeau77-sb.github.io/soundboard/eau_veil.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="audio-healing" preload="auto">
+    <source src="https://ndrapeau77-sb.github.io/soundboard/eau_healing.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="audio-sleep" preload="auto">
+    <source src="https://ndrapeau77-sb.github.io/soundboard/eau_sleep.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
     let currentAudio = null;
 
-    function playSound(audioPath) {
-      console.log("Lecture audio :", audioPath);
+    function playAudioById(audioId) {
+      const audio = document.getElementById(audioId);
 
-      if (currentAudio) {
+      if (!audio) {
+        alert("Audio introuvable : " + audioId);
+        return;
+      }
+
+      if (currentAudio && currentAudio !== audio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
 
-      currentAudio = new Audio();
-      currentAudio.src = audioPath;
-      currentAudio.preload = "auto";
+      audio.currentTime = 0;
+      currentAudio = audio;
 
-      currentAudio.addEventListener("error", () => {
-        console.error("Erreur audio pour :", audioPath, currentAudio.error);
-        alert("Le son ne charge pas : " + audioPath);
-      }, { once: true });
-
-      currentAudio.play().catch(error => {
-        console.error("Erreur play() :", error);
-        alert("Impossible de lire : " + audioPath);
+      audio.play().catch((error) => {
+        console.error("Erreur audio :", error);
+        alert("Le son ne charge pas.");
       });
     }
   </script>
