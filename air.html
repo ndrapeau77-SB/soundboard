@@ -113,51 +113,41 @@
 </head>
 <body>
   <div class="app">
+
     <div class="topbar">
       <h1>Air</h1>
       <button class="back-btn" onclick="window.location.href='magies.html'">⬅ Retour</button>
     </div>
 
     <div class="grid">
-      <div class="sound-btn" onclick="playAudioById('air-swift')">
-        <img src="spell_wind.png" alt="Swift Wind">
+      <div class="sound-btn" onclick="playAudioById('swift')">
+        <img src="spell_wind.png">
         <span>Swift Wind</span>
       </div>
 
-      <div class="sound-btn" onclick="playAudioById('air-genie')">
-        <img src="spell_genie.png" alt="Genie">
+      <div class="sound-btn" onclick="playAudioById('genie')">
+        <img src="spell_genie.png">
         <span>Genie</span>
       </div>
 
-      <div class="sound-btn" onclick="playAudioById('air-tempest')">
-        <img src="spell_tempest.png" alt="Tempest">
+      <div class="sound-btn" onclick="playAudioById('tempest')">
+        <img src="spell_tempest.png">
         <span>Tempest</span>
       </div>
     </div>
+
   </div>
 
-  <audio id="air-swift" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/air_wind.mp3" type="audio/mpeg">
-  </audio>
-
-  <audio id="air-genie" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/air_genie.mp3" type="audio/mpeg">
-  </audio>
-
-  <audio id="air-tempest" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/air_tempest.mp3" type="audio/mpeg">
-  </audio>
+  <!-- AUDIO -->
+  <audio id="swift" src="https://ndrapeau77-sb.github.io/soundboard/air_swift.mp3"></audio>
+  <audio id="genie" src="https://ndrapeau77-sb.github.io/soundboard/air_genie.mp3"></audio>
+  <audio id="tempest" src="https://ndrapeau77-sb.github.io/soundboard/air_tempest.mp3"></audio>
 
   <script>
     let currentAudio = null;
 
-    function playAudioById(audioId) {
-      const audio = document.getElementById(audioId);
-
-      if (!audio) {
-        alert("Audio introuvable : " + audioId);
-        return;
-      }
+    function playAudioById(id) {
+      const audio = document.getElementById(id);
 
       if (currentAudio && currentAudio !== audio) {
         currentAudio.pause();
@@ -167,11 +157,11 @@
       audio.currentTime = 0;
       currentAudio = audio;
 
-      audio.play().catch((error) => {
-        console.error("Erreur audio :", error);
+      audio.play().catch(() => {
         alert("Le son ne charge pas.");
       });
     }
   </script>
+
 </body>
 </html>
