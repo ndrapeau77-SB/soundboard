@@ -69,7 +69,7 @@
       </div>
 
       <div class="sound-btn" onclick="playSound('water_of_healing.mp3')">
-        <img src="spell_waterhealing.png" alt="Water of Healing">
+        <img src="spell_waterhealing.png" alt="eau_healing">
         <span>Water of Healing</span>
       </div>
 
@@ -87,7 +87,7 @@
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
-      currentAudio = new Audio("sounds/" + file);
+      currentAudio = new Audio(file);
       currentAudio.play();
     }
   </script>
