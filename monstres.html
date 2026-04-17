@@ -167,88 +167,104 @@
   </div>
 
   <script>
-    const soundFiles = {
-      rat: "rat.mp3",
-      squelette: "squelette.mp3",
-      zombie: "zombie.mp3",
-      momie: "momie.mp3",
-      gobelin: "gobelin.mp3",
-      ogre: "ogre.mp3",
-      abomination: "abomination.mp3",
-      gargouille: "gargouille.mp3",
-      dreadwarrior: "dreadwarrior.mp3",
-      dragon: "dragon.mp3"
-    };
+  const soundFiles = {
+    rat: ["rat1.mp3", "rat2.mp3", "rat3.mp3", "rat4.mp3", "rat5.mp3"],
+    squelette: ["squelette.mp3"],
+    zombie: ["zombie1.mp3", "zombie2.mp3", "zombie3.mp3", "zombie4.mp3"],
+    momie: ["momie1.mp3"],
+    gobelin: ["goblin1.mp3", "goblin2.mp3"],
+    ogre: ["ogre.mp3"],
+    abomination: ["abomination1.mp3", "abomination2.mp3"],
+    gargouille: ["gargouille.mp3"],
+    dreadwarrior: ["dread1.mp3", "dread2.mp3", "dread3.mp3", "dread4.mp3"],
+    dragon: ["dragon.mp3"]
+  };
 
-    let audioContext = null;
-    const audioBuffers = {};
+  let audioContext = null;
+  const audioBuffers = {};
+  const lastPlayedIndex = {};
 
-    function getAudioContext() {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      return audioContext;
+  function getAudioContext() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
+    return audioContext;
+  }
 
-    async function loadSoundBuffer(file) {
-      if (audioBuffers[file]) return audioBuffers[file];
+  function pickRandomFile(id) {
+    const files = soundFiles[id];
+    if (!files || !files.length) return null;
 
+    if (files.length === 1) return files[0];
+
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * files.length);
+    } while (randomIndex === lastPlayedIndex[id]);
+
+    lastPlayedIndex[id] = randomIndex;
+    return files[randomIndex];
+  }
+
+  async function loadSoundBuffer(file) {
+    if (audioBuffers[file]) return audioBuffers[file];
+
+    const ctx = getAudioContext();
+    const response = await fetch(file);
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = await ctx.decodeAudioData(arrayBuffer);
+    audioBuffers[file] = buffer;
+    return buffer;
+  }
+
+  async function playSound(id) {
+    const file = pickRandomFile(id);
+    if (!file) return;
+
+    try {
       const ctx = getAudioContext();
-      const response = await fetch(file);
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = await ctx.decodeAudioData(arrayBuffer);
-      audioBuffers[file] = buffer;
-      return buffer;
-    }
 
-    async function playSound(id) {
-      const file = soundFiles[id];
-      if (!file) return;
-
-      try {
-        const ctx = getAudioContext();
-
-        if (ctx.state === "suspended") {
-          await ctx.resume();
-        }
-
-        const buffer = await loadSoundBuffer(file);
-
-        const source = ctx.createBufferSource();
-        const gainNode = ctx.createGain();
-
-        gainNode.gain.value = 0.9;
-
-        source.buffer = buffer;
-        source.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        source.start(0);
-      } catch (error) {
-        console.log("Erreur son :", error);
+      if (ctx.state === "suspended") {
+        await ctx.resume();
       }
+
+      const buffer = await loadSoundBuffer(file);
+
+      const source = ctx.createBufferSource();
+      const gainNode = ctx.createGain();
+
+      gainNode.gain.value = 0.9;
+
+      source.buffer = buffer;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      source.start(0);
+    } catch (error) {
+      console.log("Erreur son :", error);
     }
+  }
 
-    async function warmUpAudio() {
-      try {
-        const ctx = getAudioContext();
+  async function warmUpAudio() {
+    try {
+      const ctx = getAudioContext();
 
-        if (ctx.state === "suspended") {
-          await ctx.resume();
-        }
+      if (ctx.state === "suspended") {
+        await ctx.resume();
+      }
 
-        const files = Object.values(soundFiles);
-        for (const file of files) {
-          loadSoundBuffer(file).catch(() => {});
-        }
+      const allFiles = Object.values(soundFiles).flat();
+      for (const file of allFiles) {
+        loadSoundBuffer(file).catch(() => {});
+      }
 
-        window.removeEventListener("touchstart", warmUpAudio);
-        window.removeEventListener("click", warmUpAudio);
-      } catch (_) {}
-    }
+      window.removeEventListener("touchstart", warmUpAudio);
+      window.removeEventListener("click", warmUpAudio);
+    } catch (_) {}
+  }
 
-    window.addEventListener("touchstart", warmUpAudio, { once: true });
-    window.addEventListener("click", warmUpAudio, { once: true });
-  </script>
+  window.addEventListener("touchstart", warmUpAudio, { once: true });
+  window.addEventListener("click", warmUpAudio, { once: true });
+</script>
 </body>
 </html>
