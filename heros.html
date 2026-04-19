@@ -160,137 +160,140 @@
   <div id="toast"></div>
 
   <script src="audio-utils.js"></script>
-<script>
+  <script>
+    const rewardSounds = [
+      "recompense1.mp3",
+      "recompense2.mp3",
+      "recompense3.mp3"
+    ];
 
-  const rewardSounds = [
-    "recompense1.mp3",
-    "recompense2.mp3",
-    "recompense3.mp3"
-  ];
+    let lastRewardIndex = -1;
 
-  let lastRewardIndex = -1;
+    async function playTreasure() {
+      vibrate(40);
 
-  async function playTreasure() {
-    vibrate(40);
+      await playManagedAudio("treasureAudio", "tresor_cherche.mp3", {
+        volume: 1,
+        fadeInDuration: 150,
+        fadeOutDuration: 120
+      }).catch(() => {});
 
-    await playManagedAudio("treasureAudio", "tresor_cherche.mp3", {
-      volume: 1,
-      fadeInDuration: 150,
-      fadeOutDuration: 120
-    }).catch(() => {});
-
-    showToast("🧰 Trésor !");
-  }
-
-  async function playReward() {
-    vibrate(40);
-
-    let randomIndex;
-    do {
-      randomIndex = Math.floor(Math.random() * rewardSounds.length);
-    } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
-
-    lastRewardIndex = randomIndex;
-
-    await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
-      volume: 1,
-      fadeInDuration: 180,
-      fadeOutDuration: 120
-    }).catch(() => {});
-
-    showToast("🎁 Récompense !");
-  }
-
-  const doorSounds = [
-    "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
-  ];
-
-  const placementSounds = [
-    "tick1.mp3",
-    "tick2.mp3",
-    "tick3.mp3",
-    "tick4.mp3"
-  ];
-
-  let currentAudio = null;
-  let placementAudio = null;
-
-  let placementActive = false;
-  let placementIndex = 0;
-
-  let toastTimer = null;
-
-  function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
-  }
-
-  function vibrate(ms) {
-    if ("vibrate" in navigator) navigator.vibrate(ms);
-  }
-
-  function stopPlacement() {
-    placementActive = false;
-    if (placementAudio) {
-      placementAudio.pause();
-      placementAudio.currentTime = 0;
-      placementAudio = null;
-    }
-  }
-
-  function playNextPlacement() {
-    if (!placementActive) return;
-
-    const file = placementSounds[placementIndex];
-
-    if (placementAudio) {
-      placementAudio.pause();
-      placementAudio.currentTime = 0;
+      showToast("🧰 Trésor !");
     }
 
-    placementAudio = new Audio(file);
+    async function playReward() {
+      vibrate(40);
 
-    placementAudio.onended = () => {
-      placementIndex = (placementIndex + 1) % placementSounds.length;
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * rewardSounds.length);
+      } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
+
+      lastRewardIndex = randomIndex;
+
+      await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
+        volume: 1,
+        fadeInDuration: 180,
+        fadeOutDuration: 120
+      }).catch(() => {});
+
+      showToast("🎁 Récompense !");
+    }
+
+    const doorSounds = [
+      "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
+    ];
+
+    const placementSounds = [
+      "tick1.mp3",
+      "tick2.mp3",
+      "tick3.mp3",
+      "tick4.mp3"
+    ];
+
+    let currentAudio = null;
+    let placementAudio = null;
+
+    let placementActive = false;
+    let placementIndex = 0;
+
+    let toastTimer = null;
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+    }
+
+    function vibrate(ms) {
+      if ("vibrate" in navigator) navigator.vibrate(ms);
+    }
+
+    function stopPlacement() {
+      placementActive = false;
+      if (placementAudio) {
+        placementAudio.pause();
+        placementAudio.currentTime = 0;
+        placementAudio = null;
+      }
+    }
+
+    function playNextPlacement() {
+      if (!placementActive) return;
+
+      const file = placementSounds[placementIndex];
+
+      if (placementAudio) {
+        placementAudio.pause();
+        placementAudio.currentTime = 0;
+      }
+
+      placementAudio = new Audio(file);
+
+      placementAudio.onended = () => {
+        placementIndex = (placementIndex + 1) % placementSounds.length;
+        playNextPlacement();
+      };
+
+      placementAudio.play().catch(() => {});
+    }
+
+    function playPlacement() {
+      vibrate(25);
+
+      if (placementActive) {
+        stopPlacement();
+        showToast("⛔ Placement arrêté");
+        return;
+      }
+
+      placementActive = true;
+      placementIndex = 0;
       playNextPlacement();
-    };
-
-    placementAudio.play().catch(() => {});
-  }
-
-  function playPlacement() {
-    vibrate(25);
-
-    if (placementActive) {
-      stopPlacement();
-      showToast("⛔ Placement arrêté");
-      return;
     }
 
-    placementActive = true;
-    placementIndex = 0;
-    playNextPlacement();
-  }
+    function playDoor() {
+      vibrate(40);
 
-  function playDoor() {
-    vibrate(40);
+      // Coupe la musique d’ambiance fixe du parent (index.html)
+      if (parent && parent.stopAmbianceFromFrame) {
+        parent.stopAmbianceFromFrame();
+      }
 
-    stopPlacement();
+      stopPlacement();
 
-    const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
-    playManagedAudio("currentAudio", file, {
-      volume: 1,
-      fadeInDuration: 120,
-      fadeOutDuration: 120
-    });
+      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
+      playManagedAudio("currentAudio", file, {
+        volume: 1,
+        fadeInDuration: 120,
+        fadeOutDuration: 120
+      }).catch(() => {});
 
-    showToast("🚪 Porte...");
-  }
-
-</script>
+      showToast("🚪 Porte...");
+    }
+  </script>
 
 </body>
 </html>
