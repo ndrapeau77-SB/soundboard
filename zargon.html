@@ -24,13 +24,33 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
-      gap: 15px;
+      margin-bottom: 15px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .topbar h1 {
       margin: 0;
       font-size: 32px;
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-top {
+      background: rgba(255,120,0,0.85);
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-back {
+      background: rgba(0,0,0,0.6);
     }
 
     .grid {
@@ -52,34 +72,25 @@
       padding: 0;
       background: transparent;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      transition: transform 0.1s ease;
     }
-
-    .btn:active { transform: scale(0.97); }
 
     .btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
     }
 
     .btn span {
       position: absolute;
-      left: 0;
       bottom: 0;
       width: 100%;
-      padding: 14px 10px;
       text-align: center;
+      padding: 12px;
       font-weight: bold;
-      font-size: 20px;
-      color: white;
-      text-shadow: 2px 2px 6px rgba(0,0,0,1);
-      background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.45), rgba(0,0,0,0));
-      z-index: 2;
+      background: rgba(0,0,0,0.7);
     }
 
-    /* 🔥 Nouveau bouton large */
+    /* bouton large mort */
     .btn-wide {
       width: 100%;
       height: 140px;
@@ -106,8 +117,21 @@
       text-align: center;
       padding: 12px;
       font-weight: bold;
-      font-size: 20px;
       background: rgba(0,0,0,0.7);
+    }
+
+    /* flash */
+    #death-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(180, 0, 0, 0);
+      pointer-events: none;
+      z-index: 9999;
+      transition: background 0.1s ease;
+    }
+
+    #death-flash.show {
+      background: rgba(180, 0, 0, 0.5);
     }
 
     @media (max-width: 480px) {
@@ -120,11 +144,17 @@
 <body>
   <div class="app">
 
+    <!-- 🔥 TOPBAR -->
     <div class="topbar">
       <h1>Zargon 💀</h1>
-      <button onclick="parent.navigateTo('accueil.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;">← Retour</button>
+
+      <div class="top-buttons">
+        <button class="btn-top" onclick="startTurn()">🔥 Début du tour</button>
+        <button class="btn-top btn-back" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+      </div>
     </div>
 
+    <!-- GRID -->
     <div class="grid">
 
       <button class="btn" onclick="parent.navigateTo('monstres.html')">
@@ -147,24 +177,67 @@
         <span>Dés Défense</span>
       </button>
 
-      <button class="btn" onclick="playAmbiance()">
-        <img src="musique_zargon.png">
-        <span>Musique</span>
-      </button>
-
     </div>
 
-    <!-- 🔥 NOUVEAU BOUTON LARGE -->
+    <!-- 💀 BOUTON MORT -->
     <button class="btn-wide" onclick="playDeath()">
       <img src="mort.png">
-      <span>💀 Mort</span>
+      <span>☠️ Mort</span>
     </button>
 
   </div>
 
+  <div id="death-flash"></div>
+
   <script>
+    let deathAudio = null;
+    let turnAudio = null;
+
+    function startTurn() {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(80);
+      }
+
+      if (turnAudio) {
+        turnAudio.pause();
+        turnAudio.currentTime = 0;
+      }
+
+      turnAudio = new Audio("war_horn.mp3");
+      turnAudio.play().catch(() => {});
+    }
+
     function playDeath() {
-      new Audio("mort.mp3").play().catch(()=>{});
+
+      if ("vibrate" in navigator) {
+        navigator.vibrate([120, 80, 120]);
+      }
+
+      const flash = document.getElementById("death-flash");
+
+      flash.classList.add("show");
+
+      setTimeout(() => {
+        flash.classList.remove("show");
+
+        setTimeout(() => {
+          flash.classList.add("show");
+
+          setTimeout(() => {
+            flash.classList.remove("show");
+          }, 120);
+
+        }, 80);
+
+      }, 120);
+
+      if (deathAudio) {
+        deathAudio.pause();
+        deathAudio.currentTime = 0;
+      }
+
+      deathAudio = new Audio("mort.mp3");
+      deathAudio.play().catch(() => {});
     }
   </script>
 
