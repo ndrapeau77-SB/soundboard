@@ -26,37 +26,11 @@
       align-items: center;
       margin-bottom: 25px;
       gap: 15px;
-      flex-wrap: wrap;
     }
 
     .topbar h1 {
       margin: 0;
       font-size: 32px;
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .topbar-btn {
-      color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      white-space: nowrap;
-    }
-
-    .turn-btn {
-      background: rgba(255,140,0,0.85);
-    }
-
-    .back-btn {
-      background: rgba(0,0,0,0.6);
     }
 
     .grid {
@@ -67,75 +41,78 @@
     }
 
     .btn {
-      display: block;
       width: 100%;
       max-width: 220px;
-      height: 280px;
+      height: 260px;
       border-radius: 18px;
       overflow: hidden;
       position: relative;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       cursor: pointer;
-      transition: transform 0.1s ease;
-      background: rgba(0,0,0,0.25);
       border: none;
       padding: 0;
+      background: transparent;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      transition: transform 0.1s ease;
     }
 
-    .btn:active {
-      transform: scale(0.97);
-    }
+    .btn:active { transform: scale(0.97); }
 
     .btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      background: transparent;
     }
 
     .btn span {
       position: absolute;
       left: 0;
-      right: 0;
       bottom: 0;
-      padding: 12px 10px;
+      width: 100%;
+      padding: 14px 10px;
       text-align: center;
       font-weight: bold;
-      font-size: 1.05rem;
-      color: #ffffff;
-      background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.25));
-      text-shadow: 0 2px 6px rgba(0,0,0,1);
+      font-size: 20px;
+      color: white;
+      text-shadow: 2px 2px 6px rgba(0,0,0,1);
+      background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.45), rgba(0,0,0,0));
       z-index: 2;
     }
 
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: rgba(0,0,0,0.82);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-      pointer-events: none;
-      white-space: nowrap;
-      z-index: 999;
+    /* 🔥 Nouveau bouton large */
+    .btn-wide {
+      width: 100%;
+      height: 140px;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-top: 25px;
+      position: relative;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
     }
 
-    #toast.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
+    .btn-wide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .btn-wide span {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      font-weight: bold;
+      font-size: 20px;
+      background: rgba(0,0,0,0.7);
     }
 
     @media (max-width: 480px) {
-      .app { padding: 16px; }
-      .topbar h1 { font-size: 28px; }
-      .btn { height: 220px; max-width: 100%; }
-      .btn span { font-size: 16px; padding: 7px 12px; }
+      .btn { height: 220px; }
+      .btn-wide { height: 110px; }
     }
   </style>
 </head>
@@ -144,132 +121,52 @@
   <div class="app">
 
     <div class="topbar">
-      <h1>Zargon</h1>
-
-      <div class="topbar-actions">
-        <button class="topbar-btn turn-btn" onclick="startTurn()">🔥 Début du tour</button>
-        <button class="topbar-btn back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
-      </div>
+      <h1>Zargon 💀</h1>
+      <button onclick="parent.navigateTo('accueil.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;">← Retour</button>
     </div>
 
     <div class="grid">
+
       <button class="btn" onclick="parent.navigateTo('monstres.html')">
-        <img src="monstres.png" alt="Monstres">
+        <img src="monstres.png">
         <span>Monstres</span>
       </button>
 
       <button class="btn" onclick="parent.navigateTo('sortdelaterreur.html')">
-        <img src="sortdelaterreur.png" alt="Sorts de la terreur">
+        <img src="sortdelaterreur.png">
         <span>Sorts de la terreur</span>
       </button>
 
       <button class="btn" onclick="playAttackDice()">
-        <img src="des_att_zargon.png" alt="Dés attaque">
+        <img src="des_att_zargon.png">
         <span>Dés Attaque</span>
       </button>
 
       <button class="btn" onclick="playDefenseDice()">
-        <img src="des_def_zargon.png" alt="Dés défense">
+        <img src="des_def_zargon.png">
         <span>Dés Défense</span>
       </button>
+
+      <button class="btn" onclick="playAmbiance()">
+        <img src="musique_zargon.png">
+        <span>Musique</span>
+      </button>
+
     </div>
+
+    <!-- 🔥 NOUVEAU BOUTON LARGE -->
+    <button class="btn-wide" onclick="playDeath()">
+      <img src="mort.png">
+      <span>💀 Mort</span>
+    </button>
 
   </div>
 
-  <div id="toast"></div>
-
-  <script src="audio-utils.js"></script>
   <script>
-    const attackSounds = [
-      "combat.mp3",
-      "combat2.mp3",
-      "combat3.mp3",
-      "combat4.mp3",
-      "combat5.mp3",
-      "combat6.mp3"
-    ];
-
-    const defenseSounds = [
-      "block1.mp3",
-      "block2.mp3",
-      "block3.mp3",
-      "block4.mp3",
-      "block5.mp3"
-    ];
-
-    const turnStartSound = "war_horn.mp3";
-
-    let attackAudio = null;
-    let defenseAudio = null;
-    let turnAudio = null;
-    let toastTimer = null;
-
-    let lastAttackIndex = -1;
-    let lastDefenseIndex = -1;
-
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
-    }
-
-    function vibrate(pattern) {
-      if ("vibrate" in navigator) {
-        navigator.vibrate(pattern);
-      }
-    }
-
-    async function startTurn() {
-      vibrate([40, 60, 40]);
-
-      await playManagedAudio("turnAudio", turnStartSound, {
-        volume: 1,
-        fadeInDuration: 180,
-        fadeOutDuration: 120
-      }).catch(() => {});
-
-      showToast("🔥 Début du tour !");
-    }
-
-    async function playAttackDice() {
-      vibrate(40);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * attackSounds.length);
-      } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
-
-      lastAttackIndex = randomIndex;
-
-      await playManagedAudio("attackAudio", attackSounds[randomIndex], {
-        volume: 1,
-        fadeInDuration: 100,
-        fadeOutDuration: 100
-      }).catch(() => {});
-
-      showToast("💀 Dés attaque");
-    }
-
-    async function playDefenseDice() {
-      vibrate(30);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * defenseSounds.length);
-      } while (randomIndex === lastDefenseIndex && defenseSounds.length > 1);
-
-      lastDefenseIndex = randomIndex;
-
-      await playManagedAudio("defenseAudio", defenseSounds[randomIndex], {
-        volume: 1,
-        fadeInDuration: 100,
-        fadeOutDuration: 100
-      }).catch(() => {});
-
-      showToast("🛡️ Dés défense");
+    function playDeath() {
+      new Audio("mort.mp3").play().catch(()=>{});
     }
   </script>
+
 </body>
 </html>
