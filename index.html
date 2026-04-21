@@ -60,12 +60,12 @@
       color: white;
     }
 
-    .btn-home { background: rgba(255,255,255,0.15); }
-    .btn-immersion { background: #1db954; }
-    .btn-heros { background: #3b82f6; }
-    .btn-zargon { background: #dc2626; }
-    .btn-death { background: #6b0000; }
-    .btn-stop { background: rgba(180,0,0,0.8); }
+    .btn-home     { background: rgba(255,255,255,0.15); }
+    .btn-immersion{ background: #1db954; }
+    .btn-heros    { background: #3b82f6; }
+    .btn-zargon   { background: #dc2626; }
+    .btn-death    { background: #6b0000; }
+    .btn-stop     { background: rgba(180,0,0,0.8); }
 
     button:active { transform: scale(0.95); }
 
@@ -89,12 +89,12 @@
   <img class="logo" src="hqentete.png" onclick="goHome()">
 
   <div class="controls">
-    <button class="btn-home" onclick="goHome()">🏠</button>
+    <button class="btn-home"      onclick="goHome()">🏠</button>
     <button class="btn-immersion" onclick="lancerImmersion()">🎵</button>
-    <button class="btn-heros" onclick="toggleHerosMusic()">H</button>
-    <button class="btn-zargon" onclick="toggleZargonMusic()">Z</button>
-    <button class="btn-death" onclick="playDeath()">☠️</button>
-    <button class="btn-stop" onclick="stopAll()">⏹</button>
+    <button class="btn-heros"     onclick="toggleHerosMusic()">H</button>
+    <button class="btn-zargon"    onclick="toggleZargonMusic()">Z</button>
+    <button class="btn-death"     onclick="playDeath()">☠️</button>
+    <button class="btn-stop"      onclick="stopAll()">⏹</button>
   </div>
 </div>
 
@@ -102,8 +102,9 @@
 
 <script>
 let ambianceAudio = null;
-let herosAudio = null;
-let zargonAudio = null;
+let herosAudio    = null;
+let zargonAudio   = null;
+let deathAudio    = null;
 
 let ambianceTime = 0;
 
@@ -133,7 +134,6 @@ function playRandomLoop(audioRef, tracks) {
     window[audioRef] = audio;
     audio.volume = 0.8;
 
-    // Si une seule piste, on boucle directement via .loop
     if (tracks.length === 1) {
       audio.loop = true;
       audio.play().catch(()=>{});
@@ -167,31 +167,31 @@ function lancerImmersion() {
   ambianceAudio.play().catch(()=>{});
 }
 
-function stopImmersion() {
-  if (ambianceAudio) {
-    ambianceTime = ambianceAudio.currentTime;
-    ambianceAudio.pause();
-  }
-}
-
 function playDeath() {
   stopAll();
 
-  const death = new Audio("mort.mp3");
-  death.play().catch(()=>{});
+  deathAudio = new Audio("mort.mp3");
+  deathAudio.play().catch(()=>{});
 }
 
 function stopAll() {
+  // Stoppe tous les sons du parent
   if (ambianceAudio) {
     ambianceTime = ambianceAudio.currentTime;
     ambianceAudio.pause();
+    ambianceAudio = null;
   }
-  if (herosAudio) herosAudio.pause();
-  if (zargonAudio) zargonAudio.pause();
+  if (herosAudio)  { herosAudio.pause();  herosAudio  = null; }
+  if (zargonAudio) { zargonAudio.pause(); zargonAudio = null; }
+  if (deathAudio)  { deathAudio.pause();  deathAudio  = null; }
 
-  ambianceAudio = null;
-  herosAudio = null;
-  zargonAudio = null;
+  // Stoppe aussi les sons locaux dans l'iframe active (portes, trésor, placement, etc.)
+  try {
+    const frame = document.getElementById("frame");
+    if (frame && frame.contentWindow && frame.contentWindow.stopAllLocal) {
+      frame.contentWindow.stopAllLocal();
+    }
+  } catch(e) {}
 }
 
 function goHome() {
@@ -202,7 +202,7 @@ function navigateTo(page) {
   document.getElementById("frame").src = page;
 }
 
-/* IMPORTANT : utilisé par tes pages pour couper la musique */
+/* Utilisé par les pages enfants pour couper tous les sons */
 function stopAmbianceFromFrame() {
   stopAll();
 }
