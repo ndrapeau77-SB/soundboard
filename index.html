@@ -131,14 +131,19 @@ function playRandomLoop(audioRef, tracks) {
   function playNext() {
     const audio = new Audio(tracks[index]);
     window[audioRef] = audio;
-
-    audio.onended = () => {
-      index = (index + 1) % tracks.length;
-      playNext();
-    };
-
     audio.volume = 0.8;
-    audio.play().catch(()=>{});
+
+    // Si une seule piste, on boucle directement via .loop
+    if (tracks.length === 1) {
+      audio.loop = true;
+      audio.play().catch(()=>{});
+    } else {
+      audio.onended = () => {
+        index = (index + 1) % tracks.length;
+        playNext();
+      };
+      audio.play().catch(()=>{});
+    }
   }
 
   playNext();
