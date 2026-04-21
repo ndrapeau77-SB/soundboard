@@ -25,6 +25,11 @@
 
     .topbar h1 { margin: 0; font-size: 2rem; }
 
+    .topbar-btns {
+      display: flex;
+      gap: 8px;
+    }
+
     .back-btn {
       color: white;
       background: rgba(0,0,0,0.65);
@@ -35,6 +40,19 @@
       cursor: pointer;
       font-size: 1rem;
     }
+
+    .stop-btn {
+      color: white;
+      background: rgba(180,0,0,0.8);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .back-btn:active, .stop-btn:active { transform: scale(0.95); }
 
     .grid {
       display: grid;
@@ -120,7 +138,10 @@
 
   <div class="topbar">
     <h1>Héros ⚔️</h1>
-    <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+    <div class="topbar-btns">
+      <button class="stop-btn" onclick="stopEverything()">⏹ Arrêter tout</button>
+      <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+    </div>
   </div>
 
   <div class="grid">
@@ -211,11 +232,11 @@
       "tick4.mp3"
     ];
 
-    let currentAudio = null;
+    let currentAudio   = null;
     let placementAudio = null;
 
     let placementActive = false;
-    let placementIndex = 0;
+    let placementIndex  = 0;
 
     let toastTimer = null;
 
@@ -238,6 +259,25 @@
         placementAudio.currentTime = 0;
         placementAudio = null;
       }
+    }
+
+    /* Exposée au parent (index.html) pour que ⏹ stoppe aussi les sons locaux */
+    function stopAllLocal() {
+      stopPlacement();
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+    }
+
+    /* Stoppe tout : sons locaux + sons du parent (ambiance, héros, zargon, mort) */
+    function stopEverything() {
+      stopAllLocal();
+      if (parent && parent.stopAll) {
+        parent.stopAll();
+      }
+      showToast("⏹ Tout arrêté");
     }
 
     function playNextPlacement() {
@@ -270,16 +310,16 @@
       }
 
       placementActive = true;
-      placementIndex = 0;
+      placementIndex  = 0;
       playNextPlacement();
     }
 
     function playDoor() {
       vibrate(40);
 
-      // Coupe la musique d’ambiance fixe du parent (index.html)
-      if (parent && parent.stopAmbianceFromFrame) {
-        parent.stopAmbianceFromFrame();
+      // Stoppe tous les sons du parent
+      if (parent && parent.stopAll) {
+        parent.stopAll();
       }
 
       stopPlacement();
