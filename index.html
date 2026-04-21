@@ -71,14 +71,15 @@
       top: 70px;
       left: 0;
       right: 0;
-      bottom: 0;
+      /* Laisser de la place pour le bouton Mort en bas */
+      bottom: 110px;
       width: 100%;
-      height: calc(100vh - 70px);
+      height: calc(100vh - 70px - 110px);
       border: none;
       background: transparent;
     }
 
-    /* 🔥 BOUTON MORT LARGE */
+    /* 💀 BOUTON MORT LARGE */
     .btn-death-wide {
       position: fixed;
       bottom: 10px;
@@ -92,23 +93,34 @@
       cursor: pointer;
       background: transparent;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: transform 0.1s ease;
+      display: block;
     }
+
+    .btn-death-wide:active { transform: scale(0.98); }
 
     .btn-death-wide img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
 
     .btn-death-wide span {
       position: absolute;
+      left: 0;
+      right: 0;
       bottom: 0;
-      width: 100%;
+      padding: 14px 10px;
+      box-sizing: border-box;
       text-align: center;
-      padding: 10px;
       font-weight: bold;
       font-size: 1.2rem;
-      background: rgba(0,0,0,0.7);
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+      background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.45), rgba(0,0,0,0));
+      z-index: 2;
+      pointer-events: none;
     }
 
     #death-flash {
@@ -126,7 +138,6 @@
 
   <div class="topbar">
     <img class="logo" src="hqentete.png" onclick="goHome()">
-
     <div class="controls">
       <button class="btn-home" onclick="goHome()">🏠</button>
       <button class="btn-play" onclick="lancerImmersion()">🎵</button>
@@ -136,35 +147,48 @@
 
   <iframe id="frame" src="accueil.html"></iframe>
 
-  <!-- 💀 NOUVEAU BOUTON -->
+  <!-- 💀 BOUTON MORT -->
   <button class="btn-death-wide" onclick="playDeath()">
-    <img src="mort.png">
+    <img src="mort.png" alt="Mort">
     <span>☠️ Mort</span>
   </button>
 
   <div id="death-flash"></div>
 
+  <script src="audio-utils.js"></script>
   <script>
     const AMBIANCE_FILE = "ambiance1.mp3";
     let ambianceAudio = null;
-    let deathAudio = null;
+    let deathAudio    = null;
 
-    function lancerImmersion() {
+    // Position mémorisée pour reprendre l'ambiance où elle s'est arrêtée
+    let immersionSavedTime = 0;
+
+    async function lancerImmersion() {
       if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
+        immersionSavedTime = ambianceAudio.currentTime;
+        await fadeOut(ambianceAudio, 400);
+        ambianceAudio = null;
+        return; // toggle OFF
       }
-      ambianceAudio = new Audio(AMBIANCE_FILE);
-      ambianceAudio.loop = true;
-      ambianceAudio.volume = 0.8;
-      ambianceAudio.play().catch(() => {});
+
+      const audio = new Audio(AMBIANCE_FILE);
+      audio.loop   = true;
+      audio.volume = 0;
+      audio.currentTime = immersionSavedTime;
+      ambianceAudio = audio;
+
+      audio.play()
+        .then(() => fadeIn(audio, 500, 0.8))
+        .catch(() => {});
     }
 
-    function stopImmersion() {
-      if (ambianceAudio) {
-        ambianceAudio.pause();
-        ambianceAudio.currentTime = 0;
-      }
+    async function stopImmersion() {
+      if (!ambianceAudio) return;
+      immersionSavedTime = ambianceAudio.currentTime;
+      ambianceAudio.onended = null;
+      await fadeOut(ambianceAudio, 400);
+      ambianceAudio = null;
     }
 
     function goHome() {
@@ -179,38 +203,36 @@
       stopImmersion();
     }
 
-    function playDeath() {
+    async function playDeath() {
+      if ("vibrate" in navigator) navigator.vibrate([120, 80, 120]);
 
-      stopImmersion();
+      // Couper l'ambiance avec fade et mémoriser la position
+      await stopImmersion();
 
-      if ("vibrate" in navigator) {
-        navigator.vibrate([120, 80, 120]);
-      }
-
+      // Flash rouge double
       const flash = document.getElementById("death-flash");
-
       flash.style.background = "rgba(180,0,0,0.5)";
-
       setTimeout(() => {
         flash.style.background = "rgba(180,0,0,0)";
-
         setTimeout(() => {
           flash.style.background = "rgba(180,0,0,0.5)";
-
           setTimeout(() => {
             flash.style.background = "rgba(180,0,0,0)";
           }, 120);
         }, 80);
-
       }, 120);
 
+      // Son avec fade in
       if (deathAudio) {
-        deathAudio.pause();
-        deathAudio.currentTime = 0;
+        deathAudio.onended = null;
+        await fadeOut(deathAudio, 120);
       }
-
-      deathAudio = new Audio("mort.mp3");
-      deathAudio.play().catch(() => {});
+      const audio = new Audio("mort.mp3");
+      audio.volume = 0;
+      deathAudio   = audio;
+      audio.play()
+        .then(() => fadeIn(audio, 180, 1.0))
+        .catch(() => {});
     }
   </script>
 
