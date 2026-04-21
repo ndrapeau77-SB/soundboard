@@ -41,62 +41,33 @@
 
     .topbar img.logo {
       height: 48px;
-      object-fit: contain;
       cursor: pointer;
     }
 
     .controls {
       display: flex;
       gap: 8px;
-      align-items: center;
       flex-wrap: wrap;
     }
 
-    .btn-home,
-    .btn-amb,
-    .btn-resume,
-    .btn-death,
-    .btn-stop {
-      color: white;
+    button {
       border: none;
+      padding: 9px 14px;
       border-radius: 10px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
-      white-space: nowrap;
-      padding: 9px 14px;
-    }
-
-    .btn-home   { background: rgba(255,255,255,0.15); }
-    .btn-amb    { background: #1db954; }
-    .btn-resume { background: rgba(40,120,255,0.9); }
-    .btn-death  { background: rgba(120,0,0,0.9); }
-    .btn-stop   { background: rgba(180,0,0,0.8); }
-
-    .btn-home:active,
-    .btn-amb:active,
-    .btn-resume:active,
-    .btn-death:active,
-    .btn-stop:active { transform: scale(0.96); }
-
-    #statusBar {
-      position: fixed;
-      top: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 101;
-      background: rgba(0,0,0,0.65);
       color: white;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-size: 0.9rem;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      white-space: nowrap;
     }
 
-    #statusBar.show { opacity: 1; }
+    .btn-home { background: rgba(255,255,255,0.15); }
+    .btn-immersion { background: #1db954; }
+    .btn-heros { background: #3b82f6; }
+    .btn-zargon { background: #dc2626; }
+    .btn-death { background: #6b0000; }
+    .btn-stop { background: rgba(180,0,0,0.8); }
+
+    button:active { transform: scale(0.95); }
 
     #frame {
       position: fixed;
@@ -109,150 +80,130 @@
       border: none;
       background: transparent;
     }
-
-    #death-flash {
-      position: fixed;
-      inset: 0;
-      background: rgba(180,0,0,0);
-      pointer-events: none;
-      z-index: 9999;
-      transition: background 0.1s ease;
-    }
-
-    @media (max-width: 480px) {
-      .topbar { padding: 8px 12px; }
-      .topbar img.logo { height: 36px; }
-      .btn-home, .btn-amb, .btn-resume, .btn-death, .btn-stop {
-        font-size: 0.85rem;
-        padding: 8px 10px;
-      }
-      #statusBar { top: 96px; font-size: 0.82rem; }
-    }
   </style>
 </head>
 
 <body>
 
-  <div class="topbar">
-    <img class="logo" src="hqentete.png" alt="Hero Quest" onclick="goHome()">
-    <div class="controls">
-      <button class="btn-home"   onclick="goHome()">🏠</button>
-      <button class="btn-amb"    onclick="lancerImmersion()">Amb</button>
-      <button class="btn-resume" onclick="reprendreImmersion()">Reprendre</button>
-      <button class="btn-death"  onclick="playDeath()">☠️</button>
-      <button class="btn-stop"   onclick="stopAllMusic()">⏹</button>
-    </div>
+<div class="topbar">
+  <img class="logo" src="hqentete.png" onclick="goHome()">
+
+  <div class="controls">
+    <button class="btn-home" onclick="goHome()">🏠</button>
+    <button class="btn-immersion" onclick="lancerImmersion()">🎵</button>
+    <button class="btn-heros" onclick="toggleHerosMusic()">🧙‍♂️</button>
+    <button class="btn-zargon" onclick="toggleZargonMusic()">🔥</button>
+    <button class="btn-death" onclick="playDeath()">☠️</button>
+    <button class="btn-stop" onclick="stopAll()">⏹</button>
   </div>
+</div>
 
-  <div id="statusBar"></div>
-  <div id="death-flash"></div>
+<iframe id="frame" src="accueil.html"></iframe>
 
-  <iframe id="frame" src="accueil.html"></iframe>
+<script>
+let ambianceAudio = null;
+let herosAudio = null;
+let zargonAudio = null;
 
-  <script src="audio-utils.js"></script>
-  <script>
-    const AMBIANCE_FILE = "ambiance1.mp3";
+let ambianceTime = 0;
 
-    let ambianceAudio      = null;
-    let deathAudio         = null;
-    let immersionSavedTime = 0;
-    let statusTimer        = null;
+const HEROS_TRACKS = [
+  "muz_heros1.mp3","muz_heros2.mp3","muz_heros3.mp3",
+  "muz_heros4.mp3","muz_heros5.mp3","muz_heros6.mp3",
+  "muz_heros7.mp3","muz_heros8.mp3"
+];
 
-    function showStatus(message) {
-      const bar = document.getElementById("statusBar");
-      bar.textContent = message;
-      bar.classList.add("show");
-      clearTimeout(statusTimer);
-      statusTimer = setTimeout(() => bar.classList.remove("show"), 1800);
-    }
+const ZARGON_TRACKS = [
+  "muz_zargon1.mp3",
+  "muz_zargon2.mp3",
+  "muz_zargon3.mp3"
+];
 
-    // ─── Lancer ambiance depuis le début ─────────────────────────────────────
-    async function lancerImmersion() {
-      immersionSavedTime = 0;
-      await _playAmbiance(0);
-      showStatus("🎵 Ambiance lancée");
-    }
+function playRandomLoop(audioRef, tracks) {
+  if (window[audioRef]) {
+    window[audioRef].pause();
+    window[audioRef] = null;
+    return;
+  }
 
-    // ─── Reprendre là où on avait arrêté ─────────────────────────────────────
-    async function reprendreImmersion() {
-      if (immersionSavedTime === 0) {
-        showStatus("▶️ Rien à reprendre");
-        return;
-      }
-      await _playAmbiance(immersionSavedTime);
-      showStatus("▶️ Reprise à " + Math.floor(immersionSavedTime) + "s");
-    }
+  stopAll();
 
-    async function _playAmbiance(startAt = 0) {
-      if (ambianceAudio) {
-        ambianceAudio.onended = null;
-        await fadeOut(ambianceAudio, 300);
-        ambianceAudio = null;
-      }
+  let index = Math.floor(Math.random() * tracks.length);
 
-      const audio = new Audio(AMBIANCE_FILE);
-      audio.loop        = true;
-      audio.volume      = 0;
-      audio.currentTime = startAt;
-      ambianceAudio     = audio;
+  function playNext() {
+    const audio = new Audio(tracks[index]);
+    window[audioRef] = audio;
 
-      audio.play()
-        .then(() => fadeIn(audio, 500, 0.8))
-        .catch(() => {});
-    }
+    audio.onended = () => {
+      index = (index + 1) % tracks.length;
+      playNext();
+    };
 
-    // ─── Stop ─────────────────────────────────────────────────────────────────
-    async function stopAllMusic() {
-      if (ambianceAudio) {
-        immersionSavedTime = ambianceAudio.currentTime;
-        ambianceAudio.onended = null;
-        await fadeOut(ambianceAudio, 400);
-        ambianceAudio = null;
-      }
-      showStatus("⏹ Musique arrêtée");
-    }
+    audio.volume = 0.8;
+    audio.play().catch(()=>{});
+  }
 
-    // ─── Navigation ───────────────────────────────────────────────────────────
-    function goHome() {
-      document.getElementById("frame").src = "accueil.html";
-    }
+  playNext();
+}
 
-    function navigateTo(page) {
-      document.getElementById("frame").src = page;
-    }
+function toggleHerosMusic() {
+  playRandomLoop("herosAudio", HEROS_TRACKS);
+}
 
-    function stopAmbianceFromFrame() {
-      stopAllMusic();
-    }
+function toggleZargonMusic() {
+  playRandomLoop("zargonAudio", ZARGON_TRACKS);
+}
 
-    // ─── Mort ─────────────────────────────────────────────────────────────────
-    async function playDeath() {
-      if ("vibrate" in navigator) navigator.vibrate([120, 80, 120]);
+function lancerImmersion() {
+  stopAll();
 
-      await stopAllMusic();
+  ambianceAudio = new Audio("ambiance1.mp3");
+  ambianceAudio.loop = true;
+  ambianceAudio.currentTime = ambianceTime || 0;
+  ambianceAudio.volume = 0.8;
+  ambianceAudio.play().catch(()=>{});
+}
 
-      const flash = document.getElementById("death-flash");
-      flash.style.background = "rgba(180,0,0,0.5)";
-      setTimeout(() => {
-        flash.style.background = "rgba(180,0,0,0)";
-        setTimeout(() => {
-          flash.style.background = "rgba(180,0,0,0.5)";
-          setTimeout(() => { flash.style.background = "rgba(180,0,0,0)"; }, 120);
-        }, 80);
-      }, 120);
+function stopImmersion() {
+  if (ambianceAudio) {
+    ambianceTime = ambianceAudio.currentTime;
+    ambianceAudio.pause();
+  }
+}
 
-      if (deathAudio) {
-        deathAudio.onended = null;
-        await fadeOut(deathAudio, 120);
-      }
-      const audio  = new Audio("mort.mp3");
-      audio.volume = 0;
-      deathAudio   = audio;
-      audio.play()
-        .then(() => fadeIn(audio, 180, 1.0))
-        .catch(() => {});
-    }
-  </script>
+function playDeath() {
+  stopAll();
+
+  const death = new Audio("mort.mp3");
+  death.play().catch(()=>{});
+}
+
+function stopAll() {
+  if (ambianceAudio) {
+    ambianceTime = ambianceAudio.currentTime;
+    ambianceAudio.pause();
+  }
+  if (herosAudio) herosAudio.pause();
+  if (zargonAudio) zargonAudio.pause();
+
+  ambianceAudio = null;
+  herosAudio = null;
+  zargonAudio = null;
+}
+
+function goHome() {
+  document.getElementById("frame").src = "accueil.html";
+}
+
+function navigateTo(page) {
+  document.getElementById("frame").src = page;
+}
+
+/* IMPORTANT : utilisé par tes pages pour couper la musique */
+function stopAmbianceFromFrame() {
+  stopAll();
+}
+</script>
 
 </body>
 </html>
