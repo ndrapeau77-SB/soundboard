@@ -180,66 +180,60 @@
 
   <div id="toast"></div>
 
-  <script src="audio-utils.js"></script>
   <script>
+    // ── Sons ──────────────────────────────────────────────
     const rewardSounds = [
       "recompense1.mp3",
       "recompense2.mp3",
       "recompense3.mp3"
     ];
 
-    let lastRewardIndex = -1;
-
-    async function playTreasure() {
-      vibrate(40);
-
-      await playManagedAudio("treasureAudio", "tresor_cherche.mp3", {
-        volume: 1,
-        fadeInDuration: 150,
-        fadeOutDuration: 120
-      }).catch(() => {});
-
-      showToast("🧰 Trésor !");
-    }
-
-    async function playReward() {
-      vibrate(40);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * rewardSounds.length);
-      } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
-
-      lastRewardIndex = randomIndex;
-
-      await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
-        volume: 1,
-        fadeInDuration: 180,
-        fadeOutDuration: 120
-      }).catch(() => {});
-
-      showToast("🎁 Récompense !");
-    }
-
     const doorSounds = [
       "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
     ];
 
     const placementSounds = [
-      "tick1.mp3",
-      "tick2.mp3",
-      "tick3.mp3",
-      "tick4.mp3"
+      "tick1.mp3","tick2.mp3","tick3.mp3","tick4.mp3"
     ];
 
-    let currentAudio   = null;
+    // ── État ──────────────────────────────────────────────
+    let lastRewardIndex  = -1;
+    let lastPlacementIdx = -1;
+
+    let currentAudio   = null;   // porte / trésor / récompense
     let placementAudio = null;
-
     let placementActive = false;
-    let placementIndex  = 0;
 
-    let toastTimer = null;
+    let toastTimer     = null;
+    let duckTimeout    = null;
 
+    const DUCK_VOLUME   = 0.15;
+    const NORMAL_VOLUME = 0.8;
+    const FADE_STEPS    = 20;
+    const FADE_MS       = 200;
+
+    // ── Ducking parent ────────────────────────────────────
+    function duckParent(targetVolume, durationMs) {
+      if (!parent || !parent.setMusicVolume) return;
+      const steps    = FADE_STEPS;
+      const interval = durationMs / steps;
+      const current  = parent.getMusicVolume ? parent.getMusicVolume() : NORMAL_VOLUME;
+      const delta    = (targetVolume - current) / steps;
+      let step = 0;
+      const timer = setInterval(() => {
+        step++;
+        const vol = Math.min(1, Math.max(0, current + delta * step));
+        parent.setMusicVolume(vol);
+        if (step >= steps) clearInterval(timer);
+      }, interval);
+    }
+
+    function restoreParent() {
+      clearTimeout(duckTimeout);
+      duckParent(NORMAL_VOLUME, FADE_MS * 2);
+    }
+
+    // ── Utilitaires ───────────────────────────────────────
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
@@ -252,6 +246,24 @@
       if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
+    function pickRandom(arr, lastIdx) {
+      if (arr.length === 1) return { file: arr[0], index: 0 };
+      let idx;
+      do { idx = Math.floor(Math.random() * arr.length); }
+      while (idx === lastIdx);
+      return { file: arr[idx], index: idx };
+    }
+
+    // Stoppe currentAudio proprement
+    function stopCurrent() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+    }
+
+    // ── Placement ─────────────────────────────────────────
     function stopPlacement() {
       placementActive = false;
       if (placementAudio) {
@@ -261,29 +273,11 @@
       }
     }
 
-    /* Exposée au parent (index.html) pour que ⏹ stoppe aussi les sons locaux */
-    function stopAllLocal() {
-      stopPlacement();
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-      }
-    }
-
-    /* Stoppe tout : sons locaux + sons du parent (ambiance, héros, zargon, mort) */
-    function stopEverything() {
-      stopAllLocal();
-      if (parent && parent.stopAll) {
-        parent.stopAll();
-      }
-      showToast("⏹ Tout arrêté");
-    }
-
     function playNextPlacement() {
       if (!placementActive) return;
 
-      const file = placementSounds[placementIndex];
+      const { file, index } = pickRandom(placementSounds, lastPlacementIdx);
+      lastPlacementIdx = index;
 
       if (placementAudio) {
         placementAudio.pause();
@@ -291,12 +285,8 @@
       }
 
       placementAudio = new Audio(file);
-
-      placementAudio.onended = () => {
-        placementIndex = (placementIndex + 1) % placementSounds.length;
-        playNextPlacement();
-      };
-
+      placementAudio.volume = 1;
+      placementAudio.onended = () => playNextPlacement();
       placementAudio.play().catch(() => {});
     }
 
@@ -309,29 +299,98 @@
         return;
       }
 
+      // Stoppe tout (parent + sons locaux) avant de lancer le placement
+      stopCurrent();
+      if (parent && parent.stopAll) parent.stopAll();
+
       placementActive = true;
-      placementIndex  = 0;
       playNextPlacement();
+      showToast("🎲 Placement...");
     }
 
+    // ── Porte ─────────────────────────────────────────────
     function playDoor() {
       vibrate(40);
 
-      // Stoppe tous les sons du parent
-      if (parent && parent.stopAll) {
-        parent.stopAll();
-      }
-
       stopPlacement();
+      stopCurrent();
+      if (parent && parent.stopAll) parent.stopAll();
 
-      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
-      playManagedAudio("currentAudio", file, {
-        volume: 1,
-        fadeInDuration: 120,
-        fadeOutDuration: 120
-      }).catch(() => {});
+      const { file } = pickRandom(doorSounds, -1);
+      currentAudio = new Audio(file);
+      currentAudio.volume = 1;
+      currentAudio.play().catch(() => {});
 
       showToast("🚪 Porte...");
+    }
+
+    // ── Trésor ────────────────────────────────────────────
+    function playTreasure() {
+      vibrate(40);
+
+      stopPlacement();
+      stopCurrent();
+
+      duckParent(DUCK_VOLUME, FADE_MS);
+
+      currentAudio = new Audio("tresor_cherche.mp3");
+      currentAudio.volume = 1;
+
+      currentAudio.onended = () => {
+        currentAudio = null;
+        restoreParent();
+      };
+
+      currentAudio.play().catch(() => {});
+
+      // Sécurité restore après 15s
+      duckTimeout = setTimeout(restoreParent, 15000);
+
+      showToast("🧰 Trésor !");
+    }
+
+    // ── Récompense ────────────────────────────────────────
+    function playReward() {
+      vibrate(40);
+
+      stopPlacement();
+      stopCurrent();
+
+      const { file, index } = pickRandom(rewardSounds, lastRewardIndex);
+      lastRewardIndex = index;
+
+      duckParent(DUCK_VOLUME, FADE_MS);
+
+      currentAudio = new Audio(file);
+      currentAudio.volume = 1;
+
+      currentAudio.onended = () => {
+        currentAudio = null;
+        restoreParent();
+      };
+
+      currentAudio.play().catch(() => {});
+
+      // Sécurité restore après 15s
+      duckTimeout = setTimeout(restoreParent, 15000);
+
+      showToast("🎁 Récompense !");
+    }
+
+    // ── Stop global ───────────────────────────────────────
+
+    /* Appelée par index.html via stopAll() */
+    function stopAllLocal() {
+      stopPlacement();
+      stopCurrent();
+      clearTimeout(duckTimeout);
+    }
+
+    /* Bouton ⏹ Arrêter tout */
+    function stopEverything() {
+      stopAllLocal();
+      if (parent && parent.stopAll) parent.stopAll();
+      showToast("⏹ Tout arrêté");
     }
   </script>
 
