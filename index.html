@@ -108,6 +108,9 @@ let deathAudio    = null;
 
 let ambianceTime = 0;
 
+// Volume maître de la musique (utilisé pour le ducking depuis monstres.html)
+let musicVolume = 0.8;
+
 const HEROS_TRACKS = [
   "muz_heros1.mp3","muz_heros2.mp3","muz_heros3.mp3",
   "muz_heros4.mp3","muz_heros5.mp3","muz_heros6.mp3",
@@ -118,6 +121,19 @@ const ZARGON_TRACKS = [
   "war_drums.mp3"
 ];
 
+/* ── Ducking API (appelée par monstres.html via parent) ── */
+function getMusicVolume() {
+  return musicVolume;
+}
+
+function setMusicVolume(vol) {
+  musicVolume = Math.min(1, Math.max(0, vol));
+  if (ambianceAudio) ambianceAudio.volume = musicVolume;
+  if (herosAudio)    herosAudio.volume    = musicVolume;
+  if (zargonAudio)   zargonAudio.volume   = musicVolume;
+}
+
+/* ── Lecture musique ── */
 function playRandomLoop(audioRef, tracks) {
   if (window[audioRef]) {
     window[audioRef].pause();
@@ -132,7 +148,7 @@ function playRandomLoop(audioRef, tracks) {
   function playNext() {
     const audio = new Audio(tracks[index]);
     window[audioRef] = audio;
-    audio.volume = 0.8;
+    audio.volume = musicVolume;
 
     if (tracks.length === 1) {
       audio.loop = true;
@@ -163,7 +179,7 @@ function lancerImmersion() {
   ambianceAudio = new Audio("ambiance1.mp3");
   ambianceAudio.loop = true;
   ambianceAudio.currentTime = ambianceTime || 0;
-  ambianceAudio.volume = 0.8;
+  ambianceAudio.volume = musicVolume;
   ambianceAudio.play().catch(()=>{});
 }
 
@@ -175,7 +191,9 @@ function playDeath() {
 }
 
 function stopAll() {
-  // Stoppe tous les sons du parent
+  // Remet le volume à la normale avant de tout couper
+  musicVolume = 0.8;
+
   if (ambianceAudio) {
     ambianceTime = ambianceAudio.currentTime;
     ambianceAudio.pause();
@@ -185,7 +203,7 @@ function stopAll() {
   if (zargonAudio) { zargonAudio.pause(); zargonAudio = null; }
   if (deathAudio)  { deathAudio.pause();  deathAudio  = null; }
 
-  // Stoppe aussi les sons locaux dans l'iframe active (portes, trésor, placement, etc.)
+  // Stoppe aussi les sons locaux dans l'iframe active
   try {
     const frame = document.getElementById("frame");
     if (frame && frame.contentWindow && frame.contentWindow.stopAllLocal) {
