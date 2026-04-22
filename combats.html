@@ -149,7 +149,6 @@
   <div id="toast"></div>
 
   <script>
-    // ── Sons ──────────────────────────────────────────────
     const attackSounds = [
       "combat.mp3","combat2.mp3","combat3.mp3",
       "combat4.mp3","combat5.mp3","combat6.mp3"
@@ -160,18 +159,14 @@
       "block4.mp3","block5.mp3"
     ];
 
-    // ── WebAudio (pour amplifier au-delà de volume 1.0) ──
     let audioContext = null;
     const audioBuffers = {};
 
-    // Volume amplifié pour les dés (3.0 = 3× plus fort que la normale)
-    const DICE_GAIN    = 2.0;
+    const DICE_GAIN     = 2.0;
     const VICTOIRE_GAIN = 1.5;
 
     function getCtx() {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
       return audioContext;
     }
 
@@ -188,11 +183,9 @@
     async function playAmplified(file, gain) {
       const ctx = getCtx();
       if (ctx.state === "suspended") await ctx.resume();
-
       const buffer   = await loadBuffer(file);
       const source   = ctx.createBufferSource();
       const gainNode = ctx.createGain();
-
       gainNode.gain.value = gain;
       source.buffer = buffer;
       source.connect(gainNode);
@@ -200,7 +193,6 @@
       source.start(0);
     }
 
-    // ── État ──────────────────────────────────────────────
     let lastAttackIndex  = -1;
     let lastDefenseIndex = -1;
     let toastTimer = null;
@@ -225,7 +217,6 @@
       return { file: arr[idx], index: idx };
     }
 
-    // ── Fonctions de lecture ──────────────────────────────
     async function playAttackDice() {
       vibrate(40);
       const { file, index } = pickRandom(attackSounds, lastAttackIndex);
@@ -244,11 +235,14 @@
 
     async function playVictoire() {
       vibrate(30);
+
+      // Coupe tout (ambiance, héros, zargon, sons locaux des iframes)
+      if (parent && parent.stopAll) parent.stopAll();
+
       await playAmplified("victoire.mp3", VICTOIRE_GAIN).catch(() => {});
-      showToast("🏆 Victoire");
+      showToast("🏆 Victoire !");
     }
 
-    // Préchauffage WebAudio au premier touch
     async function warmUp() {
       try {
         const ctx = getCtx();
