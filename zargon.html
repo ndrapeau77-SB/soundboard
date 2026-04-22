@@ -56,7 +56,6 @@
       background: rgba(0,0,0,0.6);
     }
 
-    /* 🔥 GRID IDENTIQUE À MAGIES */
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -64,7 +63,6 @@
       justify-items: center;
     }
 
-    /* 🔥 NOUVEAU STYLE MAGIES */
     .img-btn {
       position: relative;
       display: block;
@@ -146,17 +144,17 @@
     <div class="grid">
 
       <button class="img-btn" onclick="playAttackDice()">
-        <img src="des_att_zargon.png">
+        <img src="des_att_zargon.png" alt="Dés Attaque">
         <span>Dés Attaque</span>
       </button>
 
       <button class="img-btn" onclick="playDefenseDice()">
-        <img src="des_def_zargon.png">
+        <img src="des_def_zargon.png" alt="Dés Défense">
         <span>Dés Défense</span>
       </button>
 
       <button class="img-btn" onclick="parent.navigateTo('sortdelaterreur.html')">
-        <img src="sortdelaterreur.png">
+        <img src="sortdelaterreur.png" alt="Sorts de la terreur">
         <span>Sorts de la terreur</span>
       </button>
 
@@ -165,6 +163,100 @@
   </div>
 
   <script src="audio-utils.js"></script>
-  <!-- TON JS RESTE IDENTIQUE -->
+  <script>
+    const attackSounds = [
+      "combat.mp3",
+      "combat2.mp3",
+      "combat3.mp3",
+      "combat4.mp3",
+      "combat5.mp3",
+      "combat6.mp3"
+    ];
+
+    const defenseSounds = [
+      "block1.mp3",
+      "block2.mp3",
+      "block3.mp3",
+      "block4.mp3",
+      "block5.mp3"
+    ];
+
+    let attackAudio = null;
+    let defenseAudio = null;
+    let turnAudio = null;
+
+    let lastAttackIndex = -1;
+    let lastDefenseIndex = -1;
+
+    function vibrate(pattern) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
+    }
+
+    async function playShortSound(file, currentAudio, onNewAudio, volume = 1.0) {
+      if (currentAudio) {
+        currentAudio.onended = null;
+        await fadeOut(currentAudio, 120);
+      }
+
+      const audio = new Audio(file);
+      audio.preload = "auto";
+      audio.volume = 0;
+      onNewAudio(audio);
+
+      audio.play()
+        .then(() => fadeIn(audio, 180, volume))
+        .catch(() => {});
+
+      return audio;
+    }
+
+    async function startTurn() {
+      vibrate([40, 60, 40]);
+      turnAudio = await playShortSound(
+        "war_horn.mp3",
+        turnAudio,
+        (a) => { turnAudio = a; },
+        1.0
+      );
+    }
+
+    async function playAttackDice() {
+      vibrate(40);
+
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * attackSounds.length);
+      } while (idx === lastAttackIndex && attackSounds.length > 1);
+
+      lastAttackIndex = idx;
+
+      attackAudio = await playShortSound(
+        attackSounds[idx],
+        attackAudio,
+        (a) => { attackAudio = a; },
+        1.0
+      );
+    }
+
+    async function playDefenseDice() {
+      vibrate(30);
+
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * defenseSounds.length);
+      } while (idx === lastDefenseIndex && defenseSounds.length > 1);
+
+      lastDefenseIndex = idx;
+
+      defenseAudio = await playShortSound(
+        defenseSounds[idx],
+        defenseAudio,
+        (a) => { defenseAudio = a; },
+        1.0
+      );
+    }
+  </script>
 </body>
 </html>
