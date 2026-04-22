@@ -313,12 +313,12 @@
       const buffer   = await loadMonsterBuffer(file);
       const source   = ctx.createBufferSource();
       const gainNode = ctx.createGain();
-      if (id === "rat") {
-  gainNode.gain.value = 1.8;
+// 🔥 boost spécifique
+if (id === "rat" || id === "dreadwarrior") {
+  gainNode.gain.value = 1.75;
 } else {
   gainNode.gain.value = 0.9;
-}
-      source.buffer = buffer;
+}   source.buffer = buffer;
       source.connect(gainNode);
       gainNode.connect(ctx.destination);
 
