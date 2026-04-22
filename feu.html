@@ -15,13 +15,11 @@
         linear-gradient(rgba(5, 10, 20, 0.55), rgba(5, 10, 20, 0.75)),
         url("images/heroquestbackground.jpg") center/cover no-repeat fixed;
     }
-
     .app {
       max-width: 1000px;
       margin: auto;
       padding: 20px;
     }
-
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -30,13 +28,11 @@
       margin-bottom: 25px;
       flex-wrap: wrap;
     }
-
     h1 {
       margin: 0;
       font-size: 32px;
       text-shadow: 0 2px 8px rgba(0,0,0,0.7);
     }
-
     .back-btn {
       background: rgba(20, 30, 50, 0.85);
       color: white;
@@ -47,14 +43,12 @@
       font-size: 15px;
       font-weight: bold;
     }
-
-   .grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
-  justify-items: center;
-}
-
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      justify-items: center;
+    }
     .sound-btn {
       position: relative;
       border-radius: 18px;
@@ -65,25 +59,24 @@
       transition: transform 0.18s ease, box-shadow 0.18s ease;
       min-height: 190px;
       background: rgba(0,0,0,0.25);
+      width: 100%;
     }
-
     .sound-btn:hover {
       transform: translateY(-3px) scale(1.01);
       box-shadow: 0 14px 30px rgba(0,0,0,0.45);
     }
-
+    .sound-btn.playing {
+      box-shadow: 0 0 0 3px #f97316, 0 14px 30px rgba(0,0,0,0.45);
+    }
     .sound-btn img {
       width: 100%;
       height: 190px;
       object-fit: cover;
       display: block;
     }
-
     .sound-btn span {
       position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      left: 0; right: 0; bottom: 0;
       padding: 14px 10px;
       text-align: center;
       font-weight: bold;
@@ -92,90 +85,135 @@
       background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0.18));
       text-shadow: 0 2px 6px rgba(0,0,0,0.8);
     }
-
     @media (max-width: 700px) {
-      .grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-      }
-
-      .sound-btn,
-      .sound-btn img {
-        min-height: 150px;
-        height: 150px;
-      }
-
-      .sound-btn span {
-        font-size: 16px;
-      }
+      .grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .sound-btn, .sound-btn img { min-height: 150px; height: 150px; }
+      .sound-btn span { font-size: 16px; }
     }
   </style>
 </head>
-
 <body>
   <div class="app">
-
     <div class="topbar">
       <h1>Feu</h1>
       <button class="back-btn" onclick="window.location.href='magies.html'">⬅ Retour</button>
     </div>
-
     <div class="grid">
-      <div class="sound-btn" onclick="playAudioById('courage')">
+
+      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/feu_courage.mp3', 1.5, this)">
         <img src="spell_courage.png" alt="Courage">
         <span>Courage</span>
       </div>
 
-      <div class="sound-btn" onclick="playAudioById('wrath')">
+      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/feu_wrath.mp3', 1.5, this)">
         <img src="spell_fireofwrath.png" alt="Fire of Wrath">
         <span>Fire of Wrath</span>
       </div>
 
-      <div class="sound-btn" onclick="playAudioById('ball')">
+      <div class="sound-btn" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/feu_ball.mp3', 1.5, this)">
         <img src="spell_ballofflame.png" alt="Ball of Flame">
         <span>Ball of Flame</span>
       </div>
-    </div>
 
+    </div>
   </div>
 
-  <audio id="courage" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/feu_courage.mp3" type="audio/mpeg">
-  </audio>
-
-  <audio id="wrath" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/feu_wrath.mp3" type="audio/mpeg">
-  </audio>
-
-  <audio id="ball" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/feu_ball.mp3" type="audio/mpeg">
-  </audio>
-
   <script>
-    let currentAudio = null;
+    let audioContext = null;
+    const audioBuffers = {};
+    let activeSource = null;
+    let activeBtn    = null;
+    let duckTimeout  = null;
 
-    function playAudioById(id) {
-      const audio = document.getElementById(id);
+    const DUCK_VOLUME   = 0.15;
+    const NORMAL_VOLUME = 0.8;
+    const FADE_STEPS    = 20;
+    const FADE_MS       = 200;
 
-      if (!audio) {
-        alert("Audio introuvable : " + id);
-        return;
-      }
-
-      if (currentAudio && currentAudio !== audio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      audio.currentTime = 0;
-      currentAudio = audio;
-
-      audio.play().catch((error) => {
-        console.error("Erreur audio :", error);
-        alert("Le son ne charge pas.");
-      });
+    function getCtx() {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      return audioContext;
     }
-  </script>
 
+    async function loadBuffer(url) {
+      if (audioBuffers[url]) return audioBuffers[url];
+      const ctx = getCtx();
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = await ctx.decodeAudioData(arrayBuffer);
+      audioBuffers[url] = buffer;
+      return buffer;
+    }
+
+    function duckParent(targetVolume, durationMs) {
+      try {
+        if (!parent || !parent.setMusicVolume) return;
+        const steps    = FADE_STEPS;
+        const interval = durationMs / steps;
+        const current  = parent.getMusicVolume ? parent.getMusicVolume() : NORMAL_VOLUME;
+        const delta    = (targetVolume - current) / steps;
+        let step = 0;
+        const timer = setInterval(() => {
+          step++;
+          const vol = Math.min(1, Math.max(0, current + delta * step));
+          parent.setMusicVolume(vol);
+          if (step >= steps) clearInterval(timer);
+        }, interval);
+      } catch(e) {}
+    }
+
+    function restoreParent() {
+      clearTimeout(duckTimeout);
+      duckParent(NORMAL_VOLUME, FADE_MS * 2);
+    }
+
+    function clearActiveBtn() {
+      if (activeBtn) { activeBtn.classList.remove("playing"); activeBtn = null; }
+    }
+
+    function stopActiveSource() {
+      if (activeSource) { try { activeSource.stop(); } catch(e) {} activeSource = null; }
+      clearActiveBtn();
+      clearTimeout(duckTimeout);
+    }
+
+    async function playSound(url, gain, btn) {
+      try {
+        const ctx = getCtx();
+        if (ctx.state === "suspended") await ctx.resume();
+
+        stopActiveSource();
+
+        const buffer   = await loadBuffer(url);
+        const source   = ctx.createBufferSource();
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = gain;
+        source.buffer = buffer;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        duckParent(DUCK_VOLUME, FADE_MS);
+
+        activeSource = source;
+        activeBtn    = btn;
+        btn.classList.add("playing");
+
+        source.onended = () => {
+          activeSource = null;
+          clearActiveBtn();
+          restoreParent();
+        };
+
+        source.start(0);
+        duckTimeout = setTimeout(() => { restoreParent(); clearActiveBtn(); }, 15000);
+      } catch(e) { console.error("Erreur audio :", e); }
+    }
+
+    async function warmUp() {
+      try { const ctx = getCtx(); if (ctx.state === "suspended") await ctx.resume(); } catch(_) {}
+    }
+    window.addEventListener("touchstart", warmUp, { once: true });
+    window.addEventListener("click",      warmUp, { once: true });
+  </script>
 </body>
 </html>
