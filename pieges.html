@@ -5,35 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pièges</title>
   <style>
-    body {
+    :root {
+      --page-pad-x: 14px;
+      --page-pad-y: 12px;
+      --grid-gap-x: 14px;
+      --grid-gap-y: 14px;
+      --btn-radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
       margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
       font-family: Arial, sans-serif;
       color: white;
-      min-height: 100vh;
+      min-height: 100dvh;
       background: transparent;
+
+      /* descend sous la topbar fixe du parent */
+      padding-top: 90px;
+      padding-left: var(--page-pad-x);
+      padding-right: var(--page-pad-x);
+      padding-bottom: 18px;
     }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      height: calc(100dvh - 90px - 18px);
+      display: flex;
+      flex-direction: column;
+    }
+
     .app {
       max-width: 900px;
       margin: auto;
-      padding: 20px;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
     }
+
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
+      margin-bottom: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
     }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      line-height: 1;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--grid-gap-y) var(--grid-gap-x);
       justify-items: center;
+      align-content: start;
+      flex: 1 1 auto;
+      min-height: 0;
     }
+
     .btn {
       width: 100%;
-      max-width: 220px;
-      height: 260px;
-      border-radius: 18px;
+      max-width: 180px;
+      height: min(21dvh, 165px);
+      border-radius: var(--btn-radius);
       overflow: hidden;
       position: relative;
       cursor: pointer;
@@ -41,31 +90,39 @@
       padding: 0;
       background: transparent;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      transition: box-shadow 0.15s ease;
+      transition: box-shadow 0.15s ease, transform 0.1s ease;
+      display: block;
     }
+
     .btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center;
     }
+
     .btn span {
       position: absolute;
-      bottom: 10px;
+      bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 8px 14px;
+      padding: 7px 12px;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 0.95rem;
       color: white;
       background: rgba(0,0,0,0.6);
       border-radius: 10px;
       text-shadow: 2px 2px 6px rgba(0,0,0,1);
+      white-space: nowrap;
     }
-    /* Bouton actif pendant la lecture */
+
     .btn.playing {
       box-shadow: 0 0 0 3px #f97316, 0 10px 25px rgba(0,0,0,0.4);
     }
-    .btn:active { transform: scale(0.97); }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
 
     .back-btn {
       color: white;
@@ -77,42 +134,102 @@
       cursor: pointer;
       font-size: 1rem;
     }
-    .back-btn:active { transform: scale(0.95); }
+
+    .back-btn:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 480px) {
+      :root {
+        --page-pad-x: 12px;
+        --page-pad-y: 10px;
+        --grid-gap-x: 12px;
+        --grid-gap-y: 12px;
+      }
+
+      body {
+        padding-top: 90px;
+      }
+
+      .page {
+        height: calc(100dvh - 90px - 18px);
+      }
+
+      .topbar {
+        margin-bottom: 10px;
+      }
+
+      .topbar h1 {
+        font-size: 1.65rem;
+      }
+
+      .back-btn {
+        font-size: 0.95rem;
+        padding: 9px 12px;
+      }
+
+      .btn {
+        max-width: 100%;
+        height: min(19dvh, 145px);
+      }
+
+      .btn span {
+        font-size: 0.86rem;
+        padding: 6px 10px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .topbar h1 {
+        font-size: 1.45rem;
+      }
+
+      .btn {
+        height: min(18dvh, 132px);
+      }
+
+      .btn span {
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="topbar">
-      <h1>Pièges ☠️</h1>
-      <button class="back-btn" onclick="parent.navigateTo('heros.html')">← Retour</button>
-    </div>
-    <div class="grid">
+  <div class="page">
+    <div class="app">
+      <div class="topbar">
+        <h1>Pièges ☠️</h1>
+        <button class="back-btn" onclick="parent.navigateTo('heros.html')">← Retour</button>
+      </div>
 
-      <button class="btn" id="btn-fleche" onclick="playSound('fleche', this)">
-        <img src="piegefleche.png">
-        <span>Flèche</span>
-      </button>
+      <div class="grid">
 
-      <button class="btn" id="btn-lance" onclick="playSound('lance', this)">
-        <img src="piegelance.png">
-        <span>Lance</span>
-      </button>
+        <button class="btn" id="btn-fleche" onclick="playSound('fleche', this)">
+          <img src="piegefleche.png" alt="Flèche">
+          <span>Flèche</span>
+        </button>
 
-      <button class="btn" id="btn-eboulis" onclick="playSound('eboulis', this)">
-        <img src="piegeeboulis.png">
-        <span>Éboulis</span>
-      </button>
+        <button class="btn" id="btn-lance" onclick="playSound('lance', this)">
+          <img src="piegelance.png" alt="Lance">
+          <span>Lance</span>
+        </button>
 
-      <button class="btn" id="btn-oubliette" onclick="playSound('oubliette', this)">
-        <img src="piegeoubliette.png">
-        <span>Oubliette</span>
-      </button>
+        <button class="btn" id="btn-eboulis" onclick="playSound('eboulis', this)">
+          <img src="piegeeboulis.png" alt="Éboulis">
+          <span>Éboulis</span>
+        </button>
 
-      <button class="btn" id="btn-coffre" onclick="playSound('coffre', this)">
-        <img src="piegecoffre.png">
-        <span>Coffre</span>
-      </button>
+        <button class="btn" id="btn-oubliette" onclick="playSound('oubliette', this)">
+          <img src="piegeoubliette.png" alt="Oubliette">
+          <span>Oubliette</span>
+        </button>
 
+        <button class="btn" id="btn-coffre" onclick="playSound('coffre', this)">
+          <img src="piegecoffre.png" alt="Coffre">
+          <span>Coffre</span>
+        </button>
+
+      </div>
     </div>
   </div>
 
@@ -126,22 +243,23 @@
     };
 
     let currentAudio = null;
-    let activeBtn    = null;
-    let duckTimeout  = null;
+    let activeBtn = null;
+    let duckTimeout = null;
 
-    const DUCK_VOLUME   = 0.15;
+    const DUCK_VOLUME = 0.15;
     const NORMAL_VOLUME = 0.8;
-    const FADE_STEPS    = 20;
-    const FADE_MS       = 200;
+    const FADE_STEPS = 20;
+    const FADE_MS = 200;
 
-    // ── Ducking parent ────────────────────────────────────
     function duckParent(targetVolume, durationMs) {
       if (!parent || !parent.setMusicVolume) return;
-      const steps    = FADE_STEPS;
+
+      const steps = FADE_STEPS;
       const interval = durationMs / steps;
-      const current  = parent.getMusicVolume ? parent.getMusicVolume() : NORMAL_VOLUME;
-      const delta    = (targetVolume - current) / steps;
+      const current = parent.getMusicVolume ? parent.getMusicVolume() : NORMAL_VOLUME;
+      const delta = (targetVolume - current) / steps;
       let step = 0;
+
       const timer = setInterval(() => {
         step++;
         const vol = Math.min(1, Math.max(0, current + delta * step));
@@ -155,7 +273,6 @@
       duckParent(NORMAL_VOLUME, FADE_MS * 2);
     }
 
-    // ── Gestion bouton actif ──────────────────────────────
     function clearActiveBtn() {
       if (activeBtn) {
         activeBtn.classList.remove("playing");
@@ -163,21 +280,19 @@
       }
     }
 
-    // ── Lecture son ───────────────────────────────────────
     function playSound(id, btn) {
       const file = soundFiles[id];
       if (!file) return;
 
-      // Stoppe le son en cours
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
         currentAudio = null;
       }
+
       clearActiveBtn();
       clearTimeout(duckTimeout);
 
-      // Duck la musique du parent
       duckParent(DUCK_VOLUME, FADE_MS);
 
       currentAudio = new Audio(file);
@@ -194,14 +309,12 @@
       activeBtn = btn;
       btn.classList.add("playing");
 
-      // Sécurité : restore après 15s si onended ne se déclenche pas
       duckTimeout = setTimeout(() => {
         restoreParent();
         clearActiveBtn();
       }, 15000);
     }
 
-    /* Appelée par index.html via stopAll() */
     function stopAllLocal() {
       if (currentAudio) {
         currentAudio.pause();
