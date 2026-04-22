@@ -48,12 +48,12 @@
       font-weight: bold;
     }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
-  justify-items: center;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      justify-items: center;
+    }
 
     .sound-btn {
       position: relative;
@@ -65,11 +65,17 @@
       transition: transform 0.18s ease, box-shadow 0.18s ease;
       min-height: 190px;
       background: rgba(0,0,0,0.25);
+      width: 100%;
     }
 
     .sound-btn:hover {
       transform: translateY(-3px) scale(1.01);
       box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+    }
+
+    /* Bouton actif pendant la lecture */
+    .sound-btn.playing {
+      box-shadow: 0 0 0 3px #f97316, 0 14px 30px rgba(0,0,0,0.45);
     }
 
     .sound-btn img {
@@ -98,16 +104,12 @@
         grid-template-columns: 1fr 1fr;
         gap: 14px;
       }
-
       .sound-btn,
       .sound-btn img {
         min-height: 150px;
         height: 150px;
       }
-
-      .sound-btn span {
-        font-size: 16px;
-      }
+      .sound-btn span { font-size: 16px; }
     }
   </style>
 </head>
@@ -119,59 +121,149 @@
     </div>
 
     <div class="grid">
-      <div class="sound-btn" onclick="playAudioById('terre-pass')">
+      <div class="sound-btn" id="btn-pass" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/terre_pass.mp3', 1.5, this)">
         <img src="spell_passrock.png" alt="Pass Through Rock">
         <span>Pass Through Rock</span>
       </div>
 
-      <div class="sound-btn" onclick="playAudioById('terre-healing')">
+      <div class="sound-btn" id="btn-healing" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/terre_healing.mp3', 2.5, this)">
         <img src="spell_healbody.png" alt="Heal Body">
         <span>Heal Body</span>
       </div>
 
-      <div class="sound-btn" onclick="playAudioById('terre-rockskin')">
+      <div class="sound-btn" id="btn-rockskin" onclick="playSound('https://ndrapeau77-sb.github.io/soundboard/terre_rockskin.mp3', 1.5, this)">
         <img src="spell_rockskin.png" alt="Rock Skin">
         <span>Rock Skin</span>
       </div>
     </div>
   </div>
 
-  <audio id="terre-pass" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/terre_pass.mp3" type="audio/mpeg">
-  </audio>
-
-  <audio id="terre-healing" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/terre_healing.mp3" type="audio/mpeg">
-  </audio>
-
-  <audio id="terre-rockskin" preload="auto">
-    <source src="https://ndrapeau77-sb.github.io/soundboard/terre_rockskin.mp3" type="audio/mpeg">
-  </audio>
-
   <script>
-    let currentAudio = null;
+    // ── WebAudio ──────────────────────────────────────────
+    let audioContext = null;
+    const audioBuffers = {};
 
-    function playAudioById(audioId) {
-      const audio = document.getElementById(audioId);
-
-      if (!audio) {
-        alert("Audio introuvable : " + audioId);
-        return;
+    function getCtx() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
       }
-
-      if (currentAudio && currentAudio !== audio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      audio.currentTime = 0;
-      currentAudio = audio;
-
-      audio.play().catch((error) => {
-        console.error("Erreur audio :", error);
-        alert("Le son ne charge pas.");
-      });
+      return audioContext;
     }
+
+    async function loadBuffer(url) {
+      if (audioBuffers[url]) return audioBuffers[url];
+      const ctx = getCtx();
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = await ctx.decodeAudioData(arrayBuffer);
+      audioBuffers[url] = buffer;
+      return buffer;
+    }
+
+    // ── État ──────────────────────────────────────────────
+    let activeSource = null;
+    let activeBtn    = null;
+    let duckTimeout  = null;
+
+    const DUCK_VOLUME   = 0.15;
+    const NORMAL_VOLUME = 0.8;
+    const FADE_STEPS    = 20;
+    const FADE_MS       = 200;
+
+    // ── Ducking parent ────────────────────────────────────
+    function duckParent(targetVolume, durationMs) {
+      try {
+        if (!parent || !parent.setMusicVolume) return;
+        const steps    = FADE_STEPS;
+        const interval = durationMs / steps;
+        const current  = parent.getMusicVolume ? parent.getMusicVolume() : NORMAL_VOLUME;
+        const delta    = (targetVolume - current) / steps;
+        let step = 0;
+        const timer = setInterval(() => {
+          step++;
+          const vol = Math.min(1, Math.max(0, current + delta * step));
+          parent.setMusicVolume(vol);
+          if (step >= steps) clearInterval(timer);
+        }, interval);
+      } catch(e) {}
+    }
+
+    function restoreParent() {
+      clearTimeout(duckTimeout);
+      duckParent(NORMAL_VOLUME, FADE_MS * 2);
+    }
+
+    // ── Gestion bouton actif ──────────────────────────────
+    function clearActiveBtn() {
+      if (activeBtn) {
+        activeBtn.classList.remove("playing");
+        activeBtn = null;
+      }
+    }
+
+    function stopActiveSource() {
+      if (activeSource) {
+        try { activeSource.stop(); } catch(e) {}
+        activeSource = null;
+      }
+      clearActiveBtn();
+      clearTimeout(duckTimeout);
+    }
+
+    // ── Lecture son ───────────────────────────────────────
+    async function playSound(url, gain, btn) {
+      try {
+        const ctx = getCtx();
+        if (ctx.state === "suspended") await ctx.resume();
+
+        // Stoppe le son en cours
+        stopActiveSource();
+
+        const buffer   = await loadBuffer(url);
+        const source   = ctx.createBufferSource();
+        const gainNode = ctx.createGain();
+
+        gainNode.gain.value = gain;
+        source.buffer = buffer;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        // Duck la musique du parent
+        duckParent(DUCK_VOLUME, FADE_MS);
+
+        activeSource = source;
+        activeBtn    = btn;
+        btn.classList.add("playing");
+
+        source.onended = () => {
+          activeSource = null;
+          clearActiveBtn();
+          restoreParent();
+        };
+
+        source.start(0);
+
+        // Sécurité restore après 15s
+        duckTimeout = setTimeout(() => {
+          restoreParent();
+          clearActiveBtn();
+        }, 15000);
+
+      } catch(e) {
+        console.error("Erreur audio :", e);
+      }
+    }
+
+    // Préchauffage WebAudio au premier touch
+    async function warmUp() {
+      try {
+        const ctx = getCtx();
+        if (ctx.state === "suspended") await ctx.resume();
+      } catch(_) {}
+    }
+
+    window.addEventListener("touchstart", warmUp, { once: true });
+    window.addEventListener("click",      warmUp, { once: true });
   </script>
 </body>
 </html>
