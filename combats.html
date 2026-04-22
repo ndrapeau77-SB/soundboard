@@ -52,9 +52,7 @@
       display: block;
     }
 
-    .btn:active {
-      transform: scale(0.97);
-    }
+    .btn:active { transform: scale(0.97); }
 
     .btn img {
       width: 100%;
@@ -105,24 +103,10 @@
     }
 
     @media (max-width: 480px) {
-      .app {
-        padding: 16px;
-      }
-
-      .topbar h1 {
-        margin: 0;
-        font-size: 32px;
-      }
-
-      .btn {
-        height: 220px;
-        max-width: 100%;
-      }
-
-      .btn span {
-        font-size: 18px;
-        padding: 12px 8px;
-      }
+      .app { padding: 16px; }
+      .topbar h1 { margin: 0; font-size: 32px; }
+      .btn { height: 220px; max-width: 100%; }
+      .btn span { font-size: 18px; padding: 12px 8px; }
     }
   </style>
 </head>
@@ -132,7 +116,8 @@
 
     <div class="topbar">
       <h1>Combats ⚔️</h1>
-      <button onclick="parent.navigateTo('heros.html')" style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;white-space:nowrap;">
+      <button onclick="parent.navigateTo('heros.html')"
+        style="color:white;background:rgba(0,0,0,0.6);padding:10px 14px;border-radius:10px;font-weight:bold;border:none;cursor:pointer;font-size:1rem;white-space:nowrap;">
         ← Retour
       </button>
     </div>
@@ -154,7 +139,7 @@
       </button>
 
       <button class="btn" onclick="playVictoire()">
-        <img src="victoire.png" alt="Dague">
+        <img src="victoire.png" alt="Victoire">
         <span>Victoire 🏆</span>
       </button>
     </div>
@@ -163,30 +148,60 @@
 
   <div id="toast"></div>
 
-  <script src="audio-utils.js"></script>
   <script>
+    // ── Sons ──────────────────────────────────────────────
     const attackSounds = [
-      "combat.mp3",
-      "combat2.mp3",
-      "combat3.mp3",
-      "combat4.mp3",
-      "combat5.mp3",
-      "combat6.mp3"
+      "combat.mp3","combat2.mp3","combat3.mp3",
+      "combat4.mp3","combat5.mp3","combat6.mp3"
     ];
 
     const defenseSounds = [
-      "block1.mp3",
-      "block2.mp3",
-      "block3.mp3",
-      "block4.mp3",
-      "block5.mp3"
+      "block1.mp3","block2.mp3","block3.mp3",
+      "block4.mp3","block5.mp3"
     ];
 
-    let attackAudio = null;
-    let defenseAudio = null;
-    let victoireAudio = null;
+    // ── WebAudio (pour amplifier au-delà de volume 1.0) ──
+    let audioContext = null;
+    const audioBuffers = {};
 
-    let lastAttackIndex = -1;
+    // Volume amplifié pour les dés (3.0 = 3× plus fort que la normale)
+    const DICE_GAIN    = 3.0;
+    const VICTOIRE_GAIN = 1.5;
+
+    function getCtx() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    async function loadBuffer(file) {
+      if (audioBuffers[file]) return audioBuffers[file];
+      const ctx = getCtx();
+      const response = await fetch(file);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = await ctx.decodeAudioData(arrayBuffer);
+      audioBuffers[file] = buffer;
+      return buffer;
+    }
+
+    async function playAmplified(file, gain) {
+      const ctx = getCtx();
+      if (ctx.state === "suspended") await ctx.resume();
+
+      const buffer   = await loadBuffer(file);
+      const source   = ctx.createBufferSource();
+      const gainNode = ctx.createGain();
+
+      gainNode.gain.value = gain;
+      source.buffer = buffer;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      source.start(0);
+    }
+
+    // ── État ──────────────────────────────────────────────
+    let lastAttackIndex  = -1;
     let lastDefenseIndex = -1;
     let toastTimer = null;
 
@@ -198,61 +213,53 @@
       toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
     }
 
-    function vibrate(pattern) {
-      if ("vibrate" in navigator) {
-        navigator.vibrate(pattern);
-      }
+    function vibrate(ms) {
+      if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
+    function pickRandom(arr, lastIdx) {
+      if (arr.length === 1) return { file: arr[0], index: 0 };
+      let idx;
+      do { idx = Math.floor(Math.random() * arr.length); }
+      while (idx === lastIdx);
+      return { file: arr[idx], index: idx };
+    }
+
+    // ── Fonctions de lecture ──────────────────────────────
     async function playAttackDice() {
       vibrate(40);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * attackSounds.length);
-      } while (randomIndex === lastAttackIndex && attackSounds.length > 1);
-
-      lastAttackIndex = randomIndex;
-
-      await playManagedAudio("attackAudio", attackSounds[randomIndex], {
-        volume: 1,
-        fadeInDuration: 100,
-        fadeOutDuration: 100
-      }).catch(() => {});
-
+      const { file, index } = pickRandom(attackSounds, lastAttackIndex);
+      lastAttackIndex = index;
+      await playAmplified(file, DICE_GAIN).catch(() => {});
       showToast("⚔️ Attaque");
     }
 
     async function playDefenseDice() {
       vibrate(30);
-
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * defenseSounds.length);
-      } while (randomIndex === lastDefenseIndex && defenseSounds.length > 1);
-
-      lastDefenseIndex = randomIndex;
-
-      await playManagedAudio("defenseAudio", defenseSounds[randomIndex], {
-        volume: 1,
-        fadeInDuration: 100,
-        fadeOutDuration: 100
-      }).catch(() => {});
-
+      const { file, index } = pickRandom(defenseSounds, lastDefenseIndex);
+      lastDefenseIndex = index;
+      await playAmplified(file, DICE_GAIN).catch(() => {});
       showToast("🛡️ Défense");
     }
 
     async function playVictoire() {
       vibrate(30);
-
-      await playManagedAudio("victoireAudio", "victoire.mp3", {
-        volume: 1,
-        fadeInDuration: 100,
-        fadeOutDuration: 100
-      }).catch(() => {});
-
+      await playAmplified("victoire.mp3", VICTOIRE_GAIN).catch(() => {});
       showToast("🏆 Victoire");
     }
+
+    // Préchauffage WebAudio au premier touch
+    async function warmUp() {
+      try {
+        const ctx = getCtx();
+        if (ctx.state === "suspended") await ctx.resume();
+        [...attackSounds, ...defenseSounds, "victoire.mp3"]
+          .forEach(f => loadBuffer(f).catch(() => {}));
+      } catch(_) {}
+    }
+
+    window.addEventListener("touchstart", warmUp, { once: true });
+    window.addEventListener("click",      warmUp, { once: true });
   </script>
 
 </body>
