@@ -5,29 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Héros</title>
   <style>
-    body {
+    :root {
+      --page-pad-x: 14px;
+      --page-pad-y: 12px;
+      --topbar-gap: 10px;
+      --grid-gap-x: 14px;
+      --grid-gap-y: 14px;
+      --btn-radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
       margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
       font-family: Arial, sans-serif;
       color: white;
-      min-height: 100vh;
+      min-height: 100dvh;
       background: transparent;
-      padding: 20px 16px 40px;
+      padding: var(--page-pad-y) var(--page-pad-x) 18px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      height: calc(100dvh - (var(--page-pad-y) * 2));
+      display: flex;
+      flex-direction: column;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      gap: 12px;
+      margin-bottom: 12px;
+      gap: var(--topbar-gap);
       flex-wrap: wrap;
+      flex: 0 0 auto;
     }
 
-    .topbar h1 { margin: 0; font-size: 2rem; }
-
-    .topbar-btns {
-      display: flex;
-      gap: 8px;
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      line-height: 1;
     }
 
     .back-btn {
@@ -41,31 +67,22 @@
       font-size: 1rem;
     }
 
-    .stop-btn {
-      color: white;
-      background: rgba(180,0,0,0.8);
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .back-btn:active, .stop-btn:active { transform: scale(0.95); }
-
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(160px, 220px));
-      justify-content: center;
-      gap: 24px 36px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--grid-gap-y) var(--grid-gap-x);
+      justify-items: center;
+      align-content: start;
+      flex: 1 1 auto;
+      min-height: 0;
     }
 
     .btn {
       display: block;
       width: 100%;
-      height: 280px;
-      border-radius: 18px;
+      max-width: 180px;
+      height: min(24dvh, 180px);
+      border-radius: var(--btn-radius);
       overflow: hidden;
       position: relative;
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
@@ -76,7 +93,9 @@
       padding: 0;
     }
 
-    .btn:active { transform: scale(0.97); }
+    .btn:active {
+      transform: scale(0.97);
+    }
 
     .btn img {
       width: 100%;
@@ -91,10 +110,10 @@
       left: 0;
       right: 0;
       bottom: 0;
-      padding: 12px 10px;
+      padding: 10px 8px;
       text-align: center;
       font-weight: bold;
-      font-size: 1.05rem;
+      font-size: 1rem;
       color: #ffffff;
       background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.25));
       text-shadow: 0 2px 6px rgba(0,0,0,1);
@@ -103,7 +122,7 @@
 
     #toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 18px;
       left: 50%;
       transform: translateX(-50%) translateY(80px);
       background: rgba(0,0,0,0.82);
@@ -123,117 +142,158 @@
       opacity: 1;
     }
 
-    @media (max-width: 560px) {
-      .grid {
-        grid-template-columns: repeat(2, minmax(130px, 1fr));
-        gap: 16px;
+    @media (max-width: 480px) {
+      :root {
+        --page-pad-x: 12px;
+        --page-pad-y: 10px;
+        --grid-gap-x: 12px;
+        --grid-gap-y: 12px;
       }
-      .btn { height: 220px; }
-      .btn span { font-size: 0.95rem; }
-      .topbar h1 { font-size: 1.7rem; }
+
+      .topbar {
+        margin-bottom: 10px;
+      }
+
+      .topbar h1 {
+        font-size: 1.65rem;
+      }
+
+      .back-btn {
+        font-size: 0.95rem;
+        padding: 9px 12px;
+      }
+
+      .btn {
+        max-width: 100%;
+        height: min(22dvh, 165px);
+      }
+
+      .btn span {
+        font-size: 0.92rem;
+        padding: 8px 6px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .topbar h1 {
+        font-size: 1.45rem;
+      }
+
+      .btn {
+        height: min(21dvh, 150px);
+      }
+
+      .btn span {
+        font-size: 0.86rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <h1>Héros ⚔️</h1>
-    <div class="topbar-btns">
-      <button class="stop-btn" onclick="stopEverything()">⏹ Arrêter tout</button>
+  <div class="page">
+    <div class="topbar">
+      <h1>Héros ⚔️</h1>
       <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
     </div>
-  </div>
 
-  <div class="grid">
+    <div class="grid">
 
-    <button class="btn" onclick="parent.navigateTo('combats.html')">
-      <img src="combats.png" alt="Combats">
-      <span>Combats</span>
-    </button>
+      <button class="btn" onclick="parent.navigateTo('combats.html')">
+        <img src="combats.png" alt="Combats">
+        <span>Combats</span>
+      </button>
 
-    <button class="btn" onclick="parent.navigateTo('pieges.html')">
-      <img src="pieges.png" alt="Pièges">
-      <span>Pièges</span>
-    </button>
+      <button class="btn" onclick="parent.navigateTo('pieges.html')">
+        <img src="pieges.png" alt="Pièges">
+        <span>Pièges</span>
+      </button>
 
-    <button class="btn" onclick="playDoor()">
-      <img src="portes.png" alt="Portes">
-      <span>Portes</span>
-    </button>
+      <button class="btn" onclick="playDoor()">
+        <img src="portes.png" alt="Portes">
+        <span>Portes</span>
+      </button>
 
-    <button class="btn" onclick="playPlacement()">
-      <img src="placement.png" alt="Placement">
-      <span>Placement</span>
-    </button>
+      <button class="btn" onclick="playPlacement()">
+        <img src="placement.png" alt="Placement">
+        <span>Placement</span>
+      </button>
 
-    <button class="btn" onclick="playTreasure()">
-      <img src="tresor.png" alt="Cherche trésor">
-      <span>🧰 Cherche trésor</span>
-    </button>
+      <button class="btn" onclick="playTreasure()">
+        <img src="tresor.png" alt="Cherche trésor">
+        <span>🧰 Cherche trésor</span>
+      </button>
 
-    <button class="btn" onclick="playReward()">
-      <img src="recompense.png" alt="Récompense">
-      <span>🎁 Récompense</span>
-    </button>
+      <button class="btn" onclick="playReward()">
+        <img src="recompense.png" alt="Récompense">
+        <span>🎁 Récompense</span>
+      </button>
 
+    </div>
   </div>
 
   <div id="toast"></div>
 
+  <script src="audio-utils.js"></script>
   <script>
-    // ── Sons ──────────────────────────────────────────────
     const rewardSounds = [
       "recompense1.mp3",
       "recompense2.mp3",
       "recompense3.mp3"
     ];
 
+    let lastRewardIndex = -1;
+
+    async function playTreasure() {
+      vibrate(40);
+
+      await playManagedAudio("treasureAudio", "tresor_cherche.mp3", {
+        volume: 1,
+        fadeInDuration: 150,
+        fadeOutDuration: 120
+      }).catch(() => {});
+
+      showToast("🧰 Trésor !");
+    }
+
+    async function playReward() {
+      vibrate(40);
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * rewardSounds.length);
+      } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
+
+      lastRewardIndex = randomIndex;
+
+      await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
+        volume: 1,
+        fadeInDuration: 180,
+        fadeOutDuration: 120
+      }).catch(() => {});
+
+      showToast("🎁 Récompense !");
+    }
+
     const doorSounds = [
       "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
     ];
 
     const placementSounds = [
-      "tick1.mp3","tick2.mp3","tick3.mp3","tick4.mp3"
+      "tick1.mp3",
+      "tick2.mp3",
+      "tick3.mp3",
+      "tick4.mp3"
     ];
 
-    // ── État ──────────────────────────────────────────────
-    let lastRewardIndex  = -1;
-    let lastPlacementIdx = -1;
-
-    let currentAudio   = null;   // porte / trésor / récompense
+    let currentAudio = null;
     let placementAudio = null;
+
     let placementActive = false;
+    let placementIndex = 0;
 
-    let toastTimer     = null;
-    let duckTimeout    = null;
+    let toastTimer = null;
 
-    const DUCK_VOLUME   = 0.15;
-    const NORMAL_VOLUME = 0.8;
-    const FADE_STEPS    = 20;
-    const FADE_MS       = 200;
-
-    // ── Ducking parent ────────────────────────────────────
-    function duckParent(targetVolume, durationMs) {
-      if (!parent || !parent.setMusicVolume) return;
-      const steps    = FADE_STEPS;
-      const interval = durationMs / steps;
-      const current  = parent.getMusicVolume ? parent.getMusicVolume() : NORMAL_VOLUME;
-      const delta    = (targetVolume - current) / steps;
-      let step = 0;
-      const timer = setInterval(() => {
-        step++;
-        const vol = Math.min(1, Math.max(0, current + delta * step));
-        parent.setMusicVolume(vol);
-        if (step >= steps) clearInterval(timer);
-      }, interval);
-    }
-
-    function restoreParent() {
-      clearTimeout(duckTimeout);
-      duckParent(NORMAL_VOLUME, FADE_MS * 2);
-    }
-
-    // ── Utilitaires ───────────────────────────────────────
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
@@ -246,24 +306,6 @@
       if ("vibrate" in navigator) navigator.vibrate(ms);
     }
 
-    function pickRandom(arr, lastIdx) {
-      if (arr.length === 1) return { file: arr[0], index: 0 };
-      let idx;
-      do { idx = Math.floor(Math.random() * arr.length); }
-      while (idx === lastIdx);
-      return { file: arr[idx], index: idx };
-    }
-
-    // Stoppe currentAudio proprement
-    function stopCurrent() {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-      }
-    }
-
-    // ── Placement ─────────────────────────────────────────
     function stopPlacement() {
       placementActive = false;
       if (placementAudio) {
@@ -276,8 +318,7 @@
     function playNextPlacement() {
       if (!placementActive) return;
 
-      const { file, index } = pickRandom(placementSounds, lastPlacementIdx);
-      lastPlacementIdx = index;
+      const file = placementSounds[placementIndex];
 
       if (placementAudio) {
         placementAudio.pause();
@@ -285,8 +326,12 @@
       }
 
       placementAudio = new Audio(file);
-      placementAudio.volume = 1;
-      placementAudio.onended = () => playNextPlacement();
+
+      placementAudio.onended = () => {
+        placementIndex = (placementIndex + 1) % placementSounds.length;
+        playNextPlacement();
+      };
+
       placementAudio.play().catch(() => {});
     }
 
@@ -299,98 +344,28 @@
         return;
       }
 
-      // Stoppe tout (parent + sons locaux) avant de lancer le placement
-      stopCurrent();
-      if (parent && parent.stopAll) parent.stopAll();
-
       placementActive = true;
+      placementIndex = 0;
       playNextPlacement();
-      showToast("🎲 Placement...");
     }
 
-    // ── Porte ─────────────────────────────────────────────
     function playDoor() {
       vibrate(40);
 
-      stopPlacement();
-      stopCurrent();
-      if (parent && parent.stopAll) parent.stopAll();
+      if (parent && parent.stopAmbianceFromFrame) {
+        parent.stopAmbianceFromFrame();
+      }
 
-      const { file } = pickRandom(doorSounds, -1);
-      currentAudio = new Audio(file);
-      currentAudio.volume = 1;
-      currentAudio.play().catch(() => {});
+      stopPlacement();
+
+      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
+      playManagedAudio("currentAudio", file, {
+        volume: 1,
+        fadeInDuration: 120,
+        fadeOutDuration: 120
+      }).catch(() => {});
 
       showToast("🚪 Porte...");
-    }
-
-    // ── Trésor ────────────────────────────────────────────
-    function playTreasure() {
-      vibrate(40);
-
-      stopPlacement();
-      stopCurrent();
-
-      duckParent(DUCK_VOLUME, FADE_MS);
-
-      currentAudio = new Audio("tresor_cherche.mp3");
-      currentAudio.volume = 1;
-
-      currentAudio.onended = () => {
-        currentAudio = null;
-        restoreParent();
-      };
-
-      currentAudio.play().catch(() => {});
-
-      // Sécurité restore après 15s
-      duckTimeout = setTimeout(restoreParent, 15000);
-
-      showToast("🧰 Trésor !");
-    }
-
-    // ── Récompense ────────────────────────────────────────
-    function playReward() {
-      vibrate(40);
-
-      stopPlacement();
-      stopCurrent();
-
-      const { file, index } = pickRandom(rewardSounds, lastRewardIndex);
-      lastRewardIndex = index;
-
-      duckParent(DUCK_VOLUME, FADE_MS);
-
-      currentAudio = new Audio(file);
-      currentAudio.volume = 1;
-
-      currentAudio.onended = () => {
-        currentAudio = null;
-        restoreParent();
-      };
-
-      currentAudio.play().catch(() => {});
-
-      // Sécurité restore après 15s
-      duckTimeout = setTimeout(restoreParent, 15000);
-
-      showToast("🎁 Récompense !");
-    }
-
-    // ── Stop global ───────────────────────────────────────
-
-    /* Appelée par index.html via stopAll() */
-    function stopAllLocal() {
-      stopPlacement();
-      stopCurrent();
-      clearTimeout(duckTimeout);
-    }
-
-    /* Bouton ⏹ Arrêter tout */
-    function stopEverything() {
-      stopAllLocal();
-      if (parent && parent.stopAll) parent.stopAll();
-      showToast("⏹ Tout arrêté");
     }
   </script>
 
