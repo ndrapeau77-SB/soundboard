@@ -8,8 +8,8 @@
     :root {
       --page-pad-x: 14px;
       --page-pad-y: 12px;
-      --grid-gap-x: 14px;
-      --grid-gap-y: 14px;
+      --grid-gap-x: 12px;
+      --grid-gap-y: 12px;
       --btn-radius: 18px;
     }
 
@@ -33,31 +33,32 @@
       padding-top: 90px;
       padding-left: var(--page-pad-x);
       padding-right: var(--page-pad-x);
-      padding-bottom: 18px;
+      padding-bottom: 14px;
     }
 
     .page {
       max-width: 900px;
       margin: 0 auto;
-      height: calc(100dvh - 90px - 18px);
+      height: calc(100dvh - 90px - 14px);
       display: flex;
       flex-direction: column;
     }
 
     .app {
       max-width: 900px;
-      margin: auto;
+      margin: 0 auto;
       width: 100%;
       flex: 1 1 auto;
       min-height: 0;
+      padding-top: 2px;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      gap: var(--topbar-gap);
+      margin-bottom: 8px;
+      gap: 10px;
       flex-wrap: wrap;
       flex: 0 0 auto;
     }
@@ -76,12 +77,13 @@
       align-content: start;
       flex: 1 1 auto;
       min-height: 0;
+      margin-top: 2px;
     }
 
     .btn {
       width: 100%;
-      max-width: 180px;
-      height: min(21dvh, 165px);
+      max-width: 190px;
+      height: min(22.5dvh, 175px);
       border-radius: var(--btn-radius);
       overflow: hidden;
       position: relative;
@@ -108,7 +110,7 @@
       transform: translateX(-50%);
       padding: 7px 12px;
       font-weight: bold;
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       color: white;
       background: rgba(0,0,0,0.6);
       border-radius: 10px;
@@ -143,20 +145,25 @@
       :root {
         --page-pad-x: 12px;
         --page-pad-y: 10px;
-        --grid-gap-x: 12px;
-        --grid-gap-y: 12px;
+        --grid-gap-x: 10px;
+        --grid-gap-y: 10px;
       }
 
       body {
         padding-top: 90px;
+        padding-bottom: 12px;
       }
 
       .page {
-        height: calc(100dvh - 90px - 18px);
+        height: calc(100dvh - 90px - 12px);
+      }
+
+      .app {
+        padding-top: 0;
       }
 
       .topbar {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
       }
 
       .topbar h1 {
@@ -170,11 +177,11 @@
 
       .btn {
         max-width: 100%;
-        height: min(19dvh, 145px);
+        height: min(20.5dvh, 152px);
       }
 
       .btn span {
-        font-size: 0.86rem;
+        font-size: 0.88rem;
         padding: 6px 10px;
       }
     }
@@ -185,11 +192,11 @@
       }
 
       .btn {
-        height: min(18dvh, 132px);
+        height: min(19.5dvh, 142px);
       }
 
       .btn span {
-        font-size: 0.8rem;
+        font-size: 0.82rem;
       }
     }
   </style>
