@@ -14,9 +14,7 @@
       --btn-radius: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -94,9 +92,7 @@
       padding: 0;
     }
 
-    .btn:active {
-      transform: scale(0.97);
-    }
+    .btn:active { transform: scale(0.97); }
 
     .btn img {
       width: 100%;
@@ -142,233 +138,100 @@
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
-
-    @media (max-width: 480px) {
-      :root {
-        --page-pad-x: 12px;
-        --page-pad-y: 10px;
-        --grid-gap-x: 12px;
-        --grid-gap-y: 12px;
-      }
-
-      .topbar {
-        margin-bottom: 10px;
-      }
-
-      .topbar h1 {
-        font-size: 1.65rem;
-      }
-
-      .back-btn {
-        font-size: 0.95rem;
-        padding: 9px 12px;
-      }
-
-      .btn {
-        max-width: 100%;
-        height: min(22dvh, 165px);
-      }
-
-      .btn span {
-        font-size: 0.92rem;
-        padding: 8px 6px;
-      }
-    }
-
-    @media (max-width: 390px) {
-      .topbar h1 {
-        font-size: 1.45rem;
-      }
-
-      .btn {
-        height: min(21dvh, 150px);
-      }
-
-      .btn span {
-        font-size: 0.86rem;
-      }
-    }
   </style>
 </head>
 <body>
 
-  <div class="page">
-    <div class="topbar">
-      <h1>Héros ⚔️</h1>
-      <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
-    </div>
+<div class="page">
+<div class="topbar">
+<h1>Héros ⚔️</h1>
+<button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+</div>
 
-    <div class="grid">
+<div class="grid">
 
-      <button class="btn" onclick="parent.navigateTo('combats.html')">
-        <img src="combats.png" alt="Combats">
-        <span>Combats</span>
-      </button>
+<button class="btn" onclick="parent.navigateTo('combats.html')">
+<img src="combats.png"><span>Combats</span>
+</button>
 
-      <button class="btn" onclick="parent.navigateTo('pieges.html')">
-        <img src="pieges.png" alt="Pièges">
-        <span>Pièges</span>
-      </button>
+<button class="btn" onclick="parent.navigateTo('pieges.html')">
+<img src="pieges.png"><span>Pièges</span>
+</button>
 
-      <button class="btn" onclick="playDoor()">
-        <img src="portes.png" alt="Portes">
-        <span>Portes</span>
-      </button>
+<button class="btn" onclick="playDoor()">
+<img src="portes.png"><span>Portes</span>
+</button>
 
-      <button class="btn" onclick="playPlacement()">
-        <img src="placement.png" alt="Placement">
-        <span>Placement</span>
-      </button>
+<button class="btn" onclick="playPlacement()">
+<img src="placement.png"><span>Placement</span>
+</button>
 
-      <button class="btn" onclick="playTreasure()">
-        <img src="tresor.png" alt="Cherche trésor">
-        <span>🧰 Cherche trésor</span>
-      </button>
+<button class="btn" onclick="playTreasure()">
+<img src="tresor.png"><span>🧰 Cherche trésor</span>
+</button>
 
-      <button class="btn" onclick="playReward()">
-        <img src="recompense.png" alt="Récompense">
-        <span>🎁 Récompense</span>
-      </button>
+<button class="btn" onclick="playReward()">
+<img src="recompense.png"><span>🎁 Récompense</span>
+</button>
 
-    </div>
-  </div>
+</div>
+</div>
 
-  <div id="toast"></div>
+<div id="toast"></div>
 
-  <script src="audio-utils.js"></script>
-  <script>
-    const rewardSounds = [
-      "recompense1.mp3",
-      "recompense2.mp3",
-      "recompense3.mp3"
-    ];
+<script src="audio-utils.js"></script>
+<script>
 
-    let lastRewardIndex = -1;
+const placementSounds = [
+"tick1.mp3","tick2.mp3","tick3.mp3","tick4.mp3"
+];
 
-    async function playTreasure() {
-      vibrate(40);
+let placementAudio = null;
+let placementActive = false;
+let lastPlacementIndex = -1;
 
-      await playManagedAudio("treasureAudio", "tresor_cherche.mp3", {
-        volume: 1,
-        fadeInDuration: 150,
-        fadeOutDuration: 120
-      }).catch(() => {});
+function playNextPlacement() {
+  if (!placementActive) return;
 
-      showToast("🧰 Trésor !");
+  let randomIndex;
+
+  do {
+    randomIndex = Math.floor(Math.random() * placementSounds.length);
+  } while (randomIndex === lastPlacementIndex && placementSounds.length > 1);
+
+  lastPlacementIndex = randomIndex;
+
+  const file = placementSounds[randomIndex];
+
+  if (placementAudio) {
+    placementAudio.pause();
+    placementAudio.currentTime = 0;
+  }
+
+  placementAudio = new Audio(file);
+
+  placementAudio.onended = () => {
+    playNextPlacement();
+  };
+
+  placementAudio.play().catch(()=>{});
+}
+
+function playPlacement(){
+  if(placementActive){
+    placementActive=false;
+    if(placementAudio){
+      placementAudio.pause();
+      placementAudio.currentTime=0;
     }
+    return;
+  }
 
-    async function playReward() {
-      vibrate(40);
+  placementActive=true;
+  playNextPlacement();
+}
 
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * rewardSounds.length);
-      } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
-
-      lastRewardIndex = randomIndex;
-
-      await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
-        volume: 1,
-        fadeInDuration: 180,
-        fadeOutDuration: 120
-      }).catch(() => {});
-
-      showToast("🎁 Récompense !");
-    }
-
-    const doorSounds = [
-      "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
-    ];
-
-    const placementSounds = [
-      "tick1.mp3",
-      "tick2.mp3",
-      "tick3.mp3",
-      "tick4.mp3"
-    ];
-
-    let currentAudio = null;
-    let placementAudio = null;
-
-    let placementActive = false;
-    let placementIndex = 0;
-
-    let toastTimer = null;
-
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
-    }
-
-    function vibrate(ms) {
-      if ("vibrate" in navigator) navigator.vibrate(ms);
-    }
-
-    function stopPlacement() {
-      placementActive = false;
-      if (placementAudio) {
-        placementAudio.pause();
-        placementAudio.currentTime = 0;
-        placementAudio = null;
-      }
-    }
-
-    function playNextPlacement() {
-      if (!placementActive) return;
-
-      const file = placementSounds[placementIndex];
-
-      if (placementAudio) {
-        placementAudio.pause();
-        placementAudio.currentTime = 0;
-      }
-
-      placementAudio = new Audio(file);
-
-      placementAudio.onended = () => {
-        placementIndex = (placementIndex + 1) % placementSounds.length;
-        playNextPlacement();
-      };
-
-      placementAudio.play().catch(() => {});
-    }
-
-    function playPlacement() {
-      vibrate(25);
-
-      if (placementActive) {
-        stopPlacement();
-        showToast("⛔ Placement arrêté");
-        return;
-      }
-
-      placementActive = true;
-      placementIndex = 0;
-      playNextPlacement();
-    }
-
-    function playDoor() {
-      vibrate(40);
-
-      if (parent && parent.stopAmbianceFromFrame) {
-        parent.stopAmbianceFromFrame();
-      }
-
-      stopPlacement();
-
-      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
-      playManagedAudio("currentAudio", file, {
-        volume: 1,
-        fadeInDuration: 120,
-        fadeOutDuration: 120
-      }).catch(() => {});
-
-      showToast("🚪 Porte...");
-    }
-  </script>
+</script>
 
 </body>
 </html>
