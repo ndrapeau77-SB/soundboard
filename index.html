@@ -24,6 +24,7 @@
       background-position: center;
     }
 
+    /* ── TOPBAR ── */
     .topbar {
       position: fixed;
       top: 0;
@@ -50,7 +51,7 @@
       flex-wrap: wrap;
     }
 
-    button {
+    .controls button {
       border: none;
       padding: 9px 14px;
       border-radius: 10px;
@@ -67,165 +68,357 @@
     .btn-death    { background: #6b0000; }
     .btn-stop     { background: rgba(180,0,0,0.8); }
 
-    button:active { transform: scale(0.95); }
+    .controls button:active { transform: scale(0.95); }
 
+    /* ── IFRAME ── */
     #frame {
       position: fixed;
       top: 70px;
       left: 0;
       right: 0;
-      bottom: 0;
+      bottom: 110px; /* laisse de la place pour la monsterbar */
       width: 100%;
-      height: calc(100vh - 70px);
+      height: calc(100vh - 70px - 110px);
       border: none;
       background: transparent;
+    }
+
+    /* ── MONSTERBAR ── */
+    .monsterbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.80);
+      padding: 6px 8px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .monsterbar-row {
+      display: flex;
+      gap: 7px;
+      justify-content: center;
+    }
+
+    .monster-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.2);
+      transition: border-color 0.15s, transform 0.1s;
+      background: rgba(0,0,0,0.4);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .monster-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: left bottom;
+      display: block;
+      pointer-events: none;
+    }
+
+    .monster-icon:active {
+      transform: scale(0.9);
+    }
+
+    .monster-icon.playing {
+      border-color: #f97316;
+      box-shadow: 0 0 8px #f97316;
+    }
+
+    /* Tooltip nom au hover */
+    .monster-icon::after {
+      content: attr(data-name);
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: bold;
+      padding: 3px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .monster-icon:hover::after {
+      opacity: 1;
+    }
+
+    @media (max-width: 420px) {
+      .monster-icon { width: 38px; height: 38px; }
+      .monsterbar-row { gap: 5px; }
+      #frame { bottom: 100px; height: calc(100vh - 70px - 100px); }
     }
   </style>
 </head>
 
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
   <img class="logo" src="hqentete.png" onclick="goHome()">
-
   <div class="controls">
     <button class="btn-home"      onclick="goHome()">🏠</button>
     <button class="btn-immersion" onclick="lancerImmersion()">🎵</button>
     <button class="btn-heros"     onclick="toggleHerosMusic()">⚔️</button>
-    <button class="btn-zargon"    onclick="toggleZargonMusic()">👿</button>
+    <button class="btn-zargon"    onclick="toggleZargonMusic()">💀</button>
     <button class="btn-death"     onclick="playDeath()">☠️</button>
     <button class="btn-stop"      onclick="stopAll()">⏹</button>
   </div>
 </div>
 
+<!-- IFRAME -->
 <iframe id="frame" src="accueil.html"></iframe>
 
+<!-- MONSTERBAR -->
+<div class="monsterbar">
+  <div class="monsterbar-row">
+    <div class="monster-icon" id="mi-rat"         data-name="Rat"          onclick="playMonster('rat',         this)"><img src="rat.png"></div>
+    <div class="monster-icon" id="mi-squelette"   data-name="Squelette"    onclick="playMonster('squelette',   this)"><img src="squelette.png"></div>
+    <div class="monster-icon" id="mi-zombie"      data-name="Zombie"       onclick="playMonster('zombie',      this)"><img src="zombie.png"></div>
+    <div class="monster-icon" id="mi-momie"       data-name="Momie"        onclick="playMonster('momie',       this)"><img src="momie.png"></div>
+    <div class="monster-icon" id="mi-gobelin"     data-name="Gobelin"      onclick="playMonster('gobelin',     this)"><img src="gobelin.png"></div>
+  </div>
+  <div class="monsterbar-row">
+    <div class="monster-icon" id="mi-ogre"        data-name="Ogre"         onclick="playMonster('ogre',        this)"><img src="ogre.png"></div>
+    <div class="monster-icon" id="mi-abomination" data-name="Abomination"  onclick="playMonster('abomination', this)"><img src="abomination.png"></div>
+    <div class="monster-icon" id="mi-gargouille"  data-name="Gargouille"   onclick="playMonster('gargouille',  this)"><img src="gargouille.png"></div>
+    <div class="monster-icon" id="mi-dreadwarrior"data-name="Dread Warrior" onclick="playMonster('dreadwarrior',this)"><img src="dreadwarrior.png"></div>
+    <div class="monster-icon" id="mi-dragon"      data-name="Dragon 🐉"    onclick="playMonster('dragon',      this)"><img src="dragon.png"></div>
+  </div>
+</div>
+
 <script>
-// Variables centralisées — jamais via window["ref"]
-let ambianceAudio = null;
-let herosAudio    = null;
-let zargonAudio   = null;
-let deathAudio    = null;
+  // ── Sons monstres ─────────────────────────────────────
+  const MONSTER_SOUNDS = {
+    rat:          ["rat1.mp3","rat2.mp3","rat3.mp3","rat4.mp3","rat5.mp3"],
+    squelette:    ["monstre_squelette.mp3","monstre_squelette2.mp3","monstre_squelette3.mp3","monstre_squelette4.mp3"],
+    zombie:       ["zombie1.mp3","zombie2.mp3","zombie3.mp3","zombie4.mp3"],
+    momie:        ["momie1.mp3"],
+    gobelin:      ["monstre_goblin.mp3","goblin1.mp3","goblin2.mp3"],
+    ogre:         ["monstre_ord1.mp3","monstre_orc2.mp3","ogre.mp3"],
+    abomination:  ["abomination1.mp3","abomination2.mp3"],
+    gargouille:   ["monstre_gargouille1.mp3","monstre_gargouille2.mp3","monstre_gargouille3.mp3","monstre_gargouille4.mp3"],
+    dreadwarrior: ["dread1.mp3","dread2.mp3","dread3.mp3","dread4.mp3"],
+    dragon:       ["dragon.mp3"]
+  };
 
-let ambianceTime = 0;
-let musicVolume  = 0.8;
+  const lastMonsterIndex = {};
 
-const HEROS_TRACKS = [
-  "muz_heros1.mp3","muz_heros2.mp3","muz_heros3.mp3",
-  "muz_heros4.mp3","muz_heros5.mp3","muz_heros6.mp3",
-  "muz_heros7.mp3","muz_heros8.mp3"
-];
+  // ── WebAudio pour monstres ────────────────────────────
+  let monsterCtx = null;
+  const monsterBuffers = {};
+  let monsterSource  = null;
+  let monsterActiveBtn = null;
+  let monsterDuckTimeout = null;
 
-const ZARGON_TRACKS = [
-  "war_drums.mp3"
-];
-
-/* ── Ducking API ── */
-function getMusicVolume() { return musicVolume; }
-
-function setMusicVolume(vol) {
-  musicVolume = Math.min(1, Math.max(0, vol));
-  if (ambianceAudio) ambianceAudio.volume = musicVolume;
-  if (herosAudio)    herosAudio.volume    = musicVolume;
-  if (zargonAudio)   zargonAudio.volume   = musicVolume;
-}
-
-/* ── Lecture musique ── */
-function playLoop(getAudioRef, setAudioRef, tracks) {
-  // Toggle off si déjà en lecture
-  if (getAudioRef()) {
-    getAudioRef().pause();
-    setAudioRef(null);
-    return;
+  function getMonsterCtx() {
+    if (!monsterCtx) monsterCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return monsterCtx;
   }
 
-  stopAll();
+  async function loadMonsterBuffer(file) {
+    if (monsterBuffers[file]) return monsterBuffers[file];
+    const ctx = getMonsterCtx();
+    const res = await fetch(file);
+    const ab  = await res.arrayBuffer();
+    const buf = await ctx.decodeAudioData(ab);
+    monsterBuffers[file] = buf;
+    return buf;
+  }
 
-  let index = Math.floor(Math.random() * tracks.length);
+  function pickMonsterFile(id) {
+    const files = MONSTER_SOUNDS[id];
+    if (!files || !files.length) return null;
+    if (files.length === 1) return files[0];
+    let idx;
+    do { idx = Math.floor(Math.random() * files.length); }
+    while (idx === lastMonsterIndex[id]);
+    lastMonsterIndex[id] = idx;
+    return files[idx];
+  }
 
-  function playNext() {
-    const audio = new Audio(tracks[index]);
-    setAudioRef(audio);
-    audio.volume = musicVolume;
+  function clearMonsterBtn() {
+    if (monsterActiveBtn) {
+      monsterActiveBtn.classList.remove("playing");
+      monsterActiveBtn = null;
+    }
+  }
 
-    if (tracks.length === 1) {
-      audio.loop = true;
-      audio.play().catch(()=>{});
-    } else {
-      audio.onended = () => {
-        index = (index + 1) % tracks.length;
-        playNext();
+  function stopMonsterSound() {
+    if (monsterSource) {
+      try { monsterSource.stop(); } catch(e) {}
+      monsterSource = null;
+    }
+    clearMonsterBtn();
+    clearTimeout(monsterDuckTimeout);
+  }
+
+  async function playMonster(id, btn) {
+    const file = pickMonsterFile(id);
+    if (!file) return;
+
+    if ("vibrate" in navigator) navigator.vibrate(30);
+
+    try {
+      const ctx = getMonsterCtx();
+      if (ctx.state === "suspended") await ctx.resume();
+
+      stopMonsterSound();
+
+      // Duck la musique
+      duckMusic(0.15, 200);
+
+      const buffer   = await loadMonsterBuffer(file);
+      const source   = ctx.createBufferSource();
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = 0.9;
+      source.buffer = buffer;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      monsterSource    = source;
+      monsterActiveBtn = btn;
+      btn.classList.add("playing");
+
+      source.onended = () => {
+        monsterSource = null;
+        clearMonsterBtn();
+        duckMusic(0.8, 400);
       };
-      audio.play().catch(()=>{});
-    }
+
+      source.start(0);
+
+      monsterDuckTimeout = setTimeout(() => {
+        duckMusic(0.8, 400);
+        clearMonsterBtn();
+      }, 10000);
+
+    } catch(e) { console.error("Monstre audio:", e); }
   }
 
-  playNext();
-}
-
-function toggleHerosMusic() {
-  playLoop(
-    () => herosAudio,
-    (a) => { herosAudio = a; },
-    HEROS_TRACKS
-  );
-}
-
-function toggleZargonMusic() {
-  playLoop(
-    () => zargonAudio,
-    (a) => { zargonAudio = a; },
-    ZARGON_TRACKS
-  );
-}
-
-function lancerImmersion() {
-  stopAll();
-  ambianceAudio = new Audio("ambiance1.mp3");
-  ambianceAudio.loop = true;
-  ambianceAudio.currentTime = ambianceTime || 0;
-  ambianceAudio.volume = musicVolume;
-  ambianceAudio.play().catch(()=>{});
-}
-
-function playDeath() {
-  stopAll();
-  deathAudio = new Audio("mort.mp3");
-  deathAudio.play().catch(()=>{});
-}
-
-function stopAll() {
-  musicVolume = 0.8;
-
-  if (ambianceAudio) {
-    ambianceTime = ambianceAudio.currentTime;
-    ambianceAudio.pause();
-    ambianceAudio = null;
+  // ── Duck musique (fade volume) ────────────────────────
+  function duckMusic(targetVol, durationMs) {
+    const steps    = 20;
+    const interval = durationMs / steps;
+    const current  = musicVolume;
+    const delta    = (targetVol - current) / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      setMusicVolume(Math.min(1, Math.max(0, current + delta * step)));
+      if (step >= steps) clearInterval(timer);
+    }, interval);
   }
-  if (herosAudio)  { herosAudio.pause();  herosAudio  = null; }
-  if (zargonAudio) { zargonAudio.pause(); zargonAudio = null; }
-  if (deathAudio)  { deathAudio.pause();  deathAudio  = null; }
 
-  // Stoppe aussi les sons locaux dans l'iframe active
-  try {
-    const frame = document.getElementById("frame");
-    if (frame && frame.contentWindow && frame.contentWindow.stopAllLocal) {
-      frame.contentWindow.stopAllLocal();
+  // ── Variables musique ─────────────────────────────────
+  let ambianceAudio = null;
+  let herosAudio    = null;
+  let zargonAudio   = null;
+  let deathAudio    = null;
+  let ambianceTime  = 0;
+  let musicVolume   = 0.8;
+
+  const HEROS_TRACKS = [
+    "muz_heros1.mp3","muz_heros2.mp3","muz_heros3.mp3",
+    "muz_heros4.mp3","muz_heros5.mp3","muz_heros6.mp3",
+    "muz_heros7.mp3","muz_heros8.mp3"
+  ];
+
+  const ZARGON_TRACKS = ["war_drums.mp3"];
+
+  function getMusicVolume() { return musicVolume; }
+
+  function setMusicVolume(vol) {
+    musicVolume = Math.min(1, Math.max(0, vol));
+    if (ambianceAudio) ambianceAudio.volume = musicVolume;
+    if (herosAudio)    herosAudio.volume    = musicVolume;
+    if (zargonAudio)   zargonAudio.volume   = musicVolume;
+  }
+
+  function playLoop(getRef, setRef, tracks) {
+    if (getRef()) { getRef().pause(); setRef(null); return; }
+    stopAll();
+    let index = Math.floor(Math.random() * tracks.length);
+    function playNext() {
+      const audio = new Audio(tracks[index]);
+      setRef(audio);
+      audio.volume = musicVolume;
+      if (tracks.length === 1) {
+        audio.loop = true;
+        audio.play().catch(()=>{});
+      } else {
+        audio.onended = () => { index = (index + 1) % tracks.length; playNext(); };
+        audio.play().catch(()=>{});
+      }
     }
-  } catch(e) {}
-}
+    playNext();
+  }
 
-function goHome() {
-  document.getElementById("frame").src = "accueil.html";
-}
+  function toggleHerosMusic()  { playLoop(() => herosAudio,  (a) => { herosAudio  = a; }, HEROS_TRACKS); }
+  function toggleZargonMusic() { playLoop(() => zargonAudio, (a) => { zargonAudio = a; }, ZARGON_TRACKS); }
 
-function navigateTo(page) {
-  document.getElementById("frame").src = page;
-}
+  function lancerImmersion() {
+    stopAll();
+    ambianceAudio = new Audio("ambiance1.mp3");
+    ambianceAudio.loop = true;
+    ambianceAudio.currentTime = ambianceTime || 0;
+    ambianceAudio.volume = musicVolume;
+    ambianceAudio.play().catch(()=>{});
+  }
 
-function stopAmbianceFromFrame() {
-  stopAll();
-}
+  function playDeath() {
+    stopAll();
+    deathAudio = new Audio("mort.mp3");
+    deathAudio.play().catch(()=>{});
+  }
+
+  function stopAll() {
+    musicVolume = 0.8;
+    stopMonsterSound();
+
+    if (ambianceAudio) { ambianceTime = ambianceAudio.currentTime; ambianceAudio.pause(); ambianceAudio = null; }
+    if (herosAudio)    { herosAudio.pause();  herosAudio  = null; }
+    if (zargonAudio)   { zargonAudio.pause(); zargonAudio = null; }
+    if (deathAudio)    { deathAudio.pause();  deathAudio  = null; }
+
+    try {
+      const frame = document.getElementById("frame");
+      if (frame && frame.contentWindow && frame.contentWindow.stopAllLocal) {
+        frame.contentWindow.stopAllLocal();
+      }
+    } catch(e) {}
+  }
+
+  function goHome() { document.getElementById("frame").src = "accueil.html"; }
+  function navigateTo(page) { document.getElementById("frame").src = page; }
+  function stopAmbianceFromFrame() { stopAll(); }
+
+  // Préchauffage WebAudio monstre au premier touch
+  async function warmUpMonster() {
+    try {
+      const ctx = getMonsterCtx();
+      if (ctx.state === "suspended") await ctx.resume();
+      Object.values(MONSTER_SOUNDS).flat()
+        .forEach(f => loadMonsterBuffer(f).catch(() => {}));
+    } catch(_) {}
+  }
+  window.addEventListener("touchstart", warmUpMonster, { once: true });
+  window.addEventListener("click",      warmUpMonster, { once: true });
 </script>
 
 </body>
