@@ -99,19 +99,41 @@ let introAudio = null;
 let taverneAudio = null;
 
 function playIntro() {
-  if (introAudio) {
+  // 🔁 toggle
+  if (introAudio && !introAudio.paused) {
     introAudio.pause();
     introAudio.currentTime = 0;
+    introAudio = null;
+    return;
   }
+
+  // stop autre son si actif
+  if (taverneAudio) {
+    taverneAudio.pause();
+    taverneAudio.currentTime = 0;
+    taverneAudio = null;
+  }
+
   introAudio = new Audio("introzargon.mp3");
   introAudio.play().catch(() => {});
 }
 
 function playTaverne() {
-  if (taverneAudio) {
+  // 🔁 toggle
+  if (taverneAudio && !taverneAudio.paused) {
     taverneAudio.pause();
     taverneAudio.currentTime = 0;
+    taverneAudio = null;
+    return;
   }
+
+  // stop autre son si actif
+  if (introAudio) {
+    introAudio.pause();
+    introAudio.currentTime = 0;
+    introAudio = null;
+  }
+
   taverneAudio = new Audio("taverne.mp3");
   taverneAudio.play().catch(() => {});
 }
