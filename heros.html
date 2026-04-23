@@ -14,7 +14,9 @@
       --btn-radius: 18px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     html, body {
       margin: 0;
@@ -46,11 +48,13 @@
       margin-bottom: 12px;
       gap: var(--topbar-gap);
       flex-wrap: wrap;
+      flex: 0 0 auto;
     }
 
     .topbar h1 {
       margin: 0;
       font-size: 1.9rem;
+      line-height: 1;
     }
 
     .back-btn {
@@ -61,151 +65,316 @@
       font-weight: bold;
       border: none;
       cursor: pointer;
+      font-size: 1rem;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--grid-gap-y) var(--grid-gap-x);
       justify-items: center;
+      align-content: start;
+      flex: 1 1 auto;
+      min-height: 0;
     }
 
     .btn {
+      display: block;
       width: 100%;
       max-width: 180px;
       height: min(24dvh, 180px);
       border-radius: var(--btn-radius);
       overflow: hidden;
       position: relative;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       cursor: pointer;
-      border: none;
+      transition: transform 0.1s ease;
       background: rgba(0,0,0,0.25);
+      border: none;
+      padding: 0;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
     }
 
     .btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center;
+      display: block;
     }
 
     .btn span {
       position: absolute;
+      left: 0;
+      right: 0;
       bottom: 0;
-      width: 100%;
+      padding: 10px 8px;
       text-align: center;
-      padding: 10px;
-      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
       font-weight: bold;
+      font-size: 1rem;
+      color: #ffffff;
+      background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.25));
+      text-shadow: 0 2px 6px rgba(0,0,0,1);
+      z-index: 2;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(0,0,0,0.82);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 480px) {
+      :root {
+        --page-pad-x: 12px;
+        --page-pad-y: 10px;
+        --grid-gap-x: 12px;
+        --grid-gap-y: 12px;
+      }
+
+      .topbar {
+        margin-bottom: 10px;
+      }
+
+      .topbar h1 {
+        font-size: 1.65rem;
+      }
+
+      .back-btn {
+        font-size: 0.95rem;
+        padding: 9px 12px;
+      }
+
+      .btn {
+        max-width: 100%;
+        height: min(22dvh, 165px);
+      }
+
+      .btn span {
+        font-size: 0.92rem;
+        padding: 8px 6px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .topbar h1 {
+        font-size: 1.45rem;
+      }
+
+      .btn {
+        height: min(21dvh, 150px);
+      }
+
+      .btn span {
+        font-size: 0.86rem;
+      }
     }
   </style>
 </head>
-
 <body>
 
-<div class="page">
-  <div class="topbar">
-    <h1>Héros ⚔️</h1>
-    <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+  <div class="page">
+    <div class="topbar">
+      <h1>Héros ⚔️</h1>
+      <button class="back-btn" onclick="parent.navigateTo('accueil.html')">← Retour</button>
+    </div>
+
+    <div class="grid">
+
+      <button class="btn" onclick="parent.navigateTo('combats.html')">
+        <img src="combats.png" alt="Combats">
+        <span>Combats</span>
+      </button>
+
+      <button class="btn" onclick="parent.navigateTo('pieges.html')">
+        <img src="pieges.png" alt="Pièges">
+        <span>Pièges</span>
+      </button>
+
+      <button class="btn" onclick="playDoor()">
+        <img src="portes.png" alt="Portes">
+        <span>Portes</span>
+      </button>
+
+      <button class="btn" onclick="playPlacement()">
+        <img src="placement.png" alt="Placement">
+        <span>Placement</span>
+      </button>
+
+      <button class="btn" onclick="playTreasure()">
+        <img src="tresor.png" alt="Cherche trésor">
+        <span>🧰 Cherche trésor</span>
+      </button>
+
+      <button class="btn" onclick="playReward()">
+        <img src="recompense.png" alt="Récompense">
+        <span>🎁 Récompense</span>
+      </button>
+
+    </div>
   </div>
 
-  <div class="grid">
+  <div id="toast"></div>
 
-    <button class="btn" onclick="parent.navigateTo('combats.html')">
-      <img src="combats.png"><span>Combats</span>
-    </button>
+  <script src="audio-utils.js"></script>
+  <script>
+    const rewardSounds = [
+      "recompense1.mp3",
+      "recompense2.mp3",
+      "recompense3.mp3"
+    ];
 
-    <button class="btn" onclick="parent.navigateTo('pieges.html')">
-      <img src="pieges.png"><span>Pièges</span>
-    </button>
+    let lastRewardIndex = -1;
 
-    <button class="btn" onclick="playDoor()">
-      <img src="portes.png"><span>Portes</span>
-    </button>
+    async function playTreasure() {
+      vibrate(40);
 
-    <button class="btn" onclick="playPlacement()">
-      <img src="placement.png"><span>Placement</span>
-    </button>
+      await playManagedAudio("treasureAudio", "tresor_cherche.mp3", {
+        volume: 1,
+        fadeInDuration: 150,
+        fadeOutDuration: 120
+      }).catch(() => {});
 
-    <button class="btn" onclick="playTreasure()">
-      <img src="tresor.png"><span>🧰 Cherche trésor</span>
-    </button>
-
-    <button class="btn" onclick="playReward()">
-      <img src="recompense.png"><span>🎁 Récompense</span>
-    </button>
-
-  </div>
-</div>
-
-<script src="audio-utils.js"></script>
-<script>
-
-const doorSounds = ["porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"];
-const placementSounds = ["tick1.mp3","tick2.mp3","tick3.mp3","tick4.mp3"];
-const rewardSounds = ["recompense1.mp3","recompense2.mp3","recompense3.mp3"];
-
-let placementAudio = null;
-let placementActive = false;
-let lastPlacementIndex = -1;
-let lastRewardIndex = -1;
-
-// 🔥 PLACEMENT RANDOM (SEULE MODIF)
-function playNextPlacement(){
-  if(!placementActive) return;
-
-  let randomIndex;
-  do{
-    randomIndex = Math.floor(Math.random()*placementSounds.length);
-  }while(randomIndex===lastPlacementIndex && placementSounds.length>1);
-
-  lastPlacementIndex = randomIndex;
-
-  const file = placementSounds[randomIndex];
-
-  if(placementAudio){
-    placementAudio.pause();
-    placementAudio.currentTime=0;
-  }
-
-  placementAudio = new Audio(file);
-  placementAudio.onended = ()=>playNextPlacement();
-  placementAudio.play().catch(()=>{});
-}
-
-function playPlacement(){
-  if(placementActive){
-    placementActive=false;
-    if(placementAudio){
-      placementAudio.pause();
-      placementAudio.currentTime=0;
+      showToast("🧰 Trésor !");
     }
-    return;
-  }
 
-  placementActive=true;
-  playNextPlacement();
-}
+    async function playReward() {
+      vibrate(40);
 
-function playDoor(){
-  const file = doorSounds[Math.floor(Math.random()*doorSounds.length)];
-  new Audio(file).play();
-}
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * rewardSounds.length);
+      } while (randomIndex === lastRewardIndex && rewardSounds.length > 1);
 
-function playTreasure(){
-  new Audio("tresor_cherche.mp3").play();
-}
+      lastRewardIndex = randomIndex;
 
-function playReward(){
-  let idx;
-  do{
-    idx = Math.floor(Math.random()*rewardSounds.length);
-  }while(idx===lastRewardIndex && rewardSounds.length>1);
+      await playManagedAudio("rewardAudio", rewardSounds[randomIndex], {
+        volume: 1,
+        fadeInDuration: 180,
+        fadeOutDuration: 120
+      }).catch(() => {});
 
-  lastRewardIndex = idx;
-  new Audio(rewardSounds[idx]).play();
-}
+      showToast("🎁 Récompense !");
+    }
 
-</script>
+    const doorSounds = [
+      "porte1.mp3","porte2.mp3","porte3.mp3","porte4.mp3","porte5.m4a"
+    ];
+
+    const placementSounds = [
+      "tick1.mp3",
+      "tick2.mp3",
+      "tick3.mp3",
+      "tick4.mp3"
+    ];
+
+    let currentAudio = null;
+    let placementAudio = null;
+
+    let placementActive = false;
+    let placementIndex = 0;
+    let lastPlacementIndex = -1;
+
+    let toastTimer = null;
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+    }
+
+    function vibrate(ms) {
+      if ("vibrate" in navigator) navigator.vibrate(ms);
+    }
+
+    function stopPlacement() {
+      placementActive = false;
+      if (placementAudio) {
+        placementAudio.pause();
+        placementAudio.currentTime = 0;
+        placementAudio = null;
+      }
+    }
+
+    function playNextPlacement() {
+      if (!placementActive) return;
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * placementSounds.length);
+      } while (randomIndex === lastPlacementIndex && placementSounds.length > 1);
+
+      lastPlacementIndex = randomIndex;
+      const file = placementSounds[randomIndex];
+
+      if (placementAudio) {
+        placementAudio.pause();
+        placementAudio.currentTime = 0;
+      }
+
+      placementAudio = new Audio(file);
+
+      placementAudio.onended = () => {
+        playNextPlacement();
+      };
+
+      placementAudio.play().catch(() => {});
+    }
+
+    function playPlacement() {
+      vibrate(25);
+
+      if (placementActive) {
+        stopPlacement();
+        showToast("⛔ Placement arrêté");
+        return;
+      }
+
+      placementActive = true;
+      placementIndex = 0;
+      playNextPlacement();
+    }
+
+    function playDoor() {
+      vibrate(40);
+
+      if (parent && parent.stopAmbianceFromFrame) {
+        parent.stopAmbianceFromFrame();
+      }
+
+      stopPlacement();
+
+      const file = doorSounds[Math.floor(Math.random() * doorSounds.length)];
+      playManagedAudio("currentAudio", file, {
+        volume: 1,
+        fadeInDuration: 120,
+        fadeOutDuration: 120
+      }).catch(() => {});
+
+      showToast("🚪 Porte...");
+    }
+  </script>
 
 </body>
 </html>
