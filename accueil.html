@@ -75,19 +75,47 @@
       <img src="heros.png" alt="Héros">
       <span>Héros</span>
     </button>
+
     <button class="folder-btn" onclick="parent.navigateTo('zargon.html')">
       <img src="zargon.png" alt="Zargon">
       <span>Zargon</span>
     </button>
-          <button class="btn" onclick="playIntro()">
-        <img src="introzargon.png" alt="Intro">
-        <span>Intro</span>
-      </button>
-          <button class="btn" onclick="playTaverne()">
-        <img src="taverne.png" alt="Taverne">
-        <span>Taverne</span>
-      </button>
+
+    <!-- 🔥 INTRO ZARGON -->
+    <button class="folder-btn" onclick="playIntro()">
+      <img src="introzargon.png" alt="Intro">
+      <span>Intro</span>
+    </button>
+
+    <!-- 🔥 TAVERNE -->
+    <button class="folder-btn" onclick="playTaverne()">
+      <img src="taverne.png" alt="Taverne">
+      <span>Taverne</span>
+    </button>
   </div>
+
+<script>
+let introAudio = null;
+let taverneAudio = null;
+
+function playIntro() {
+  if (introAudio) {
+    introAudio.pause();
+    introAudio.currentTime = 0;
+  }
+  introAudio = new Audio("introzargon.mp3");
+  introAudio.play().catch(() => {});
+}
+
+function playTaverne() {
+  if (taverneAudio) {
+    taverneAudio.pause();
+    taverneAudio.currentTime = 0;
+  }
+  taverneAudio = new Audio("taverne.mp3");
+  taverneAudio.play().catch(() => {});
+}
+</script>
 
 </body>
 </html>
