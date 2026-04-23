@@ -27,9 +27,7 @@
     /* ── TOPBAR ── */
     .topbar {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       height: 80px;
       z-index: 100;
       display: flex;
@@ -41,16 +39,9 @@
       flex-wrap: wrap;
     }
 
-    .topbar img.logo {
-      height: 48px;
-      cursor: pointer;
-    }
+    .topbar img.logo { height: 48px; cursor: pointer; }
 
-    .controls {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .controls button {
       border: none;
@@ -68,15 +59,12 @@
     .btn-zargon   { background: #dc2626; }
     .btn-death    { background: #6b0000; }
     .btn-stop     { background: rgba(180,0,0,0.8); }
-
     .controls button:active { transform: scale(0.95); }
 
     /* ── IFRAME ── */
     #frame {
       position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
+      top: 70px; left: 0; right: 0;
       bottom: 145px;
       width: 100%;
       height: calc(100vh - 70px - 145px);
@@ -87,9 +75,7 @@
     /* ── MONSTERBAR ── */
     .monsterbar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       z-index: 100;
       background: rgba(0,0,0,0.82);
       padding: 8px 6px 10px;
@@ -100,11 +86,7 @@
       border-top: 1px solid rgba(255,255,255,0.08);
     }
 
-    .monsterbar-row {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-    }
+    .monsterbar-row { display: flex; gap: 8px; justify-content: center; }
 
     .monster-item {
       display: flex;
@@ -115,8 +97,7 @@
     }
 
     .monster-icon {
-      width: 54px;
-      height: 54px;
+      width: 54px; height: 54px;
       border-radius: 50%;
       overflow: hidden;
       border: 2px solid rgba(255,255,255,0.25);
@@ -126,8 +107,7 @@
     }
 
     .monster-icon img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
       object-position: left bottom;
       display: block;
@@ -135,11 +115,7 @@
     }
 
     .monster-item:active .monster-icon { transform: scale(0.88); }
-
-    .monster-item.playing .monster-icon {
-      border-color: #f97316;
-      box-shadow: 0 0 10px #f97316;
-    }
+    .monster-item.playing .monster-icon { border-color: #f97316; box-shadow: 0 0 10px #f97316; }
 
     .monster-name {
       font-size: 0.55rem;
@@ -161,7 +137,6 @@
     }
   </style>
 </head>
-
 <body>
 
 <!-- TOPBAR -->
@@ -182,45 +157,45 @@
 <!-- MONSTERBAR -->
 <div class="monsterbar">
   <div class="monsterbar-row">
-    <div class="monster-item" id="mi-rat"          onclick="playMonster('rat',          this)">
+    <div class="monster-item" id="mi-rat"          onclick="playMonster('rat',this)">
       <div class="monster-icon"><img src="rat1.png" alt="Rat"></div>
       <span class="monster-name">Rat</span>
     </div>
-    <div class="monster-item" id="mi-squelette"    onclick="playMonster('squelette',    this)">
+    <div class="monster-item" id="mi-squelette"    onclick="playMonster('squelette',this)">
       <div class="monster-icon"><img src="squelette1.png" alt="Squelette"></div>
       <span class="monster-name">Squelette</span>
     </div>
-    <div class="monster-item" id="mi-zombie"       onclick="playMonster('zombie',       this)">
+    <div class="monster-item" id="mi-zombie"       onclick="playMonster('zombie',this)">
       <div class="monster-icon"><img src="zombie1.png" alt="Zombie"></div>
       <span class="monster-name">Zombie</span>
     </div>
-    <div class="monster-item" id="mi-momie"        onclick="playMonster('momie',        this)">
+    <div class="monster-item" id="mi-momie"        onclick="playMonster('momie',this)">
       <div class="monster-icon"><img src="momie1.png" alt="Momie"></div>
       <span class="monster-name">Momie</span>
     </div>
-    <div class="monster-item" id="mi-gobelin"      onclick="playMonster('gobelin',      this)">
+    <div class="monster-item" id="mi-gobelin"      onclick="playMonster('gobelin',this)">
       <div class="monster-icon"><img src="gobelin1.png" alt="Gobelin"></div>
       <span class="monster-name">Gobelin</span>
     </div>
   </div>
   <div class="monsterbar-row">
-    <div class="monster-item" id="mi-ogre"         onclick="playMonster('ogre',         this)">
+    <div class="monster-item" id="mi-ogre"         onclick="playMonster('ogre',this)">
       <div class="monster-icon"><img src="ogre1.png" alt="Ogre"></div>
       <span class="monster-name">Ogre</span>
     </div>
-    <div class="monster-item" id="mi-abomination"  onclick="playMonster('abomination',  this)">
+    <div class="monster-item" id="mi-abomination"  onclick="playMonster('abomination',this)">
       <div class="monster-icon"><img src="abomination1.png" alt="Abomination"></div>
       <span class="monster-name">Abomination</span>
     </div>
-    <div class="monster-item" id="mi-gargouille"   onclick="playMonster('gargouille',   this)">
+    <div class="monster-item" id="mi-gargouille"   onclick="playMonster('gargouille',this)">
       <div class="monster-icon"><img src="gargouille1.png" alt="Gargouille"></div>
       <span class="monster-name">Gargouille</span>
     </div>
-    <div class="monster-item" id="mi-dreadwarrior" onclick="playMonster('dreadwarrior', this)">
+    <div class="monster-item" id="mi-dreadwarrior" onclick="playMonster('dreadwarrior',this)">
       <div class="monster-icon"><img src="dreadwarrior1.png" alt="Dread Warrior"></div>
       <span class="monster-name">Dread Warrior</span>
     </div>
-    <div class="monster-item" id="mi-dragon"       onclick="playMonster('dragon',       this)">
+    <div class="monster-item" id="mi-dragon"       onclick="playMonster('dragon',this)">
       <div class="monster-icon"><img src="dragon1.png" alt="Dragon"></div>
       <span class="monster-name">Dragon</span>
     </div>
@@ -228,7 +203,102 @@
 </div>
 
 <script>
-  // ── Sons monstres ─────────────────────────────────────
+  const frame = document.getElementById("frame");
+
+  // ══════════════════════════════════════════════════════
+  // PROXY INJECTION — injecté dans chaque page de l'iframe
+  // Intercepte new Audio() et enregistre chaque instance
+  // dans fw._allAudios pour que stopAll() puisse tout killer
+  // ══════════════════════════════════════════════════════
+  const PROXY_SCRIPT = `
+    (function() {
+      if (window._audioProxyInstalled) return;
+      window._audioProxyInstalled = true;
+      window._allAudios = [];
+
+      const OriginalAudio = window.Audio;
+      window.Audio = function(...args) {
+        const instance = new OriginalAudio(...args);
+        window._allAudios.push(instance);
+        return instance;
+      };
+      window.Audio.prototype = OriginalAudio.prototype;
+
+      // Nettoyage périodique des éléments terminés
+      setInterval(() => {
+        window._allAudios = window._allAudios.filter(a => !a.ended || !a.paused);
+      }, 5000);
+    })();
+  `;
+
+  function injectProxy() {
+    try {
+      const fw = frame.contentWindow;
+      if (!fw) return;
+      const script = fw.document.createElement("script");
+      script.textContent = PROXY_SCRIPT;
+      (fw.document.head || fw.document.body || fw.document.documentElement).appendChild(script);
+    } catch(e) {}
+  }
+
+  frame.addEventListener("load", injectProxy);
+
+  // ══════════════════════════════════════════════════════
+  // STOP UNIVERSEL
+  // ══════════════════════════════════════════════════════
+  function stopAll() {
+    musicVolume = 0.8;
+
+    // 1. Stop monstre WebAudio (parent)
+    stopMonsterSound();
+
+    // 2. Stop musiques HTML Audio (parent)
+    [ambianceAudio, herosAudio, zargonAudio, deathAudio].forEach(a => {
+      if (a) { try { a.pause(); a.currentTime = 0; } catch(e){} }
+    });
+    if (ambianceAudio) ambianceTime = ambianceAudio.currentTime;
+    ambianceAudio = herosAudio = zargonAudio = deathAudio = null;
+
+    // 3. Tout killer dans l'iframe
+    try {
+      const fw = frame.contentWindow;
+      if (!fw) return;
+
+      // 3a. Tous les new Audio() capturés par le proxy
+      if (fw._allAudios) {
+        fw._allAudios.forEach(a => {
+          try { a.pause(); a.currentTime = 0; } catch(e){}
+        });
+        fw._allAudios = [];
+      }
+
+      // 3b. Tous les <audio> HTML dans le DOM de l'iframe
+      fw.document.querySelectorAll("audio").forEach(a => {
+        try { a.pause(); a.currentTime = 0; } catch(e){}
+      });
+
+      // 3c. Suspend tous les AudioContext WebAudio de l'iframe
+      ["audioContext","monsterCtx","_audioCtx"].forEach(name => {
+        const ctx = fw[name];
+        if (ctx && ctx.state !== "closed") {
+          try { ctx.suspend(); } catch(e){}
+        }
+      });
+
+      // 3d. Stop activeSource WebAudio si exposé
+      ["activeSource","monsterSource"].forEach(name => {
+        if (fw[name]) { try { fw[name].stop(); } catch(e){} fw[name] = null; }
+      });
+
+      // 3e. stopAllLocal si dispo (placement, etc.)
+      if (fw.stopAllLocal) fw.stopAllLocal();
+
+    } catch(e) {}
+  }
+
+  // ══════════════════════════════════════════════════════
+  // MONSTRES WEBaudio (parent)
+  // ══════════════════════════════════════════════════════
   const MONSTER_SOUNDS = {
     rat:          ["rat1.mp3","rat2.mp3","rat3.mp3","rat4.mp3","rat5.mp3"],
     squelette:    ["monstre_squelette.mp3","monstre_squelette2.mp3","monstre_squelette3.mp3","monstre_squelette4.mp3"],
@@ -276,17 +346,11 @@
   }
 
   function clearMonsterItem() {
-    if (monsterActiveItem) {
-      monsterActiveItem.classList.remove("playing");
-      monsterActiveItem = null;
-    }
+    if (monsterActiveItem) { monsterActiveItem.classList.remove("playing"); monsterActiveItem = null; }
   }
 
   function stopMonsterSound() {
-    if (monsterSource) {
-      try { monsterSource.stop(); } catch(e) {}
-      monsterSource = null;
-    }
+    if (monsterSource) { try { monsterSource.stop(); } catch(e){} monsterSource = null; }
     clearMonsterItem();
     clearTimeout(monsterDuckTimeout);
   }
@@ -307,8 +371,7 @@
       source.buffer = buffer;
       source.connect(gainNode);
       gainNode.connect(ctx.destination);
-      monsterSource     = source;
-      monsterActiveItem = item;
+      monsterSource = source; monsterActiveItem = item;
       item.classList.add("playing");
       source.onended = () => { monsterSource = null; clearMonsterItem(); duckMusic(0.8, 400); };
       source.start(0);
@@ -316,23 +379,10 @@
     } catch(e) { console.error("Monstre audio:", e); }
   }
 
-  // ── Duck musique ──────────────────────────────────────
-  function duckMusic(targetVol, durationMs) {
-    const steps = 20, interval = durationMs / steps;
-    const current = musicVolume, delta = (targetVol - current) / steps;
-    let step = 0;
-    const timer = setInterval(() => {
-      step++;
-      setMusicVolume(Math.min(1, Math.max(0, current + delta * step)));
-      if (step >= steps) clearInterval(timer);
-    }, interval);
-  }
-
-  // ── Variables musique ─────────────────────────────────
-  let ambianceAudio = null;
-  let herosAudio    = null;
-  let zargonAudio   = null;
-  let deathAudio    = null;
+  // ══════════════════════════════════════════════════════
+  // MUSIQUE (ambiance / héros / zargon / mort)
+  // ══════════════════════════════════════════════════════
+  let ambianceAudio = null, herosAudio = null, zargonAudio = null, deathAudio = null;
   let ambianceTime  = 0;
   let musicVolume   = 0.8;
 
@@ -352,6 +402,17 @@
     if (zargonAudio)   zargonAudio.volume   = musicVolume;
   }
 
+  function duckMusic(targetVol, durationMs) {
+    const steps = 20, interval = durationMs / steps;
+    const current = musicVolume, delta = (targetVol - current) / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      setMusicVolume(Math.min(1, Math.max(0, current + delta * step)));
+      if (step >= steps) clearInterval(timer);
+    }, interval);
+  }
+
   function playLoop(getRef, setRef, tracks) {
     if (getRef()) { getRef().pause(); setRef(null); return; }
     stopAll();
@@ -361,18 +422,17 @@
       setRef(audio);
       audio.volume = musicVolume;
       if (tracks.length === 1) {
-        audio.loop = true;
-        audio.play().catch(()=>{});
+        audio.loop = true; audio.play().catch(()=>{});
       } else {
-        audio.onended = () => { index = (index + 1) % tracks.length; playNext(); };
+        audio.onended = () => { index = (index+1) % tracks.length; playNext(); };
         audio.play().catch(()=>{});
       }
     }
     playNext();
   }
 
-  function toggleHerosMusic()  { playLoop(() => herosAudio,  (a) => { herosAudio  = a; }, HEROS_TRACKS); }
-  function toggleZargonMusic() { playLoop(() => zargonAudio, (a) => { zargonAudio = a; }, ZARGON_TRACKS); }
+  function toggleHerosMusic()  { playLoop(() => herosAudio,  a => { herosAudio  = a; }, HEROS_TRACKS); }
+  function toggleZargonMusic() { playLoop(() => zargonAudio, a => { zargonAudio = a; }, ZARGON_TRACKS); }
 
   function lancerImmersion() {
     stopAll();
@@ -389,76 +449,16 @@
     deathAudio.play().catch(()=>{});
   }
 
-  // ── STOP UNIVERSEL ────────────────────────────────────
-  function stopAll() {
-    // 1. Remet volume à la normale
-    musicVolume = 0.8;
-
-    // 2. Stop monstre WebAudio (parent)
-    stopMonsterSound();
-
-    // 3. Stop toutes les musiques HTML Audio (parent)
-    [ambianceAudio, herosAudio, zargonAudio, deathAudio].forEach(a => {
-      if (a) { try { a.pause(); a.currentTime = 0; } catch(e){} }
-    });
-    if (ambianceAudio) ambianceTime = 0;
-    ambianceAudio = herosAudio = zargonAudio = deathAudio = null;
-
-    // 4. Stop tous les <audio> HTML présents dans le parent (sécurité)
-    document.querySelectorAll("audio").forEach(a => {
-      try { a.pause(); a.currentTime = 0; } catch(e){}
-    });
-
-    // 5. Stop tout dans l'iframe active
-    try {
-      const fw = document.getElementById("frame").contentWindow;
-      if (!fw) return;
-
-      // 5a. Fonction stopAllLocal (HTML Audio + placement)
-      if (fw.stopAllLocal) fw.stopAllLocal();
-
-      // 5b. Suspend le AudioContext WebAudio de l'iframe (sorts, combats, monstres)
-      if (fw.audioContext && fw.audioContext.state !== "closed") {
-        try { fw.audioContext.suspend(); } catch(e){}
-      }
-      // Aussi monsterCtx si la page en a un
-      if (fw.monsterCtx && fw.monsterCtx.state !== "closed") {
-        try { fw.monsterCtx.suspend(); } catch(e){}
-      }
-
-      // 5c. Stop activeSource WebAudio de l'iframe si exposée
-      if (fw.activeSource) {
-        try { fw.activeSource.stop(); } catch(e){}
-        fw.activeSource = null;
-      }
-
-      // 5d. Kill tous les <audio> HTML dans l'iframe
-      fw.document.querySelectorAll("audio").forEach(a => {
-        try { a.pause(); a.currentTime = 0; } catch(e){}
-      });
-
-    } catch(e) {}
-  }
-
-  function goHome() { document.getElementById("frame").src = "accueil.html"; }
-
-  function navigateTo(page) {
-    // Avant de naviguer, on suspend l'AudioContext de la page courante
-    try {
-      const fw = document.getElementById("frame").contentWindow;
-      if (fw && fw.audioContext) fw.audioContext.suspend();
-    } catch(e){}
-    document.getElementById("frame").src = page;
-  }
-
+  function goHome()            { stopAll(); frame.src = "accueil.html"; }
+  function navigateTo(page)    { frame.src = page; }
   function stopAmbianceFromFrame() { stopAll(); }
 
-  // ── Préchauffage WebAudio monstres ────────────────────
+  // Préchauffage
   async function warmUpMonster() {
     try {
       const ctx = getMonsterCtx();
       if (ctx.state === "suspended") await ctx.resume();
-      Object.values(MONSTER_SOUNDS).flat().forEach(f => loadMonsterBuffer(f).catch(() => {}));
+      Object.values(MONSTER_SOUNDS).flat().forEach(f => loadMonsterBuffer(f).catch(()=>{}));
     } catch(_) {}
   }
   window.addEventListener("touchstart", warmUpMonster, { once: true });
