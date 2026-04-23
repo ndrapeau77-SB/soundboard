@@ -414,22 +414,66 @@ if (id === "rat" || id === "dreadwarrior") {
     deathAudio.play().catch(()=>{});
   }
 
-  function stopAll() {
-    musicVolume = 0.8;
-    stopMonsterSound();
+function stopAll() {
+  musicVolume = 0.8;
 
-    if (ambianceAudio) { ambianceTime = ambianceAudio.currentTime; ambianceAudio.pause(); ambianceAudio = null; }
-    if (herosAudio)    { herosAudio.pause();  herosAudio  = null; }
-    if (zargonAudio)   { zargonAudio.pause(); zargonAudio = null; }
-    if (deathAudio)    { deathAudio.pause();  deathAudio  = null; }
+  // 🔥 stop monstres
+  stopMonsterSound();
 
+  // 🔥 stop musiques principales
+  if (ambianceAudio) {
+    ambianceTime = ambianceAudio.currentTime;
+    ambianceAudio.pause();
+    ambianceAudio.currentTime = 0;
+    ambianceAudio = null;
+  }
+
+  if (herosAudio) {
+    herosAudio.pause();
+    herosAudio.currentTime = 0;
+    herosAudio = null;
+  }
+
+  if (zargonAudio) {
+    zargonAudio.pause();
+    zargonAudio.currentTime = 0;
+    zargonAudio = null;
+  }
+
+  if (deathAudio) {
+    deathAudio.pause();
+    deathAudio.currentTime = 0;
+    deathAudio = null;
+  }
+
+  // 🔥 NOUVEAU : stop TOUS les audio HTML (sécurité maximale)
+  document.querySelectorAll("audio").forEach(a => {
     try {
-      const frame = document.getElementById("frame");
-      if (frame && frame.contentWindow && frame.contentWindow.stopAllLocal) {
+      a.pause();
+      a.currentTime = 0;
+    } catch(e){}
+  });
+
+  // 🔥 stop les sons dans l'iframe (portes, trésor, etc.)
+  try {
+    const frame = document.getElementById("frame");
+    if (frame && frame.contentWindow) {
+
+      // ta fonction existante
+      if (frame.contentWindow.stopAllLocal) {
         frame.contentWindow.stopAllLocal();
       }
-    } catch(e) {}
-  }
+
+      // 🔥 NOUVEAU : kill tout audio dans iframe
+      frame.contentWindow.document.querySelectorAll("audio").forEach(a => {
+        try {
+          a.pause();
+          a.currentTime = 0;
+        } catch(e){}
+      });
+    }
+  } catch(e) {}
+}
 
   function goHome() { document.getElementById("frame").src = "accueil.html"; }
   function navigateTo(page) { document.getElementById("frame").src = page; }
