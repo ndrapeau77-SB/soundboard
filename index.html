@@ -106,7 +106,6 @@
       justify-content: center;
     }
 
-    /* Chaque monstre = icône ronde + nom */
     .monster-item {
       display: flex;
       flex-direction: column;
@@ -135,9 +134,7 @@
       pointer-events: none;
     }
 
-    .monster-item:active .monster-icon {
-      transform: scale(0.88);
-    }
+    .monster-item:active .monster-icon { transform: scale(0.88); }
 
     .monster-item.playing .monster-icon {
       border-color: #f97316;
@@ -154,9 +151,7 @@
       letter-spacing: 0.02em;
     }
 
-    .monster-item.playing .monster-name {
-      color: #f97316;
-    }
+    .monster-item.playing .monster-name { color: #f97316; }
 
     @media (max-width: 380px) {
       .monster-icon { width: 46px; height: 46px; }
@@ -248,11 +243,10 @@
   };
 
   const lastMonsterIndex = {};
-
-  let monsterCtx       = null;
-  const monsterBuffers = {};
-  let monsterSource    = null;
-  let monsterActiveItem = null;
+  let monsterCtx         = null;
+  const monsterBuffers   = {};
+  let monsterSource      = null;
+  let monsterActiveItem  = null;
   let monsterDuckTimeout = null;
 
   function getMonsterCtx() {
@@ -300,50 +294,32 @@
   async function playMonster(id, item) {
     const file = pickMonsterFile(id);
     if (!file) return;
-
     if ("vibrate" in navigator) navigator.vibrate(30);
-
     try {
       const ctx = getMonsterCtx();
       if (ctx.state === "suspended") await ctx.resume();
-
       stopMonsterSound();
       duckMusic(0.15, 200);
-
       const buffer   = await loadMonsterBuffer(file);
       const source   = ctx.createBufferSource();
       const gainNode = ctx.createGain();
-// 🔥 boost spécifique
-if (id === "rat" || id === "dreadwarrior") {
-  gainNode.gain.value = 1.75;
-} else {
-  gainNode.gain.value = 0.9;
-}   source.buffer = buffer;
+      gainNode.gain.value = (id === "rat" || id === "dreadwarrior") ? 1.75 : 0.9;
+      source.buffer = buffer;
       source.connect(gainNode);
       gainNode.connect(ctx.destination);
-
-      monsterSource    = source;
+      monsterSource     = source;
       monsterActiveItem = item;
       item.classList.add("playing");
-
-      source.onended = () => {
-        monsterSource = null;
-        clearMonsterItem();
-        duckMusic(0.8, 400);
-      };
-
+      source.onended = () => { monsterSource = null; clearMonsterItem(); duckMusic(0.8, 400); };
       source.start(0);
       monsterDuckTimeout = setTimeout(() => { duckMusic(0.8, 400); clearMonsterItem(); }, 10000);
-
     } catch(e) { console.error("Monstre audio:", e); }
   }
 
   // ── Duck musique ──────────────────────────────────────
   function duckMusic(targetVol, durationMs) {
-    const steps    = 20;
-    const interval = durationMs / steps;
-    const current  = musicVolume;
-    const delta    = (targetVol - current) / steps;
+    const steps = 20, interval = durationMs / steps;
+    const current = musicVolume, delta = (targetVol - current) / steps;
     let step = 0;
     const timer = setInterval(() => {
       step++;
@@ -365,7 +341,6 @@ if (id === "rat" || id === "dreadwarrior") {
     "muz_heros4.mp3","muz_heros5.mp3","muz_heros6.mp3",
     "muz_heros7.mp3","muz_heros8.mp3"
   ];
-
   const ZARGON_TRACKS = ["war_drums.mp3"];
 
   function getMusicVolume() { return musicVolume; }
@@ -414,71 +389,71 @@ if (id === "rat" || id === "dreadwarrior") {
     deathAudio.play().catch(()=>{});
   }
 
-function stopAll() {
-  musicVolume = 0.8;
+  // ── STOP UNIVERSEL ────────────────────────────────────
+  function stopAll() {
+    // 1. Remet volume à la normale
+    musicVolume = 0.8;
 
-  // 🔥 stop monstres
-  stopMonsterSound();
+    // 2. Stop monstre WebAudio (parent)
+    stopMonsterSound();
 
-  // 🔥 stop musiques principales
-  if (ambianceAudio) {
-    ambianceTime = ambianceAudio.currentTime;
-    ambianceAudio.pause();
-    ambianceAudio.currentTime = 0;
-    ambianceAudio = null;
-  }
+    // 3. Stop toutes les musiques HTML Audio (parent)
+    [ambianceAudio, herosAudio, zargonAudio, deathAudio].forEach(a => {
+      if (a) { try { a.pause(); a.currentTime = 0; } catch(e){} }
+    });
+    if (ambianceAudio) ambianceTime = 0;
+    ambianceAudio = herosAudio = zargonAudio = deathAudio = null;
 
-  if (herosAudio) {
-    herosAudio.pause();
-    herosAudio.currentTime = 0;
-    herosAudio = null;
-  }
+    // 4. Stop tous les <audio> HTML présents dans le parent (sécurité)
+    document.querySelectorAll("audio").forEach(a => {
+      try { a.pause(); a.currentTime = 0; } catch(e){}
+    });
 
-  if (zargonAudio) {
-    zargonAudio.pause();
-    zargonAudio.currentTime = 0;
-    zargonAudio = null;
-  }
-
-  if (deathAudio) {
-    deathAudio.pause();
-    deathAudio.currentTime = 0;
-    deathAudio = null;
-  }
-
-  // 🔥 NOUVEAU : stop TOUS les audio HTML (sécurité maximale)
-  document.querySelectorAll("audio").forEach(a => {
+    // 5. Stop tout dans l'iframe active
     try {
-      a.pause();
-      a.currentTime = 0;
-    } catch(e){}
-  });
+      const fw = document.getElementById("frame").contentWindow;
+      if (!fw) return;
 
-  // 🔥 stop les sons dans l'iframe (portes, trésor, etc.)
-  try {
-    const frame = document.getElementById("frame");
-    if (frame && frame.contentWindow) {
+      // 5a. Fonction stopAllLocal (HTML Audio + placement)
+      if (fw.stopAllLocal) fw.stopAllLocal();
 
-      // ta fonction existante
-      if (frame.contentWindow.stopAllLocal) {
-        frame.contentWindow.stopAllLocal();
+      // 5b. Suspend le AudioContext WebAudio de l'iframe (sorts, combats, monstres)
+      if (fw.audioContext && fw.audioContext.state !== "closed") {
+        try { fw.audioContext.suspend(); } catch(e){}
+      }
+      // Aussi monsterCtx si la page en a un
+      if (fw.monsterCtx && fw.monsterCtx.state !== "closed") {
+        try { fw.monsterCtx.suspend(); } catch(e){}
       }
 
-      // 🔥 NOUVEAU : kill tout audio dans iframe
-      frame.contentWindow.document.querySelectorAll("audio").forEach(a => {
-        try {
-          a.pause();
-          a.currentTime = 0;
-        } catch(e){}
+      // 5c. Stop activeSource WebAudio de l'iframe si exposée
+      if (fw.activeSource) {
+        try { fw.activeSource.stop(); } catch(e){}
+        fw.activeSource = null;
+      }
+
+      // 5d. Kill tous les <audio> HTML dans l'iframe
+      fw.document.querySelectorAll("audio").forEach(a => {
+        try { a.pause(); a.currentTime = 0; } catch(e){}
       });
-    }
-  } catch(e) {}
-}
+
+    } catch(e) {}
+  }
 
   function goHome() { document.getElementById("frame").src = "accueil.html"; }
-  function navigateTo(page) { document.getElementById("frame").src = page; }
+
+  function navigateTo(page) {
+    // Avant de naviguer, on suspend l'AudioContext de la page courante
+    try {
+      const fw = document.getElementById("frame").contentWindow;
+      if (fw && fw.audioContext) fw.audioContext.suspend();
+    } catch(e){}
+    document.getElementById("frame").src = page;
+  }
+
   function stopAmbianceFromFrame() { stopAll(); }
 
+  // ── Préchauffage WebAudio monstres ────────────────────
   async function warmUpMonster() {
     try {
       const ctx = getMonsterCtx();
